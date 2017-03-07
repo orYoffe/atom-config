@@ -1,0 +1,91 @@
+{% helpers ['helper_seo', 'helper_live'] %}
+
+{% extends 'shared/header/_base.html' %}
+
+{% block header_content %}
+    {% spaceless %}
+    {% if gatekeeper('ALGOLIA_SEARCH_DESKTOP') %}
+    <!-- React Algolia search -->
+    <div class="sd_header__a-search">
+        <!-- copied react code -->
+        <div class="a-search" data-reactid=".0">
+            <div class="a-search__form" data-reactid=".0.0">
+                <div class="a-search__form__input" data-reactid=".0.0.0">
+                    <input type="text" placeholder="{{ 'Search on Dailymotion'|trans }}" data-reactid=".0.0.0.0">
+                    <i class="icon-search" data-reactid=".0.0.0.$search">
+
+                    </i>
+                </div>
+            </div>
+        </div>
+        <!-- end of copied react code -->
+    </div>
+    {% else %}
+    <!-- Old DM search -->
+        <div class="sd_header__search hidden-sm" itemscope itemtype="http://schema.org/WebSite">
+            <meta itemprop="url" content="{{ get_config('EMAIL_URL_BASE') }}/{{ context.version }}"/>
+            <form itemprop="potentialAction" itemscope itemtype="http://schema.org/SearchAction" action="/" name="header_search" method="get">
+                <meta itemprop="target" content="{{ get_config('EMAIL_URL_BASE') }}/{{ context.version }}/relevance/universal/search/{search}/1"/>
+                <input type="hidden" name="search_copy" value="" />
+                <input type="hidden" name="locale" value="{{ context.version }}" />
+                <input id="search_hitmap" type="hidden" name="hitmap" value="{{ searchHitmap }}" />
+                <input itemprop="query-input" id="input_search" tabindex="1" placeholder="{{ "Video, channel…"|trans }}" type="text" name="search" autocomplete="off" spellcheck="false" value="" data-event-debug="{{ {'event': 'search_input_charachter_typed'}|json_encode }}" required />
+                <button type="submit" name="submit_button">
+                    <i class="icon-search neutral-2_color"></i>
+                </button>
+            </form>
+        </div>
+    {% endif %}
+    {% endspaceless %}
+
+    {# UPLOAD & GO LIVE #}
+    <div class="sd_header__buttons">
+        {% set upload_label_long = 'Upload a video'|trans %}
+        {% set upload_button_label %}
+            <i class="icon-upload"></i>
+            <span class="hidden-sm hidden-md hidden-xl">{{ 'Upload'|trans }}</span>
+            <span class="hidden-sm hidden-md hidden-lg">{{ upload_label_long }}</span>
+        {% endset %}
+        {% set upload_uri = build_uri('upload') %}
+        {% set button_class = 'btn btn-sm sd_header__upload js-header-upload-button' %}
+        {% if helper_live.isLiveDashboardEnabled(context.request) %}
+            <a
+                href="{{ build_uri('live_create') }}"
+                title="{{ 'Go Live'|trans }}"
+                data-event="live_header_create_button_click"
+                class="btn btn-sm sd_header__live">
+                    <i class="icon-live" style="font-size: 9px"></i>
+                    <span class="hidden-sm hidden-md">{{ 'Go Live'|trans }}</span>
+            </a>
+        {% endif %}
+        {% if context.is_logged %}
+            <a
+                href="{{ upload_uri }}"
+                title="{{ upload_label_long }}"
+                class="{{ button_class }}"
+                data-event="upload_video_button_click">
+                    {{ upload_button_label }}
+            </a>
+        {% else %}
+            {%
+                set authLinkParams =
+                {
+                    'label': upload_button_label,
+                    'req_parameters':
+                    {
+                        'request': '/signin',
+                        'urlback': upload_uri|url_encode,
+                    },
+                    'attrs':
+                    {
+                        'class': button_class,
+                        'data-event-location': 'header',
+                        'data-event-feature': 'upload'
+                    },
+                    'blured': false,
+                }
+            %}
+            {% include 'shared/_authenticationlink.html' with authLinkParams %}
+        {% endif %}
+    </div>
+{% endblock %}

@@ -1,0 +1,91 @@
+{% helpers [
+    'helper_user',
+    'helper_header',
+    'helper_auth'
+] %}
+
+{% import 'macros/utils.html' as utils %}
+
+{% if gatekeeper('MAIN_HEADER_BAR_BLACK')  %}
+<div class="sd_header black-header{{ header_fixed ? ' sd_header--fixed' }}">
+{% else %}
+<div class="sd_header{{ header_fixed ? ' sd_header--fixed' }}">
+{% endif %}
+    <div class="sd_header__login">
+        {% if context.is_logged %}
+            {% set menuAction = (context.device == 'desktop') ? 'hover' : 'manual' %}
+            {% set reader = context.reader %}
+            {% set reader_channel_url = dm_url ~ build_uri('user_home', {'object_user': reader}) %}
+            {%
+                set tipsy_options =
+                {
+                    target: '#tipsy-profile-menu',
+                    gravity: 'ne',
+                    trigger: menuAction,
+                    tooltip_type: 'tipsy-button-dropdown force-arrow',
+                }
+            %}
+            <a
+                href="{{ reader_channel_url }}"
+                class="js-tipsy"
+                data-tipsy-options="{{ tipsy_options|json_encode }}"
+            >
+                <img src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw=="
+                    alt="{{ reader.screenName }}"
+                    data-lg="header"
+                    width="30"
+                    height="30"
+                    data-src="{{ helper_user.getAvatarURL(reader, '25x25') }}"
+                    data-href="{{ reader_channel_url }}"
+                    class="clickable js-tipsy"
+                />
+            </a>
+            <div id="tipsy-profile-menu" class="hidden">
+                <ul class="font-md foreground2 tipsy-profile-menu-inner tipsy-header">
+                    {% include 'shared/user/_headermenu.html' %}
+                </ul>
+            </div>
+        {% elseif (no_login is not defined) and context.request.getRouteName() != 'register' and context.request.getRouteName() != 'login' %}
+            {%
+                set authLinkParams =
+                {
+                    'label': 'Sign in'|trans,
+                    'req_parameters': {'request': '/login'},
+                    'attrs':
+                    {
+                        'class': 'font-sm sign_in no_icon_loading',
+                        'data-event-location': 'header',
+                        'data-event-feature': 'signinsignup'
+                    },
+                }
+            %}
+            {% include 'shared/_authenticationlink.html' with authLinkParams %}
+        {% endif %}
+    </div>
+
+    {# NAVIGATION MENU #}
+    {% if navigation_menu is not defined or ( navigation_menu is defined and navigation_menu != false ) %}
+        <div class="sd_header__navigation hidden-sm">
+            <i class="icon-hamburger"></i>
+            {% if context.is_logged %}
+                {% set badge_count = '' %}
+                {% set attrs = {class: 'navigation-notification notification badge--sm clickable hidden', 'data-total': 0} %}
+            {% else %}
+                {% set badge_count = '*' %}
+                {% set attrs = {class: 'navigation-notification notification badge--sm clickable unlogged'} %}
+            {% endif %}
+            {{ utils.badge('count', badge_count, attrs) }}
+        </div>
+    {% endif %}
+
+    {# LOGO #}
+    <a class="sd_header__logo" href="{{ build_uri('home') }}" title="{{ 'Home'|trans }}">
+        <img width="130px" height="27px" alt="logo Dailymotion" src="{{ static_url('/images/header/logo.svg') }}" />
+        {% if context.route_name == 'home' %}
+            <h1>{{ seo.title }}</h1>
+        {% endif %}
+    </a>
+
+    {# Custom Header Content #}
+    {% block header_content %}{% endblock %}
+</div>

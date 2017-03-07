@@ -1,0 +1,39 @@
+.search-small-channelItem {
+  float: left;
+  display: inline-block;
+  width: 161px;
+  height: 59px;
+
+  .search-smallChannelItem-avatar img {
+    width: 40px;
+    height: 40px;
+  }
+
+  .search-smallChannelItem-verifiedBadge {
+    width: 21.42px;
+    height: 21.51px;
+    background-color: #0066DC;
+    border: 2px solid #FFFFFF;
+    border-radius: 50%;
+  }
+
+  .search-smallChannelItem-name {
+    width: 96px;
+    height: 23px;
+    font-family: Hind;
+    font-size: 16px;
+    font-weight: 600;
+    line-height: 26px;
+    color: #404040;
+  }
+
+  .search-smallChannelItem-videos,
+  .search-smallChannelItem-followers {
+    width: 75px;
+    height: 36px;
+    font-family: Hind;
+    font-size: 14px;
+    line-height: 18px;
+    color: #7F7F7F;
+  }
+}

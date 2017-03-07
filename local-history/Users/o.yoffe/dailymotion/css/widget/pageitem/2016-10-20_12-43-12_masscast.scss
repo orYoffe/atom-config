@@ -1,0 +1,224 @@
+div.mc_hide
+{
+    display: none;
+}
+
+/* ================ MIDDLE */
+
+#mc_Middle,
+#mc_Middle iframe,
+#mc_Middle div.dmpi_video_playerv4,
+#mc_x01,
+#mc_x01 iframe,
+#mc_x01 div.dmpi_video_playerv4
+{
+    width: 300px;
+    height: 250px;
+/*  height of iframe and container is automaticaly adjusted by the js in src/middle.php or js/lib/dm/masscast.js */
+}
+
+#mc_Middle *,
+#mc_x01 *
+{
+    z-index: 10 !important;
+}
+
+/* ================ TOP */
+
+#mc_Top,
+{
+    width: 100%;
+/*  height is automaticaly adjusted by the js in src/middle.php or js/lib/dm/masscast.js */
+    text-align: center;
+}
+
+#mc_Top iframe
+{
+    width: 100%;
+    height: 90px;
+}
+
+#mc_Top *
+{
+    margin: 0 auto;
+}
+
+/* ================ BOTTOMRIGHT */
+
+#mc_BottomRight,
+#mc_BottomRight iframe
+{
+    width: 468px;
+    height: 60px;
+/*  height is automaticaly adjusted by the js in src/middle.php or js/lib/dm/masscast.js */
+}
+
+/* ================ BOTTOM */
+
+#mc_Bottom
+{
+    margin-top: 20px;
+}
+
+#mc_Bottom,
+#mc_Bottom iframe
+{
+    height: 90px;
+/*  height is automaticaly adjusted by the js in src/middle.php or js/lib/dm/masscast.js */
+    text-align: center;
+}
+
+#mc_Bottom *
+{
+    width: 728px;
+    margin: 0 auto;
+}
+
+/* ================ NOFRAME */
+
+#mc_x01.noFrame,
+#mc_Middle.noFrame,
+#mc_Top.noFrame,
+#mc_BttomLeft.noFrame
+{
+    height: auto;
+}
+
+/* ================ */
+
+div.mc_right_player_box
+{
+    @include float(start);
+    width: 300px;
+}
+
+div.mc_right_player_close_cont
+{
+    @include text-align(end);
+    padding: 2px;
+    height: 12px;
+}
+
+div.mc_right_player_box div.dmpi_video_playerv4
+{
+    margin-bottom: 0 !important;
+}
+
+
+/* ================== RIGHT SKYSCRAPER */
+
+#mc_Right
+{
+    display:none;
+    position: absolute;
+    text-align: #{$end}; /* DAILY-36569 */
+    top: 10px;
+    #{$end}: 20px; /* DAILY-36569 */
+    width: 160px;
+    height: 600px;
+}
+#mc_Right iframe
+{
+    width: 160px;
+    height: 600px;
+}
+
+/* =================== X30 */
+
+#mc_x30
+{
+    margin-top: 12px;
+    height: 250px;
+}
+
+/* =================== X28 */
+
+#x28_dimmer
+{
+    position: absolute;
+    top: 0;
+    #{$start}: 0; /* DAILY-36569 */
+    width: 100%;
+    height: 100%;
+    background-position: center center;
+    background-color: #000;
+    background-repeat: no-repeat;
+    z-index: 3000;
+}
+
+#x28_dimmer_inner
+{
+    position: relative;
+    width: 936px;
+    height: 100%;
+    margin: 0 auto;
+    background-color: transparent;
+}
+
+#x28_dimmer_logo
+{
+    background-image: url(http://static1.dmcdn.net/mc/logo-grey-NEW.png);
+    background-repeat: no-repeat;
+    height: 48px;
+    width: 183px;
+    position: absolute;
+    #{$start}: 0; /* DAILY-36569 */
+    top: 0;
+}
+
+#x28_go_to_dm
+{
+    position: absolute;
+    #{$end}: 4px; /* DAILY-36569 */
+    top: 12px;
+}
+
+#x28_dimmer #DM_swftr,
+#x28_dimmer #x28_fallback
+{
+    position:absolute;
+    width: 100%;
+    margin: 0 auto;
+    top: 0;
+    #{$start}: 0; /* DAILY-36569 */
+}
+
+#x28_dimmer.with_banner .x28_top_banner
+{
+    height: 45px;
+    position: relative;
+    z-index: 200;
+}
+
+#x28_dimmer.with_banner .x28_top_banner_inner
+{
+    margin: 0 auto;
+    width: 970px;
+    position: relative;
+}
+
+#x28_dimmer.with_banner #x28_dimmer_logo
+{
+    top: 5px;
+}
+
+#x28_dimmer.with_banner #x28_go_to_dm
+{
+    top: 10px;
+}
+
+#x28_dimmer.with_banner #x28_dimmer_inner
+{
+    margin-top: -45px;
+}
+
+
+// No idea what i am doing (DAILY-47877)
+#mc_x28,
+#mc_x29,
+#mc_x70
+{
+    position:absolute;
+    top:0;
+    left:0;
+}

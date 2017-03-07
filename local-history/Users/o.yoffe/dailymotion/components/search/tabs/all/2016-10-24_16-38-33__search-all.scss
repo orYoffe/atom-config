@@ -1,0 +1,25 @@
+.channel-list-small {
+  margin-bottom: 20px;
+}
+
+.search-all__lists {
+  display: flex;
+}
+
+.search-all__videos {
+  margin-right: 40px;
+}
+.search-all__playlists {
+  max-width: 270px;
+  min-width: 270px;
+}
+
+.search-all__playlists__title {
+    display: block;
+    text-align: left;
+    font-size: 18px;
+    font-weight: 600;
+    color: #7F7F7F;
+    margin-bottom: 8px;
+    margin-top: -6px;
+}

@@ -1,0 +1,501 @@
+{% extends "layouts/site.html" %}
+
+{% import 'macros/masscast.html' as masscast %}
+{% import 'macros/utils.html' as utils %}
+{% import 'macros/playerv5.html' as playerv5 %}
+{% import 'macros/ads.html' as ads %}
+
+{% helpers [
+    'helper_base',
+    'tools',
+    'paywall',
+    'authzcyphergenerator',
+    'helper_livechatcomments',
+    'dm_ads_unblocker',
+    'dm_language',
+    'dm_displayads',
+    'helper_seo',
+    'helper_moderation',
+    'helper_video',
+    'helper_player',
+    'helper_playerv5',
+    'helper_socialbuttons',
+    'helper_facebook',
+    'helper_editinplace',
+    'helper_masscast',
+    'helper_pinba',
+    'helper_subtitle',
+    'helper_comment',
+    'helper_rum'
+] %}
+
+{% set is_responsive = true %}
+
+{% set lazy_assets = [
+    '/js/lib/plugins/jquery.farbtastic.patched.js',
+    '#pickadatetime',
+    '/js/lib/dm/search_videos.js',
+    '/js/widget/pageitem/video/repost.js'
+] %}
+
+{% do helper_pinba.handleForPlayerPage(context.request) %}
+
+{% set videoDimensions1000by800 = tools.computeOptimalPlayerSize(video, 1000, 800) %}
+{% set owner = video.owner %}
+{% set displayad_positions = [] %}
+
+{% if not video.explicit %}
+    {% set displayad_positions = ['Top','Bottom','X51','X52'] %}
+{% endif %}
+
+{% set PIXELLE_ALLOWED = (context.video_ads == false) ? false : true %}
+{% set DISPLAY_ALLOWED = gatekeeper('DISPLAY_ALLOWED') %}
+{% set DISPLAY_ALLOWED = gatekeeper('DISPLAYADS_VIDEOPAGE_B') %}
+{% set playerV5Active = helper_playerv5.isActive(video) %}
+
+{% set has_mtv_player = video.hasMTVPlayer() %}
+
+{% if not DISPLAY_ALLOWED %}
+    {# MASSCAST BUILING - MUST BE OUTSIDE OF ANY BLOCK!!! #}
+    {% set masscast_positions, masscast_overloads = ['Bottom', 'Right'], {} %}
+
+    {% if (has_mtv_player and context.country == 'fr') or not has_mtv_player %}
+        {% if helper_masscast.isMiddleEnabledForVideo(video) %}
+            {% set masscast_positions = masscast_positions|merge(['Middle']) %}
+        {% endif %}
+        {% if helper_masscast.isTopEnabledForUser(owner) %}
+            {% set masscast_positions = masscast_positions|merge(['Top']) %}
+        {% endif %}
+    {% endif %}
+
+    {% if not has_mtv_player %}
+        {% if helper_masscast.isTop3EnabledForUser(owner) %}
+            {% set masscast_positions = masscast_positions|merge(['Top3']) %}
+        {% endif %}
+        {% if helper_masscast.isX30EnabledForVideo(video) %}
+            {% set masscast_positions = masscast_positions|merge(['x30']) %}
+        {% endif %}
+    {% endif %}
+
+    {% if owner.handlingMiddleCompanionBanner %}
+        {% set masscast_overloads = masscast_overloads|merge(
+            {
+                'Middle': get_config('CONTENT_OWNER_ADVERTISING_TAGS.%s.middle'|format(owner.login|lower))|default('')
+            }
+        ) %}
+    {% endif %}
+
+    {% if owner.handlingTopCompanionBanner %}
+        {% set masscast_overloads = masscast_overloads|merge(
+            {
+                'Middle': get_config('CONTENT_OWNER_ADVERTISING_TAGS.%s.top'|format(owner.login|lower))|default('')
+            }
+        ) %}
+    {% endif %}
+
+    {% set masscast_positions = masscast_positions|merge(['x28']) %}
+    {% set masscast_positions = masscast_positions|merge(['x29']) %}
+    {% set masscast_positions = masscast_positions|merge(['x51']) %}
+    {% set masscast_positions = masscast_positions|merge(['x52']) %}
+    {% set masscast_positions = masscast_positions|merge(['x53']) %}
+    {% set masscast_positions = masscast_positions|merge(['x70']) %}
+
+    {% set masscast_instance = helper_masscast.getInstance('videoplayer', {
+        explicit: video.explicit,
+        no_frame: false,
+        positions: masscast_positions,
+        overloads: masscast_overloads
+        }) %}
+
+{% else %}
+    {% if dm_displayads.isMiddleEnabledForVideo(video) or dm_displayads.isMiddleEnabledForUser(owner) %}
+        {% set displayad_positions = displayad_positions|merge(['Middle']) %}
+    {% endif %}
+{% endif %}
+{####################### META LANG ########################}
+
+{% block xml_lang %}{{ video.language }}{% endblock %}
+{% block metaxml_lang %}{{ video.language }}{% endblock %}
+{% block meta_lang %}{{ video.language }}{% endblock %}
+
+{####################### ENV TOP ########################}
+{% block env_top %}
+    {# MASSCAST ENVS #}
+    {% if not DISPLAY_ALLOWED %}
+        masscast_async_call= {{ masscast_instance.call|js_var|raw }};
+        masscast_async_ads1_call = {{ masscast_instance.callAds1|js_var|raw }};
+    {% endif %}
+
+    {# VIDEO TOP ENVS #}
+
+    DM_ViewID='{{ view_id }}';
+
+    DM_CurrentVideoId='{{ video.id }}';
+    DM_CurrentVideoXID='{{ video.getExtendedId(false) }}';
+
+    {% if context.reader %}
+        DMPI_List_Recommendations_USER='{{ context.reader.id }}';
+    {% endif %}
+    {% if helper_video.isRedBandActiveForVideo(video) %}
+        showRedBand=true;
+    {% else %}
+        showRedBand=false;
+    {% endif %}
+    videoHasPartnerPlayer = {{ video.hasPartnerPlayer() ? 'true' : 'false' }};
+
+    {{ add_env_top('RUMBeaconUrl', helper_rum.getBeaconURL()) }}
+    {% if gatekeeper('REQUEST_REPORTING') %}
+        {{ add_env_top('RUMReqsBeaconUrl', helper_rum.getBeaconForReqsTrackURL()) }}
+    {% endif %}
+    {{ add_env_top('RUMEnabled', true) }}
+    {{ add_env_top('RUMWaitForPlayer', true) }}
+    {{ add_env_top('HAS_PV5', helper_playerv5.isActive(video))}}
+    {{ add_env_top('MAX_COMMENT_LENGTH', get_config('MAX_COMMENT_LENGTH')) }}
+
+    {{ add_env_top('GRAVITY_ALLOWED', gatekeeper('GRAVITY_ALLOWED')) }}
+    {{ add_env_top('postponeLazyload', 300) }} {# Says lazyload.js to postpone image loading of 300ms #}
+
+    {{ add_env_top('Gravity',
+        {
+            split: gatekeeper('GRAVITY_SPLIT') ? 'A' : 'B',
+            xid: video.getExtendedId(false),
+            owner: owner.login
+        })
+    }}
+
+    RESOURCE_WATCH_PLAYER = {{ video.hasPartnerPlayer() ? '""' : '"video_player_main"' }};
+    RESOURCE_PRIORITY_MAP = {
+        high: ['image'],
+        medium: ['pixelle'],
+        low: ['stat','ad-plugin'],
+        trivial: ['social', 'ad']
+    };
+
+    {{ parent() }}
+{% endblock %}
+
+
+{######################## ENV BOTTOM ########################}
+{% block env_bottom %}
+
+  {{ add_env_bottom('Pg_Video',
+      {
+            'url': context.request.buildURI,
+            'urlFull': context.request.buildURL,
+            'video': {
+                'ownerLogin' : video.owner.login,
+                'context'    : 'Pg_Video',
+                'xid'        : video.getExtendedId(false)
+            },
+            'googleSearchQuery': dm_browsingcontext.getSearchEngineQuery()|trim,
+            'fromSubscriptionEmail': user_comes_from_subscription_email,
+            'isBehindPaywall': paywall.isVideoBehindPaywall(video)
+        })
+    }}
+
+    {{ add_env_bottom('DM_Gravity',
+        {
+            'GRAVITY_ALLOWED': gatekeeper('GRAVITY_ALLOWED'),
+            'waitForRelated': true
+        })
+    }}
+
+    {{ add_env_bottom('DM_EditInPlace',
+        {
+            'enabled': context.is_logged and helper_video.userIsOwner(video, context.reader) ? true : false
+        })
+    }}
+
+    {% if helper_video.isAnnotationsEnabled(video, context.request.getDeviceType()) %}
+        {{ add_env_bottom('DM_HapYak', hapyak_config) }}
+    {% endif %}
+
+    {% if helper_video.isInWatchLater(video) %}
+        {{ add_env_bottom('DM_WatchLater', { 'videosFromReq' : [video.getExtendedId(false)] }) }}
+    {% endif %}
+    {{ parent() }}
+{% endblock %}
+
+{######################## MASSCAST POSITIONS OVERRIDING ########################}
+
+    {% block masscast_x28 %}
+        {{ masscast.positionV2('x28') }}
+    {% endblock %}
+    {% block masscast_x29 %}
+        {{ masscast.positionV2('x29') }}
+    {% endblock %}
+
+    {# Top #}
+    {% block masscast_top %}
+        {% if DISPLAYADS_VIDEOPAGE_B %}
+            {% if not video_data.error.type or video_data.error.type != 'password_protected' %}
+                {% if DISPLAY_ALLOWED %}
+                    {{ ads.displayAd('div-gpt-ad-1422660696836-2', {'width':'728px','height':'auto'}) }}
+                {% else %}
+                    {{ masscast.positionV2('Top') }}
+                {% endif %}
+            {% endif %}
+        {% endif %}
+    {% endblock %}
+
+    {% block masscast_bottom %}
+        {% if DISPLAYADS_VIDEOPAGE_B %}
+            {% if not video_data.error.type or video_data.error.type != 'password_protected' %}
+                {% if DISPLAY_ALLOWED %}
+                    {# Bottom #}
+                    {{ ads.displayAd('div-gpt-ad-1422660696836-0', {'width':'728px','height':'90px'}) }}
+                {% endif %}
+                {{ masscast.positionV2('Bottom') }}
+            {% endif %}
+        {% endif %}
+    {% endblock %}
+
+{######################## SCHEMA.ORG ITEMSCOPE ########################}
+{% set schema_org_itemscope = 'itemscope itemtype=http://schema.org/VideoObject' %}
+
+{######################## VIDEO LINKS ########################}
+
+{% block links %}
+    {{ parent() }}
+    <link rel="alternate" media="only screen and (max-width: 640px)" href="{{ context.request.buildURL() }}" />
+    <link rel="image_src" type="image/jpeg" href="{{ helper_seo.getVideoPreviewURL(video) }}" />
+    <link rel="thumbnail" type="image/jpeg" href="{{ helper_seo.getVideoPreviewURL(video) }}" />
+    <link rel="alternate" type="application/json+oembed" title="{{ video.title }}" href="{{ helper_seo.getVideoOEmbed(video, 'json') }}" />
+    <link rel="alternate" type="application/xml+oembed" title="{{ video.title }}" href="{{ helper_seo.getVideoOEmbed(video, 'xml') }}" />
+    {% if not context.request.isUserAgentFacebook() %}
+        <link rel="video_src" href="{{ helper_seo.getVideoSWFUrl(video) }}" />
+    {% endif %}
+    <link rel="alternate" href="android-app://com.dailymotion.dailymotion/dailymotion/video/{{ video.getExtendedId(false) }}" />
+{% endblock %}
+
+{######################## VIDEO METAS ########################}
+
+{% block metas %}
+    {{ parent() }}
+    {% if not context.request.isUserAgentFacebook() %}
+        <meta name="medium" content="video" />
+        <meta name="video_type" content="application/x-shockwave-flash" />
+        <meta name="video_height" content="{{ videoDimensions1000by800[1] }}" />
+        <meta name="video_width" content="{{ videoDimensions1000by800[0] }}" />
+    {% endif %}
+{% endblock %}
+
+{######################## SCHEMA ORG ########################}
+{% set allow_countries = video.getAllowCountryCodes() %}
+{% set formatted_views = helper_video.getFormattedViews(video) %}
+
+{% block schema_org %}
+
+    {# SCHEMA_ORG : Thing #}
+    <meta itemprop="name" content="{{ video.title }}" />
+    <meta itemprop="description" content="{{ seo.meta_description }}" />
+    <link itemprop="url" href="{{ video.url }}" />
+
+    {# SCHEMA_ORG : VideoObject #}
+    <meta itemprop="caption" content="{{ DISPLAYADS_VIDEOPAGE_B }}" />
+    <div itemprop="thumbnail" itemscope itemtype="http://schema.org/ImageObject">
+        <link itemprop="url" href="{{ helper_video.getPreviewURI(video, '1280x720') }}">
+        <meta itemprop="width" content="1280" />
+        <meta itemprop="height" content="720" />
+    </div>
+    <meta itemprop="videoQuality" content="{{ video.getBestAvailableFormatLabel }}" />
+
+    {# SCHEMA_ORG : MediaObject #}
+    <meta itemprop="duration" content="{{ tools.formatDurationISO8601(video.duration) }}" />
+    <link itemprop="embedURL" href="{{ build_url('embed_player', {'object_video': video}) }}" />
+    <link itemprop="encodingFormat" href="{{ video.getFormatExtension }}" />
+    <meta itemprop="width" content="{{ videoDimensions1000by800[0] }}" />
+    <meta itemprop="height" content="{{ videoDimensions1000by800[1] }}" />
+    <meta itemprop="isFamilyFriendly" content="{{ video.explicit ? 'false' : 'true' }}"/>
+    <meta itemprop="uploadDate" content="{{ dm_date('c', video.dateCreated.time) }}" />
+    <meta itemprop="dateCreated" content="{{ dm_date('c', video.dateCreated.time) }}" />
+    <meta itemprop="requiresSubscription" content="false"/>
+    <meta itemprop="playerType" content="HTML5 Flash" />
+    <span itemprop="provider" itemscope itemtype="http://schema.org/Organization" />
+        <meta itemprop="name" content="Dailymotion" />
+        <meta itemprop="logo" content="{{ get_config('EMAIL_URL_BASE') }}" />
+        <link itemprop="url" href="{{ static_url('/images/header/logo_dailymotion.png') }}" />
+    </span>
+    {% if allow_countries|length > 0 %}
+        <meta itemprop="regionsAllowed" content="{% for key, value in allow_countries %}{% if key == 0 %}{{ value|upper }}{% else %},{{ value|upper }}{% endif %}{% endfor %}" />
+    {% endif %}
+    {% if context.request.isWebCrawler %}
+        <meta itemprop="contentURL" content="{{ video.videoURLForFormat(null, null, constant('DM_Video::CRAWLER')) }}" />
+    {% endif %}
+
+    {# SCHEMA_ORG : CreativeWork #}
+    <link itemprop="thumbnailUrl" href="{{ helper_video.getPreviewURI(video, '1280x720') }}" />
+    <link itemprop="inLanguage" href="{{ video.getLanguage }}" />
+    <div itemprop="author" itemscope itemtype="http://schema.org/Person" />
+        <link itemprop="url" href="{{ owner.url|default('') }}" />
+        <meta itemprop="name" content="{{ owner.login }}" />
+    </div>
+    <div itemprop="about" itemscope itemtype="http://schema.org/Thing" />
+        <meta itemprop="name" content="{{ helper_video.getChannelDisplayName(video) }}" />
+    </div>
+    <meta itemprop="interactionCount" content="UserPlays:{{ formatted_views }}" />
+    <meta itemprop="interactionCount" content="UserComments:{{ video.getTotalCommentCached }}" />
+
+{% endblock %}
+
+{######################## BODY CLASS DEFINITION ########################}
+
+{% block body_class %}{{ parent() }} pg_video{% endblock %}
+
+{######################## BIGBOX CLASS DEFINITION ########################}
+{% block bigbox_extra_classes %}{{ paywall.isVideoBehindPaywall(video) ? 'expanded' : '' }}{% endblock %}
+
+{######################## PAGE CONTENT ########################}
+
+{% block css %}
+    {{ parent() }}
+    <link rel="stylesheet" href="{{ css_pack_url('video') }}" />
+    {% if playerV5Active %}
+        {{ playerv5.styles() }}
+    {% endif %}
+    {% if helper_livechatcomments.isEnabledForVideo(video) %}
+        <link rel="stylesheet" href="//live-chat.dmcdn.net/css/dailymotion-live-chat-live.css"/>
+    {% endif %}
+{% endblock %}
+
+{% block scripts_top %}
+    {{ parent() }}
+    {% if PIXELLE_ALLOWED %}
+        {% include 'shared/_pixelletag.html' %}
+    {% endif %}
+{% endblock %}
+
+{% block content %}
+
+    {% set player_settings = helper_playerv5.getPlayerPageDefaultSettings() %}
+    {% set is_expanded = (player_settings['expand-state'] == 'expanded') %}
+    {% js_trans 'VideoShare' with
+        {
+            'share_email' : 'Share by email'|trans,
+            'password_message' : "The video's password will automatically be included in your message."|trans,
+            'enter_emails': 'Enter email addresses (separated by commas)'|trans,
+            'add_message': 'Add a message (optional)'|trans,
+            'email_sent' : 'Your video has been sent.'|trans,
+            'send': 'Send'|trans,
+        }
+    %}
+
+    <div class="fluid-container">
+
+        {% if video_data.error.type == 'password_protected' and not helper_base.isAdmin() %}
+            {% include 'video/_password_prompt.html' %}
+        {% else %}
+            {# PLAYER CONTAINER #}
+            {% if is_expanded %}
+                {% set classes = "main-container main-container-player expand col-sm-12" %}
+            {% else %}
+                {% set classes = "col-xl-9 col-lg-8 col-sm-12 main-container main-container-player" %}
+            {% endif %}
+            <div class="{{ classes }}">
+                <div class="player-container">
+                {% include 'video/_player.html' %}
+                </div>
+            </div>
+
+            {# SIDEBAR (ADS & RELATED) #}
+            <div class="col-xl-3 col-lg-4 col-sm-12 sidebar">
+                {% include 'video/_rightbox.html' %}
+            </div>
+
+            {# PLAYER INFOS #}
+            <div class="col-xl-9 col-lg-8 col-sm-12 main-container">
+                {% set highlight_banner_data = helper_video.getHighlightBanner(video, context.request) %}
+                {% if  highlight_banner_data %}
+                {% include 'video/_highlight_banner.html' with highlight_banner_data %}
+                {% endif %}
+
+                {% include 'video/_infos.html' %}
+                {% include 'video/_bottombox.html' %}
+                {% if context.request.isWebCrawler %}
+                    {% include 'video/_comments_and_context_videos.html' %}
+                {% else %}
+                    <div class="comments_and_context_videos_ph"></div>
+                {% endif %}
+
+                <div class="hidden-sm hidden-md">
+
+                    {% if DISPLAYADS_VIDEOPAGE_B %}
+                        {% if adsense.is_enabled %}
+                            {% for i in 1..2 %}
+                                {% include 'shared/adsense/_afc.html' with { id: 'adcontainer' ~ i }|merge(adsense) %}
+                            {% endfor %}
+                        {% endif %}
+                        <div>
+                            {% if 'x51' in masscast_positions %}
+                                {{ masscast.positionV2('x51','',{'defaultHeight':'254px'})}}
+                            {% endif %}
+
+                            {% if DISPLAY_ALLOWED %}
+                                {# AdSense1 #}
+                                {{ ads.displayAd('div-gpt-ad-1425059150269-0', {'width':'468px','height':'60px','float':'auto','margin':'0 0 10px 0'}) }}
+                                {# AdSense2 #}
+                                {{ ads.displayAd('div-gpt-ad-1425059150269-1', {'width':'468px','height':'60px','float':'auto','margin':'0 0 20px 0'}) }}
+                            {% endif %}
+
+                            {% if adsense.is_enabled and not DISPLAY_ALLOWED %}
+                                {% for i in 1..2 %}
+                                    {% include 'shared/adsense/_afc.html' with { id: 'adcontainer' ~ i }|merge(adsense) %}
+                                {% endfor %}
+                            {% endif %}
+
+                            {% if DISPLAY_ALLOWED %}
+                                {# X51 #}
+                                {{ ads.displayAd('div-gpt-ad-1422660696836-3', {'width':'300px','height':'250px','float':'left','margin':'0 10px 0 0'}) }}
+                                {# X52 #}
+                                {{ ads.displayAd('div-gpt-ad-1422660696836-4', {'width':'300px','height':'250px','float':'left','margin':'auto'}) }}
+                            {% else %}
+                                <div>
+                                    <div class="pull-start mrg-end-10">
+                                        {% if 'x51' in masscast_positions %}
+                                            {{ masscast.positionV2('x51','',{'defaultHeight':'254px'})}}
+                                        {% endif %}
+                                        {% if 'x52' in masscast_positions %}
+                                            {{ masscast.positionV2('x52','',{'defaultHeight':'254px'})}}
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            {% endif %}
+                        </div>
+                    {% endif %}
+                </div>
+            {% endif %}
+        </div>
+    {{ masscast.positionV2('x70') }}
+{% endblock %}
+
+{% block mandatory %}{% endblock %}
+
+{######################## SCRIPTS BOTTOM ########################}
+{% block scripts_bottom %}
+    {{ parent() }}
+    <script type="text/javascript">
+        window._spkv = [
+            {{video.owner.id}},
+            "{{video.channel}}",
+            "{{context.country}}",
+        ];
+    </script>
+    <script type="text/javascript"> window.adpositions = {{ displayad_positions|json_encode|raw }};  </script>
+    <script type="text/javascript" src="{{ js_bundle_url('common') }}"></script>
+    <script type="text/javascript" src="{{ js_bundle_url('video') }}"></script>
+
+    {% if helper_livechatcomments.isEnabledForVideo(video) %}
+       <script type="text/javascript" src="//live-chat.dmcdn.net/js/dailymotion-live-chat.js"></script>
+       <script type="text/javascript" src="{{ js_url('/js/views/video/livechat.js') }}"></script>
+    {% endif %}
+
+
+    {{ dm_ads_unblocker.getDetectionScriptTag() | raw }}
+    {% if playerV5Active %}
+        {% set conf = helper_playerv5.getPlayerPageDefaultSettings() %}
+        {% if helper_base.isAppleWithSafari() %}
+            {% set conf = conf|merge({'html': 1}) %}
+        {% endif %}
+        {{ playerv5.scriptsForInline(video, conf, PLAYER_PAGE_CACHEABILITY_ENABLED) }}
+    {% endif %}
+{% endblock %}

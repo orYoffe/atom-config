@@ -1,0 +1,33 @@
+.channel-item {
+  display: inline-flex;
+  flex-direction: column;
+
+  &__cover {
+    width: 100%;
+    opacity: .8;
+  }
+  &__avatar {
+    img {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      background-color: #FFFFFF;
+      box-shadow: 0 2px 4px 0 rgba(0,0,0,0.2);
+    }
+  }
+  &__verifiedBadge{
+
+  }
+  &__infos{
+
+  }
+  &__name{
+
+  }
+  &__videos{
+
+  }
+  &__followers{
+
+  }
+}

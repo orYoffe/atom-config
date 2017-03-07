@@ -1,0 +1,44 @@
+.channel-item-small {
+
+  display: inline-flex;
+  flex-direction: row;
+  align-items: center;
+  flex: 1;
+  width: 100%;
+
+  &__avatar {
+    display: inline-flex;
+    position: relative;
+    img {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+    }
+  }
+
+  .verified-badge {
+    position: absolute;
+    top: 50%;
+    left: 27px;
+    transform: translateY(-50%);
+  }
+
+  &__infos {
+    line-height: 1;
+    text-align: left;
+    padding: 0 10px 0 15px;
+    width: 62%;
+    > p {
+      font-size: 14px;
+      color: #7F7F7F;
+      margin-bottom: -5px;
+    }
+  }
+
+  &__name {
+    font-weight: 600;
+    font-size: 16px;
+    max-width: 100%;
+  }
+
+}

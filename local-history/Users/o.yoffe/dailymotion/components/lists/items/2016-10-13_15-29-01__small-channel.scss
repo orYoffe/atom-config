@@ -1,0 +1,56 @@
+.search-small-channelItem {
+  float: left;
+  display: inline-block;
+  width: 161px;
+  height: 59px;
+
+  &:after {
+    content: "";
+    display: block;
+    height: 0;
+    clear: both;
+    visibility: hidden;
+  }
+
+  .search-smallChannelItem-avatar {
+    position: relative;
+    float: left;
+    width: 65px;
+
+
+    img {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+    }
+  }
+
+  .search-smallChannelItem-verifiedBadge {
+    width: 21.42px;
+    height: 21.51px;
+    background-color: #0066DC;
+    border: 2px solid #FFFFFF;
+    border-radius: 50%;
+    text-align: center;
+
+    .icon-check{
+      color: #fff;
+    }
+  }
+
+  .search-smallChannelItem-name {
+    font-family: Hind;
+    font-size: 16px;
+    font-weight: 600;
+    line-height: 26px;
+    color: #404040;
+  }
+
+  .search-smallChannelItem-videos,
+  .search-smallChannelItem-followers {
+    font-family: Hind;
+    font-size: 14px;
+    line-height: 18px;
+    color: #7F7F7F;
+  }
+}

@@ -1,0 +1,57 @@
+{# video #}
+
+{% helpers ['paywall','tools', 'helper_related'] %}
+
+{% if paywall.isVideoBehindPaywall(video) %}
+    {% set player_dimensions = tools.computeOptimalPlayerSize(video, 940, 752) %}
+{% else %}
+    {% set player_dimensions = tools.computeOptimalPlayerSize(video, 620, 496) %}
+{% endif %}
+
+{########## MIDDLE AND MIDDLE1 MASSCAST POSITIONS  ##########}
+{% if 'Middle' in masscast_positions %}
+    <div class="hidden-sm hidden-md">
+        {% if 'Middle' in masscast_positions and not DISPLAY_ALLOWED %}
+            {{ masscast.positionV2('Middle', '', {'defaultHeight': '254px'}) }}
+        {% endif %}
+
+        {% if DISPLAYADS_VIDEOPAGE_B %}
+            {% if DISPLAYADS_VIDEOPAGE_C %}
+                {{ masscast.positionV2('Right') }}
+
+                {% if dm_displayads.isEnabled() and DISPLAY_ALLOWED %}
+                    {% block displayads %}
+                        {{ ads.displayAd('div-gpt-ad-1422660696836-1', {'width':'300px','height':'auto', 'float':'inherit','margin':'auto'}) }}
+                    {% endblock %}
+                {% endif %}
+            {% endif %}
+        {% endif %}
+    </div>
+{% endif %}
+
+{########## LIVE COMMENTS  ##########}
+{% if helper_livechatcomments.isEnabledForVideo(video) %}
+<div id="livechat" data-username="{{ video.getOwner().getLogin()}}" data-id="{{ video.getExtendedId(false) }}" class="pl_video_livechatcomments">
+</div>
+{% endif %}
+
+
+<div id="related" class="row">
+
+    {########## RELATED VIDEOS  ##########}
+    <div id="related_ph">
+        {% if context.is_web_crawler %}
+            {% include 'shared/video/_related.html' with { is_responsive: true }%}
+        {% endif %}
+    </div>
+
+    {########## MASCAST  ##########}
+    <div class="hidden-sm hidden-md">
+        {% set classnames = 'col-sm-12 mrg-top-lg' %}
+        {% for number in ['x30','x53'] %}
+            {% if number == 'x53' %}
+                {{ masscast.positionV2(number, classnames) }}
+            {% elseif number == 'x30' %}
+                {{ masscast.positionV2(number, classnames) }}
+            {% endif %}
+     {% endfor %

@@ -1,0 +1,29 @@
+// The ui-variables file is provided by base themes provided by Atom.
+//
+// See https://github.com/atom/atom-dark-ui/blob/master/stylesheets/ui-variables.less
+// for a full listing of what's available.
+@import "ui-variables";
+
+.clipboard-history {
+
+  ol.list-group {
+    position: static;
+
+    .preview {
+      position: absolute;
+      top: 42px;
+      left: 370px;
+      opacity: 0.7;
+
+      pre {
+        width: 330px;
+        height: auto;
+        max-height: 400px;
+        font-family: Inconsolata, Monaco, Consolas, 'Courier New', Courier;
+        font-size: 9px;
+        border-radius: 2px;
+        overflow-x: scroll;
+      }
+    }
+  }
+}

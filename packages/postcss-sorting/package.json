@@ -1,0 +1,65 @@
+{
+  "_args": [
+    [
+      {
+        "raw": "/private/var/folders/9f/ww0z6qpn3570l__fqn1h30wh0000gp/T/d-11712-8411-1okv550/package.tgz",
+        "scope": null,
+        "escapedName": null,
+        "name": null,
+        "rawSpec": "/private/var/folders/9f/ww0z6qpn3570l__fqn1h30wh0000gp/T/d-11712-8411-1okv550/package.tgz",
+        "spec": "/private/var/folders/9f/ww0z6qpn3570l__fqn1h30wh0000gp/T/d-11712-8411-1okv550/package.tgz",
+        "type": "local"
+      },
+      "/private/var/folders/9f/ww0z6qpn3570l__fqn1h30wh0000gp/T/apm-install-dir-11712-8411-jd77un"
+    ]
+  ],
+  "_from": "../d-11712-8411-1okv550/package.tgz",
+  "_id": "postcss-sorting@2.9.0",
+  "_inCache": true,
+  "_installable": true,
+  "_location": "/postcss-sorting",
+  "_phantomChildren": {},
+  "_requested": {
+    "raw": "/private/var/folders/9f/ww0z6qpn3570l__fqn1h30wh0000gp/T/d-11712-8411-1okv550/package.tgz",
+    "scope": null,
+    "escapedName": null,
+    "name": null,
+    "rawSpec": "/private/var/folders/9f/ww0z6qpn3570l__fqn1h30wh0000gp/T/d-11712-8411-1okv550/package.tgz",
+    "spec": "/private/var/folders/9f/ww0z6qpn3570l__fqn1h30wh0000gp/T/d-11712-8411-1okv550/package.tgz",
+    "type": "local"
+  },
+  "_requiredBy": [
+    "#USER"
+  ],
+  "_resolved": "file:../d-11712-8411-1okv550/package.tgz",
+  "_shasum": "799a422b4f256d62ffe26a43c5003059abd9a37e",
+  "_shrinkwrap": null,
+  "_spec": "/private/var/folders/9f/ww0z6qpn3570l__fqn1h30wh0000gp/T/d-11712-8411-1okv550/package.tgz",
+  "_where": "/private/var/folders/9f/ww0z6qpn3570l__fqn1h30wh0000gp/T/apm-install-dir-11712-8411-jd77un",
+  "bugs": {
+    "url": "https://github.com/lysyi3m/atom-postcss-sorting/issues"
+  },
+  "dependencies": {
+    "postcss": "5.2.11",
+    "postcss-scss": "0.4.0",
+    "postcss-sorting": "2.0.1",
+    "sugarss": "0.2.0"
+  },
+  "description": "Atom editor plugin to sort CSS rules content with specified order.",
+  "devDependencies": {},
+  "engines": {
+    "atom": ">=1.0.0 <2.0.0"
+  },
+  "homepage": "https://github.com/lysyi3m/atom-postcss-sorting#readme",
+  "license": "MIT",
+  "main": "./lib/postcss-sorting",
+  "name": "postcss-sorting",
+  "optionalDependencies": {},
+  "readme": "# atom-postcss-sorting\n[![apm](https://img.shields.io/apm/v/postcss-sorting.svg)]()\n[![apm](https://img.shields.io/apm/dm/postcss-sorting.svg)](https://atom.io/packages/postcss-sorting)\n\n![Screenshot](https://lysyi3m-pluto.s3.amazonaws.com/dropshare/Screen-Recording-2016-03-31-02-15-19.gif)\n\nAtom editor plugin to sort CSS rules content with specified order.\n\n## Installation\n\n```\n$ apm install postcss-sorting\n```\nor open Atom and go to Preferences > Install and search for `postcss-sorting` package.\n\n## Options\n\nYou can select one of the bundled presets: _default_, _csscomb_, _yandex_ and _zen_.\n\nIf any of the following config files exist, they will override the selected preset. They are loaded in the following order of priority:\n\n1. `.postcss-sorting.json` at the root of your project\n\n2. A `\"postcssSortingConfig\": { ... }` object in your project `package.json`\n\n3. Custom `~/path/to/your/config.json` (if specified in package settings)\n\n4. `~/.postcss-sorting.json` (in your `HOME` directory)\n\nFiles can be processed \"On Save\" (not enabled by default).\n\n\"On Save\" can be disabled if no config file is present (not enabled by default).\n\nNotifications can also be disabled from the package settings.\n\n## Usage\n\nIn a CSS or PostCSS file, open the Command Palette (<kbd>Cmd</kbd> + <kbd>Shift</kbd> + <kbd>P</kbd> (OS X), <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>P</kbd> (Windows/Linux)) and choose `PostCSS Sorting: Run`.\n\nKeyboard shortcut: <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>S</kbd>\n\nIf you have an \"On Save\" option enabled and \"Check for config file\" option disabled just save a file.\n\n## Acknowledgements\n\nThis plugin is based on the [postcss-sorting](https://github.com/hudochenkov/postcss-sorting) plugin by [Aleks Hudochenkov](https://github.com/hudochenkov)\n",
+  "readmeFilename": "README.md",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lysyi3m/atom-postcss-sorting.git"
+  },
+  "version": "2.9.0"
+}

@@ -1,0 +1,116 @@
+{% extends 'layouts/site.html' %}
+
+{% import 'macros/masscast.html' as masscast %}
+{% import 'macros/ads.html' as ads %}
+
+{% helpers [
+    'dm_ads_unblocker',
+    'helper_masscast',
+    'dm_displayads',
+] %}
+
+{% set PIXELLE_ALLOWED = not context.is_web_crawler and videos_has_ads  %}
+{% set DISPLAY_ALLOWED = gatekeeper('DISPLAY_ALLOWED') %}
+{% set display_ad_positions = ['Top','Middle','Skin','InterstitialOPP'] %}
+
+{% block scripts_top %}
+    {{ parent() }}
+    {% if videos_has_ads %}
+        <script type="text/javascript"> window.videolist_has_ads = true; </script>
+    {% else %}
+        <script type="text/javascript">
+          window.videolist_has_ads = false;
+          window.videolist_has_ads_reason = '{{ videos_has_ads_reason }}';
+         </script>
+    {% endif %}
+    {% if PIXELLE_ALLOWED %}
+        {% include 'shared/_pixelletag.html' %}
+    {% endif %}
+{% endblock %}
+
+{% block mandatory %}{% endblock %}
+
+{% block scripts_bottom %}
+    <script type="text/javascript"> window.adpositions = {{ display_ad_positions|json_encode|raw }};  </script>
+    <script type="text/javascript" src="{{ js_bundle_url('common') }}"></script>
+    {{ dm_ads_unblocker.getDetectionScriptTag() | raw }}
+{% endblock %}
+
+{% if not DISPLAY_ALLOWED %}
+    {# MASSCAST BUILDING #}
+    {% if ad_position %}
+        {% set masscast_positions = ['Middle', 'Top', 'Top3', 'x70', 'x28','x29'] %}
+    {% else %}
+        {% set masscast_positions = [] %}
+    {% endif %}
+    {% set masscast_instance = helper_masscast.getInstance('home', {
+        positions: masscast_positions
+    }) %}
+    {# END OF MASSCAST BUILDING #}
+{% endif %}
+
+{% block env_top %}
+    {% if not DISPLAY_ALLOWED %}
+        masscast_async_call= {{ masscast_instance.call|js_var|raw }};
+        masscast_async_ads1_call = {{ masscast_instance.callAds1|js_var|raw }};
+    {% endif %}
+
+    PREFETCH_CONF = {
+        resources: [
+            '{{ js_bundle_url('common') }}',
+            '{{ js_bundle_url('videos') }}',
+            '{{ css_pack_url('video') }}'
+        ]
+    };
+
+    RESOURCE_PRIORITY_MAP = {
+        critical: ['ad', 'pixelle'],
+        high: ['image']
+    };
+    {{ parent() }}
+{% endblock %}
+
+{% block ads_top %}
+    {% if DISPLAY_ALLOWED %}
+        {{ ads.displayAd('div-gpt-ad-1422660696836-2', {'width':'728px','height':'auto'}) }}
+        {{ ads.displayAd('div-gpt-ad-1426543907758-5', {'width':'1px','height':'1px'}) }}
+    {% endif %}
+{% endblock %}
+
+{# MASSCAST POSITIONS OVERRIDING #}
+{% block masscast_top %}
+    {% if not DISPLAY_ALLOWED %}
+        {{ masscast.positionV2('Top') }}
+    {% endif %}
+{% endblock %}
+{% block masscast_x29 %}
+    {% if not DISPLAY_ALLOWED %}
+        {{ masscast.positionV2('x29') }}
+    {% endif %}
+{% endblock %}
+{% block masscast_x28 %}
+    {% if not DISPLAY_ALLOWED %}
+        {{ masscast.positionV2('x28') }}
+    {% endif %}
+{% endblock %}
+{% block masscast_middle %}
+    {% if ad_position %}
+        <div class="hidden-sm hidden-md mrg-top-lg mrg-btm-lg">
+        {% if dm_displayads.isEnabled() and DISPLAY_ALLOWED %}
+            {{ ads.displayAd('div-gpt-ad-1422660696836-1', {'width':'300px','height':'auto', 'float':'inherit','margin':'auto'}) }}
+        {% else %}
+            {{ masscast.positionV2('Middle', '', {'defaultHeight': '254px'}) }}
+        {% endif %}
+        </div>
+    {% endif %}
+{% endblock %}
+{% block masscast_x70 %}
+    {% if not DISPLAY_ALLOWED %}
+        {{ masscast.positionV2('x70') }}
+    {% endif %}
+{% endblock %}
+{% block ads_out_of_page %}
+    {% if DISPLAY_ALLOWED %}
+        {{ ads.displayAd('div-gpt-ad-1426543907758-2-oop', {'width':'auto','height':'auto'}) }}
+    {% endif %}
+{% endblock %}

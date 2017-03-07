@@ -1,0 +1,22 @@
+'context-menu':
+  'atom-text-editor': [
+    {
+      'label': 'Run PostCSS Sorting'
+      'command': 'postcss-sorting:run'
+    }
+  ]
+
+'menu': [
+  {
+    'label': 'Packages'
+    'submenu': [
+      'label': 'PostCSS Sorting'
+      'submenu': [
+        {
+          'label': 'Run'
+          'command': 'postcss-sorting:run'
+        }
+      ]
+    ]
+  }
+]

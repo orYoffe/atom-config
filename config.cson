@@ -1,0 +1,55 @@
+"*":
+  core:
+    disabledPackages: [
+      "language-babel"
+      "auto-update-packages"
+      "linter-htmlhint"
+      "clipboard-history"
+      "file-icons"
+    ]
+    ignoredNames: [
+      ".git"
+      ".hg"
+      ".svn"
+      ".DS_Store"
+      "._*"
+      "Thumbs.db"
+      ".fuse_hidden*"
+      ".DS*"
+    ]
+    telemetryConsent: "limited"
+    themes: [
+      "atom-dark-ui"
+      "monokai"
+    ]
+  editor:
+    fontSize: 11
+    preferredLineLength: 140
+    zoomFontWhenCtrlScrolling: true
+  "exception-reporting":
+    userId: "b43cee21-9f0c-8d81-ffc4-adce37402810"
+  "file-icons": {}
+  "postcss-sorting":
+    checkForConfigFile: true
+    shouldUpdateOnSave: true
+  react:
+    enabledForAllJavascriptFiles: true
+  "seti-ui":
+    compactView: true
+    fileIcons: false
+  welcome:
+    showOnStartup: false
+".coffee.jsx.source":
+  editor:
+    autoIndent: false
+    preferredLineLength: 140
+".css.scss.source":
+  editor:
+    preferredLineLength: 140
+".js.jsx.source":
+  editor:
+    preferredLineLength: 140
+".sass.source":
+  editor:
+    autoIndentOnPaste: true
+    preferredLineLength: 140

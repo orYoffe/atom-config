@@ -1,0 +1,151 @@
+{
+  "name": "Neon",
+  "version": "0.0.1",
+  "description": "Neon is the next kick ass universal app.",
+  "main": "app/bin/server/server.js",
+  "private": true,
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:dailymotion/neon.git"
+  },
+  "author": "Squad U-app <squad-u-app@dailymotion.com>",
+  "scripts": {
+    "start": "npm run watch",
+    "clean": "rimraf ./app/dist",
+    "dev": "npm run watch",
+    "prod": "npm run build:prod && cross-env NODE_ENV=production npm run server",
+    "cdn": "npm run build:cdn",
+    "watch": "npm run build:dev && npm run server",
+    "server": "node ./app/bin/server/server.js",
+    "build:prod": "npm run clean && cross-env NODE_ENV=production node ./app/bin/bundler/prod.js",
+    "build:test": "npm run clean && node ./app/bin/bundler/test.js && cross-env NODE_ENV=test node ./app/bin/server/server.js",
+    "build:cdn": "npm run clean && cross-env NODE_ENV=production node ./app/bin/bundler/cdn.js",
+    "build:dev": "npm run clean && node ./app/bin/bundler/dev.js",
+    "lint:js": "eslint ./app/src --ext .jsx,.js --ignore-path .eslintignore",
+    "lint": "npm run lint:js",
+    "fake-api": "node ./app/bin/server/fixtures/fake-api.js",
+    "g": "node ./app/bin/generate.js",
+    "generate": "node ./app/bin/generate.js",
+    "test": "jest",
+    "test:unit": "jest app/src/shared/.*.unit.js",
+    "test:functional": "npm run build:test && cross-env NODE_ENV=test npm run server",
+<<<<<<< Updated upstream
+    "test:watch": "jest --watch"
+=======
+    "test:watch": "jest --watch",
+    "test:watch:coverage": "npm run test:watch -- --coverage"
+>>>>>>> Stashed changes
+  },
+  "jest": {
+    "testRegex": "((\\.|/)(unit|functional|spec))\\.jsx?$",
+    "testPathDirs": [
+      "./app",
+      "./__tests__"
+    ],
+    "modulePaths": [
+      "app/src/shared",
+      "__tests__"
+    ],
+    "moduleNameMapper": {
+      "\\.(jpg|jpeg|png|gif|eot|otf|webp|svg|ico|ttf|woff|woff2|mp4|webm|wav|mp3|m4a|aac|oga)$": "<rootDir>/__tests__/__mocks__/fileMock.js"
+    }
+  },
+  "moduleRoots": [
+    "app/src/shared"
+  ],
+  "devDependencies": {
+    "assets-webpack-plugin": "^3.5.0",
+    "babel-core": "^6.21.0",
+    "babel-eslint": "^7.1.1",
+    "babel-loader": "^6.2.10",
+    "babel-plugin-css-modules-transform": "^1.1.0",
+    "babel-plugin-transform-class-properties": "^6.19.0",
+    "babel-plugin-transform-decorators-legacy": "^1.3.4",
+    "babel-plugin-transform-es2015-modules-commonjs": "^6.22.0",
+    "babel-plugin-transform-function-bind": "^6.8.0",
+    "babel-plugin-transform-object-rest-spread": "^6.16.0",
+    "babel-plugin-transform-runtime": "^6.15.0",
+    "babel-preset-latest": "^6.16.0",
+    "babel-preset-react": "6.16.0",
+    "babel-register": "^6.22.0",
+    "chai": "3.5.0",
+    "chai-spies": "0.7.1",
+    "concurrently": "^3.1.0",
+    "cors": "^2.8.1",
+    "css-loader": "^0.26.1",
+    "enzyme": "2.6.0",
+    "eslint": "^3.10.2",
+    "eslint-config-airbnb": "^13.0.0",
+    "eslint-plugin-import": "^2.2.0",
+    "eslint-plugin-jsx-a11y": "^2.2.3",
+    "eslint-plugin-react": "^6.7.1",
+    "extract-text-webpack-plugin": "2.0.0-beta.5",
+    "file-loader": "^0.9.0",
+    "humps": "^2.0.0",
+    "node-sass": "^4.2.0",
+    "postcss-cssnext": "^2.9.0",
+    "postcss-import": "^9.1.0",
+    "postcss-loader": "^1.2.1",
+    "raw-loader": "^0.5.1",
+    "react-addons-test-utils": "15.4.0",
+    "react-hot-loader": "^3.0.0-beta.6",
+<<<<<<< Updated upstream
+=======
+    "react-test-renderer": "^15.4.2",
+    "redux-cli": "^1.9.0",
+>>>>>>> Stashed changes
+    "sass-loader": "^4.0.2",
+    "style-loader": "^0.13.1",
+    "stylelint": "^7.8.0",
+    "stylelint-order": "^0.2.2",
+    "wdio-cucumber-framework": "^0.2.15",
+    "wdio-phantomjs-service": "^0.2.2",
+    "wdio-selenium-standalone-service": "^0.0.7",
+    "webpack": "2.2.0",
+    "webpack-dev-middleware": "^1.9.0",
+    "webpack-hot-middleware": "^2.15.0",
+    "webpack-node-externals": "1.5.4"
+  },
+  "dependencies": {
+    "apollo-client": "^0.7.1",
+    "babel-register": "^6.22.0",
+    "babel-runtime": "^6.20.0",
+    "classnames": "^2.2.5",
+    "clipboard-js": "^0.3.2",
+    "compression": "^1.6.2",
+    "cookie-parser": "1.4.3",
+    "cross-env": "^3.1.4",
+    "cucumber": "1.3.1",
+    "express": "^4.14.0",
+    "fs-extra": "^2.0.0",
+    "graphql-tag": "^1.2.3",
+    "history": "^4.5.1",
+    "isomorphic-fetch": "^2.2.1",
+    "jest": "^18.1.0",
+    "lodash": "^4.16.6",
+    "moment": "^2.17.1",
+    "react": "^15.4.2",
+    "react-addons-css-transition-group": "^15.4.2",
+    "react-addons-transition-group": "^15.4.2",
+    "react-apollo": "^0.8.1",
+    "react-dom": "^15.4.2",
+    "react-motion": "^0.4.7",
+    "react-redux": "^4.4.5",
+    "react-router": "^3.0.2",
+    "react-router-redux": "^4.0.7",
+    "react-svg-inline": "^1.2.0",
+    "react-swipe": "^5.0.6",
+    "redux": "^3.6.0",
+    "redux-thunk": "^2.2.0",
+    "rimraf": "^2.5.4",
+    "store": "^1.3.20",
+    "swipe-js-iso": "^2.0.3",
+    "traverse": "^0.6.6",
+    "uuid": "^3.0.1",
+    "webdriverio": "^4.6.2"
+  },
+  "engineStrict": true,
+  "engines": {
+    "node": ">= 6.9.4"
+  }
+}

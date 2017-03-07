@@ -1,0 +1,15 @@
+.search-small-channelList {
+  width: 940px;
+  height: 132px;
+  background-color: #FFFFFF;
+  border: 1px solid #F5F5F5;
+  border-radius: 2px;
+}
+
+.search-small-channelList:after {
+    content: "";
+    display: block;
+    height: 0;
+    clear: both;
+    visibility: hidden;
+}

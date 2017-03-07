@@ -1,0 +1,4027 @@
+#################################################################################
+# THE FIRST ROUTES OF THIS FILE ARE ORDERED SPECIFICALLY FOR PERFORMANCE REASONS
+# YOU MAY NOT INSERT ANY NEW ROUTES ABOVE THE MARKER "NEW ROUTES HERE" (grep it).
+# VIOLATORS WILL BE TAKEN OUT THE BACK AND SHOT.
+#################################################################################
+
+search_algolia:
+    url: /qsearch/=search
+    param:
+        search: ~
+        script: qsearch.php
+    requirements:
+        search: $(search)
+        options:
+            extra_parameters_as_query_string: true
+
+history_logger:
+    url: /history/log/=user/=video
+    param:
+        script: history/log.php
+    requirements:
+        user: $(user)
+        video: $(video)
+    options:
+        extra_parameters_as_query_string: true
+
+widget_v3_chunks:
+    url: /widget_chunks/:pagename
+    param:
+        dispatcher: true
+        chunked: true
+        pagename: ~
+    requirements:
+        pagename: .+
+    options:
+        handle_404: false
+
+cdn_director:
+    url: /cdn/:format/=video.:extension
+    params:
+        module: cdn
+        action: index
+        extension: ~
+        sf_format: html
+    requirements:
+        video: $(video_short)
+        format: '(?!(?:live|metrics|upload))[a-zA-Z0-9_-]+'
+        extension: '[a-zA-Z0-9]+'
+        key: '[a-z0-9]+'
+    options:
+        extra_parameters_as_query_string: true
+        handle_403: false
+
+cdn_director_live:
+    url: /cdn/live/=video.:extension
+    params:
+        module: cdn
+        action: index
+        format: live
+        prefix: /cdn/live/
+        extension: ~
+    requirements:
+        video: $(video_short)
+        extension: '[a-zA-Z0-9]+'
+    options:
+        strict_optionals_order: false
+        extra_parameters_as_query_string: true
+        handle_403: false
+
+cdn_director_metrics:
+    url: /cdn/metrics
+    params:
+        module: cdn_metrics
+
+cdn_director_upload:
+    url: /cdn/upload
+    params:
+        module: cdn
+        format: upload
+    options:
+        visibility: private
+
+cookies_writer:
+    url: /__cookies
+    param:
+        script: cookies_writer.php
+
+cookie_setter:
+    url: /cookie/:cookie_name
+    param:
+        script: cookie_setter.php
+    requirements:
+        cookie_name: '[a-zA-Z0-9_-]+'
+    options:
+        extra_parameters_as_query_string: true
+
+gravity_report:
+    url: /gravity/report
+    params:
+        module: gravity
+        action: index
+    options:
+        extra_parameters_as_query_string: true
+        handle_403: false
+
+controller_dispatch:
+    url: /controller/:controllername
+    param:
+        csrf_protected: true
+        dispatcher: true
+        twig: true
+    requirements:
+        controllername: .+
+    options:
+        handle_404: false
+        extra_parameters_as_query_string: true
+
+encoder_json_callback:
+    url: /encoder/json_callback
+    params:
+        module: encoder_json
+        action: index
+    requirements:
+        res: .+
+
+jukebox_widget:
+    url: /widget/jukebox
+    param:
+        script: jukebox.php
+        sf_format: html
+    options:
+        extra_parameters_as_query_string: true
+
+embed_player:
+    url: /:sf_format/=video
+    params:
+        module: video
+        action: index
+        sf_format: swf
+    requirements:
+        sf_format: $(formats:swf|embed)
+        video: $(video_short)
+    options:
+        handle_404: false
+        extra_parameters_as_query_string: true
+
+home:
+    url: /:sf_format/:localization
+    param:
+        controller: Page_WhatToWatchController
+        module: video
+        action: home
+        sf_format: html
+        localization: ~
+    requirements:
+        sf_format: html
+        localization: $(localization)
+    options:
+        strict_optionals_order: false
+        extra_parameters_as_query_string: true
+
+thumbnail:
+    url: /thumbnail/:type/:identifier
+    param:
+        script: thumbnail.php
+        size: ~
+    requirements:
+        identifier: '(?:[A-Za-z0-9_-]+)'
+        type: (video|live|user)
+
+
+thumbnail_size:
+    url: /thumbnail/:size/:type/:identifier
+    param:
+        script: thumbnail.php
+        size: ~
+    requirements:
+        identifier: '(?:[A-Za-z0-9_-]+)'
+        type: (video|live|user)
+
+video_item:
+    url: /:sf_format/:size/:localization/:_module(/:sort/:filters/=user/=tag/=tags/=group/=not-in-group/=playlist/=mychannel/=myuchannel/=bookmark/=related/=featuredby/=unclaimed/=relation/=skip-video/=country/=lang/=search/=added-since/=feed/=vids/=edited/=channel)/video/:video
+    param:
+        module: video
+        _module: ~
+        action: index
+        sf_format: html
+        media-type: auto
+        size: ~
+        sort: recent
+        filters: ~
+        localization: ~
+        user: ~
+        tag: ~
+        tags: ~
+        group: ~
+        not-in-group: ~
+        playlist: ~
+        mychannel: ~
+        myuchannel: ~
+        bookmark: ~
+        related: ~
+        featuredby: ~
+        unclaimed: ~
+        relation: ~
+        skip-video: ~
+        country: ~
+        lang: ~
+        search: ~
+        added-since: ~
+        feed: ~
+        vids: ~
+        edited: ~
+        channel: ~
+    requirements:
+        _module: videos
+        action: item
+        sf_format: $(formats:html|rss|iphonerss|atom|xml|json|sequence|podcast|oembed|opensearch|swf|widget|htmlchunk|videoroll|videowall|hqv|videozap|html5)
+        media-type: $(media_types)
+        size: \d{2,3}x\d{2,3}
+        filters: $(filters:featured|hd|v360|censored|pending|deleted|official|quality-watcher|ugc|ugc-official|public|history|internal|external|watchlater|monetizable)
+        sort: $(sort:recent|commented|duration|popular|relevance|visited|random|trending)
+        localization: $(localization)
+        user: $(user)
+        video: $(video)
+        tag: $(tags)
+        tags: $(tags)
+        group: $(group_name)
+        not-in-group: $(group_name)
+        playlist: $(playlist)
+        mychannel: $(user)
+        myuchannel: $(user_unlogged)
+        bookmark: $(user)
+        related: $(video)
+        featuredby: $(user)
+        unclaimed: $(user)
+        relation: $(relation)
+        skip-video: $(video)
+        search: $(search)
+        added-since: $(time_window)
+        feed: $(user)
+        vids: $(vids)
+        edited: $(time_window)
+        channel: $(channel)
+    options:
+        visibility: public
+        strict_optionals_order: false
+        extra_parameters_as_query_string: true
+
+mc_call:
+    url: /mc_call
+    param:
+        script: masscast_call.php
+    options:
+        visibility: public
+        strict_optionals_order: false
+        extra_parameters_as_query_string: true
+
+smartbox:
+    url: /smartbox/:format
+    param:
+        format: ~
+        color: black
+        bgcolor: white
+        font: 'hindlight,Helvetica,Arial,Sans-serif'
+        controller: Page_SmartboxController
+    requirements:
+        format: '[0-9]{2,3}x[0-9]{2,3}'
+        color: '\#[0-9a-fA-F]{3}(?:[0-9a-fA-F]{3})?|[a-zA-Z]{3,20}'
+        bgcolor: '\#[0-9a-fA-F]{3}(?:[0-9a-fA-F]{3})?|[a-zA-Z]{3,20}'
+        font: '[a-zA-Z, -]+'
+        syndication: '[a-zA-Z0-9-]+'
+        channels: '[a-zA-Z0-9_-]{2,30}(?:\s+[a-zA-Z0-9_-]{2,30})*'
+
+oembed:
+    url: /services/oembed
+    param:
+        script: video.oembed.php
+        module: oembed
+    options:
+      extra_parameters_as_query_string: true
+
+external_user_widget:
+    url: /card/=user
+    param:
+        controller: Page_UserCardController
+        module: user
+        sf_format: html
+    requirements:
+        user: $(user)
+    options:
+        extra_parameters_as_query_string: true
+
+diagnostic_player:
+    url: /diagnostic_player
+    param:
+        script: diagnostic_player.php
+
+autocomplete_list:
+    url: /:format/complete/:lang/(:safe/):search
+    param:
+        script: autocomplete.php
+        safe: safe
+    requirements:
+        lang: $(autocomp_locale)
+        search: $(search)
+        safe: (safe|unsafe)
+        format: (json|xml)
+    options:
+        strict_optionals_order: false
+
+user_widget:
+    url: /badge/=user
+    param:
+        page: Html_User_Widget
+        module: user
+        action: user_badge
+        sf_format: html
+    requirements:
+        user: $(user)
+    options:
+        extra_parameters_as_query_string: true
+
+video_sequence:
+    url: /sequence(/:type/:video)
+    param:
+        module: video
+        action: index
+        sf_format: sequence
+        type: full
+        video: ~
+    requirements:
+        type: (full|play|cue|embed|start)
+        video: $(video)
+    options:
+        strict_optionals_order: false
+        handle_404: false
+
+family_filter:
+    url: /family_filter
+    param:
+        controller: Page_FamilyFilterController
+    options:
+        extra_parameters_as_query_string: true
+
+oembed_compat:
+    url: /api/oembed
+    param:
+        script: video.oembed.php
+        module: oembed
+    options:
+      extra_parameters_as_query_string: true
+
+# ajax widget dispatcher V3
+widget_dispatch_v3:
+    url: /:widget_type/:path
+    param:
+        dispatcher: true
+        csrf_protected: true
+    requirements:
+        widget_type: (?:pageitem|component|page)
+        path: .+
+    options:
+        handle_404: false
+        extra_parameters_as_query_string: true
+
+api_farmer_listall:
+    url: /farmer/list
+    param:
+        module: farmer
+        action: list
+        sf_format: json
+        sort: recent
+        pagination: '1:1000'
+        listall: true
+    options:
+        visibility: public
+        strict_optionals_order: false
+        handle_404: false
+        type: list
+        model: DM_Farmer_Farm
+        backends:
+            mysql: DM_Selector_Backend_Mysql_Farmer
+
+api_farmer_list:
+    url: /farmer/:farm
+    param:
+        module: farmer
+        action: list
+        sf_format: json
+        sort: recent
+        pagination: '1:1000'
+    requirements:
+        farm: $(farmer_farm)
+    options:
+        visibility: public
+        strict_optionals_order: false
+        handle_404: false
+        type: list
+        model: DM_Farmer_Node
+        backends:
+            mysql: DM_Selector_Backend_Mysql_FarmerNodes
+
+admin_video_adcriteria:
+    url: /admin/videoadcriteria/:pagination
+    param:
+       module: video
+       pagination: ~
+       video_xid: ~
+       controller: Page_Admin_VideoAdPropertiesController
+    requirements:
+       pagination: '1:10'
+       video_id: '(?:[A-Za-z0-9_-]+)'
+    options:
+       model: DM_Video
+       extra_parameters_as_query_string: true
+       strict_optional_order: true
+       type: list
+       backends:
+           mysql: DM_Selector_Backend_Mysql_VideoAdCriteria
+
+# THE FOLLOWING ROUTES MUST APPEAR BEFORE widget_dispatch_v1
+
+getVideoFromXUpload:
+    url: /ajax/getVideoFromXUpload
+    param:
+        script: ajax/getVideoFromXUpload.php
+    options:
+        extra_parameters_as_query_string: true
+
+ajax_admin:
+    url: /ajax/admin
+    param:
+        csrf_protected: true
+        module: ajax
+        action: admin
+    options:
+        handle_404: false
+
+# old ajax widget dispatcher (/ajax/ catchall)
+widget_dispatch_v1:
+    url: /ajax/:action
+    param:
+        csrf_protected: true
+        module: ajax
+
+external_preview:
+    url: /externalpreview/=video
+    param:
+        controller: Page_ExternalPreviewController
+        sf_format: html
+        module: video
+    requirements:
+        video: $(video)
+    options:
+        extra_parameters_as_query_string: true
+
+dmcaptcha:
+    url: /dmcaptcha
+    param:
+        script: captcha.php
+
+test_semantics:
+    url: /test/semantics
+    param:
+        controller: Page_SemanticsController
+    options:
+        strict_optionals_order: false
+        extra_parameters_as_query_string: true
+
+test:
+    url: /test/:action
+    param:
+        module: test
+    options:
+        extra_parameters_as_query_string: true
+
+signin:
+    url: /signin
+    param:
+        controller: Page_SigninController
+        action: ~
+    options:
+        extra_parameters_as_query_string: true
+
+playlist_list_user_compat:
+    class: DM_UserCompatRoute
+    url: /:sf_format/playlists/:user/:pagination
+    param:
+        sf_format: ~
+        module: ~
+        pagination: ~
+    requirements:
+        sf_format: $(formats:html|rss)
+        module: playlists
+        user: $(user)
+        pagination: $(pagination)
+    options:
+        strict_optionals_order: false
+        rewrite: true
+        goto: playlist_list
+
+playlist_list:
+    url: /:sf_format/:localization/playlists(/:sort/:filters/=user/=video/=group/=min-videos/=search/=program)/:pagination
+    param:
+        controller : Page_PlaylistsController
+        module: playlist
+        action: list
+        sf_format: html
+        sort: recent
+        filters: ~
+        pagination: '1:10'
+        localization: ~
+        search: ~
+        user: ~
+        video: ~
+        group: ~
+        program: ~
+        min-videos: ~
+        noempty: true
+    requirements:
+        action: list
+        sf_format: $(formats:html|rss|iphonerss|atom|widget)
+        filters: $(filters:)
+        sort: $(sort:recent|most|least|changed|alpha|alphaaz|alphaza|relevance)
+        pagination: $(pagination)
+        localization: $(localization)
+        search: $(search)
+        user: $(user)
+        video: $(video)
+        group: $(group_name)
+        min-videos: $(uint)
+    options:
+        visibility: public
+        strict_optionals_order: false
+        extra_parameters_as_query_string: true
+        type: list
+        model: DM_Playlist
+        backends:
+            algolia: DM_Selector_Backend_Algolia_Playlists
+            es: DM_Selector_Backend_ES_Playlists
+            mysql: DM_Selector_Backend_Mysql_Playlists
+
+legal:
+    url: /:localization/legal/:action(/:subaction)
+    param:
+        controller: Page_LegalController
+        module: legal
+        action: terms
+        subaction: ~
+        localization: ~
+    requirements:
+        localization: $(localization)
+    options:
+        strict_optionals_order: false
+
+upload:
+    url: /upload
+    param:
+        controller: Page_UploadController
+        module: upload
+    options:
+        extra_parameters_as_query_string: true
+
+oauth_authorize:
+    url: /oauth/authorize
+    param:
+        controller: Page_OauthController
+
+browse:
+    url: /:localization/browse
+    param:
+        controller: Page_BrowseController
+        localization: ~
+    requirements:
+        localization: $(localization)
+    options:
+        strict_optionals_order: false
+        api_centric: true
+
+livechat:
+    url: /livechat/:room_name
+    param:
+        script: livechat.php
+        room_name: ~
+
+liveconsole:
+    url: /live/logs/:video_xid
+    param:
+        video_xid: ~
+        script: live_logs.php
+
+# THE FOLLOWING ROUTES MUST APPEAR BEFORE video_list
+
+# we send the request to the video list script and we dispatch it from there if the home channel is defined for the country # / language
+channel_home:
+    url: /:sf_format/:localization/channel/:channel(/:filters)
+    param:
+        module: video
+        _module: ~
+        action: list
+        sf_format: html
+        sort: recent
+        pagination: '1:15'
+        localization: ~
+        filters: featured
+    requirements:
+        sf_format: html
+        filters: $(filters:featured)
+        channel: $(channel)
+        localization: $(localization)
+    options:
+        visibility: public
+        strict_optionals_order: false
+        type: list
+        model: DM_Video
+        extra_parameters_as_query_string: true
+        backends:
+            es: DM_Selector_Backend_ES_Videos
+            mysql: DM_Selector_Backend_Mysql_Videos
+
+stream:
+    url: /stream
+    param:
+        module: stream
+        script: stream.php
+
+# Alias for highly used dynamic routes to optimize performance
+# NOTE: do not create alias for /1 or /lang/fr, they will have 100% chance to be in the lookup cache
+# NOTE: it is difficult to instrument this to determine how frequently they hit
+#
+# [/<sort>][/search/<search>][/lang/<lang>]/video/<video_id>
+video_item_alias:
+    class: DM_GotoRoute
+    url: /:sort/=search/=lang/=video
+    param:
+        sort: ~
+        lang: ~
+        search: ~
+    requirements:
+        sort: $(sort:recent|commented|duration|popular|relevance|visited)
+        lang: $(language_code)
+        search: $(search)
+        video: $(video)
+    options:
+        strict_optionals_order: false
+        route: video_item
+
+opensearch:
+    url: /:typeFormat/opensearch/:search
+    param:
+        script: opensearch.php
+
+hub_item:
+    url: /:sf_format/:localization/hub/:hub
+    param:
+        page: Html_Hub
+        module: hub
+        action: index
+        sf_format: html
+        localization: ~
+    requirements:
+        sf_format: $(formats:html)
+        hub: $(hub)
+        localization: $(localization)
+    options:
+        visibility: public
+        strict_optionals_order: false
+
+topic_item:
+    url: /:sf_format/:localization/topic/:topic
+    params:
+        sf_format: html
+        controller: Page_TopicController
+        localization: ~
+    requirements:
+        sf_format: html
+        localization: $(localization)
+        topic: $(freebase_tag)
+    options:
+        strict_optionals_order: false
+
+live_home:
+    url: /:sf_format/:localization/:_module/live(/:sort/=channel)
+    param:
+        module: video
+        _module: ~
+        action: list
+        sf_format: html
+        sort: recent
+        pagination: '1:20'
+        localization: ~
+        channel: ~
+        controller: Page_LiveController
+    requirements:
+        sf_format: $(formats:html)
+        pagination: $(pagination)
+        localization: $(localization)
+        sort: $(sort:recent|duration|visited)
+        channel: $(channel)
+    options:
+        visibility: public
+        strict_optionals_order: false
+        extra_parameters_as_query_string: true
+        type: list
+        model: DM_Video
+        backends:
+            es: DM_Selector_Backend_ES_Videos
+            mysql: DM_Selector_Backend_Mysql_Videos
+
+live_dashboard:
+    url: /live/:action/:video
+    param:
+        controller: Page_LiveDashboardController
+        video: ~
+    requirements:
+        action: (dashboard|information|settings|clips)
+        video: $(video)
+
+ams_video:
+    url: /ams/video/:video
+    param:
+        page: Html_Ams_Dashboard
+        module: ams
+    requirements:
+        video: $(video)
+
+static_cost_list:
+    url: /static_cost/(:label/):pagination
+    param:
+        label: ~
+        pagination: '1:8'
+        action: list
+    requirements:
+        label: '[a-zA-Z0-9_=-]+'
+        pagination: $(pagination)
+    options:
+        strict_optionals_order: false
+        type: list
+        model: DM_StaticCost
+        backends:
+            mysql: DM_Selector_Backend_Mysql_StaticCosts
+
+admin_events:
+    url: /admin/events
+    param:
+        controller: Page_Admin_EventsController
+
+admin_user_disable_request_list:
+    url: /:sf_format/userdisablerequest(/:sort/:filters)/:pagination
+    param:
+        module: admin
+        action: list
+        sf_format: html
+        pagination: '1:100'
+        sort: recent
+        filters: pending
+    requirements:
+        action: list
+        sort: '(?:recent)'
+        filters: '(?:pending|accepted|refused|moderation|explicit|noadfit|sexy|not-sexy)'
+        pagination: $(pagination)
+        sf_format: $(formats:html|rss|atom|widget|json|xml)
+    options:
+        strict_optionals_order: false
+        type: list
+        model: DM_UserDisableRequest
+        backends:
+            mysql: DM_Selector_Backend_Mysql_UserDisableRequest
+
+admin_log_list:
+    url: /:sf_format/admin_log(/:sort/=user/=video)/:pagination
+    param:
+        module: admin
+        action: list
+        sf_format: html
+        pagination: '1:100'
+        sort: recent
+        user: ~
+        video: ~
+    requirements:
+        action: list
+        sf_format: $(formats:html|rss|atom|widget|json|xml)
+        user: $(user)
+        video: $(video)
+    options:
+        strict_optionals_order: false
+        type: list
+        model: DM_AdminLogV2
+        backends:
+            mysql: DM_Selector_Backend_Mysql_AdminLogV2
+
+searchhighlight_list:
+    url: /search_highlights(/:sort/:filters/=country/=search)/:pagination
+    param:
+        module: search-highlight
+        action: list
+        pagination: '1:100'
+        sort: recent
+        filters: ~
+        country: ~
+        search: ~
+    requirements:
+        pagination: $(pagination)
+        filters: $(filters:enabled)
+        country: $(country_code)
+        search: $(search)
+        sort: $(sort:recent|relevance)
+    options:
+        visibility: private
+        strict_optionals_order: false
+        type: list
+        model: DM_SearchHighlight
+        backends:
+            mysql: DM_Selector_Backend_Mysql_SearchHighlights
+            es: DM_Selector_Backend_ES_SearchHighlights
+
+apikey_list:
+    url: /apikeys(/=user/=client/=apikey/=roles)/:pagination
+    param:
+        module: api
+        action: list_keys
+        pagination: '1:100'
+        sort: recent
+        client: ~
+        user: ~
+        apikey: ~
+        roles: ~
+    requirements:
+        client: $(user)
+        user: $(user)
+        pagination: $(pagination)
+        apikey: '/^[a-z0-9]{20}$/'
+        roles: '[^/]+'
+    options:
+        visibility: private
+        strict_optionals_order: false
+        type: list
+        model: DM_OAuth_ClientIdentifier
+        backends:
+            mysql: DM_Selector_Backend_Mysql_APIKeys
+
+video_list:
+    url: /:sf_format/:localization/:_module(/:sort/:filters/=recorded-from/=game/=list/=topic/=topic-mid/=stag/=user/=user_list/=excluded_user_list/=video/=tag/=tags/=group/=not-in-group/=playlist/=mychannel/=myuchannel/=bookmarks/=related-type/=related/=featuredby/=unclaimed/=relation/=skip-video/=country/=lang/=search/=genre/=nogenre/=added-since/=added-until/=feed/=vids/=exclude-vids/=channel/=edited/=unblocked-media/=unblocked-country/=created-after/=created-before/=modified-after/=modified-before/=live-started-before/=subscriptions/=subscriptions-weekly/=hub/=price/=more-views/=less-views/=blacklistedvideos/=less-duration/=more-duration/=repost)/:pagination
+    param:
+        module: video
+        _module: ~
+        action: list
+        sf_format: html
+        media-type: auto
+        sort: recent
+        filters: ~
+        list: ~
+        pagination: '1:18'
+        localization: ~
+        user: ~
+        user_list: ~
+        excluded_user_list: ~
+        video: ~
+        tag: ~
+        tags: ~
+        group: ~
+        not-in-group: ~
+        playlist: ~
+        mychannel: ~
+        myuchannel: ~
+        bookmarks: ~
+        related-type: ~
+        related: ~
+        featuredby: ~
+        unclaimed: ~
+        relation: ~
+        skip-video: ~
+        country: ~
+        lang: ~
+        detected-language: ~
+        search: ~
+        genre: ~
+        nogenre: ~
+        added-since: ~
+        added-until: ~
+        feed: ~
+        vids: ~
+        exclude-vids: ~
+        edited: ~
+        channel: ~
+        unblocked-media: ~
+        unblocked-country: ~
+        created-after: ~
+        created-before: ~
+        modified-after: ~
+        modified-before: ~
+        live-started-before: ~
+        subscriptions: ~
+        subscriptions-weekly: ~
+        hub: ~
+        price: ~
+        stag: ~
+        recorded-from: ~
+        game: ~
+        topic: ~
+        topic-mid: ~
+        more-views: ~
+        less-views: ~
+        blacklistedvideos: ~
+        less-duration: ~
+        more-duration: ~
+        repost: ~
+    requirements:
+        _module: videos
+        action: '[A-Za-z]+' # TOFIX: historical miss-usage of this parameter...
+        sf_format: $(formats:html|stream|rss|xml|json|csv|iphonerss|atom|podcast|oembed|opensearch|swf|widget|htmlchunk|videoroll|videowall|hqv|videozap|embed)
+        media-type: $(media_types)
+        filters: $(filters:universal|featured|hd|v360|censored|private|deleted|official|quality-watcher|ugc|ugc-official|public|history|internal|external|watchlater|monetizable|all|no-live|all-live|live|live-offair|live-finished|live-upcoming|amtdsd|red-band|unblocked-users|premium|premium-tvod|premium-svod|premium-paidvideos|premium-offers|test|no-explicit|free|no-premium|without-stag|with-poster|without-poster|nogeoblock|game|adfit|no-adfit|ad|no-ad|spam|promoted-on-games|partner|verified|recorded-from|auto-recorded|manual-recorded|webtrend|fbtrend|reposts|reposted|no-repost)
+        sort: $(sort:recent|commented|duration|popular|relevance|visited|random|ranking|rated|old|trending|live-audience)
+        list: 'what-to-watch|recommended|webtrend|watch-later'
+        pagination: $(pagination)
+        localization: $(localization)
+        user: $(user)
+        user_list: '[^/]+'
+        excluded_user_list: '[^/]+'
+        video: $(video)
+        tag: $(tags)
+        tags: $(tags)
+        group: $(group_name)
+        not-in-group: $(group_name)
+        playlist: $(playlist)
+        mychannel: $(user)
+        myuchannel: $(user_unlogged)
+        bookmarks: $(user)
+        related-type: $(filters:all|metadata|morelikethis|behavior)
+        related: $(video)
+        featuredby: $(user)
+        unclaimed: $(user)
+        relation: $(relation)
+        skip-video: $(video)
+        country: $(country_code)
+        geoblocking: $(country_code)
+        lang: $(language_code)
+        detected-language: $(language_code)
+        search: $(search)
+        genre: $(search)
+        nogenre: $(search)
+        added-since: $(time_window)
+        added-until: $(time_window)
+        feed: $(user)
+        vids: $(vids)
+        exclude-vids: $(vids)
+        edited: $(time_window)
+        channel: $(channel)
+        unblocked-media: $(unblocked_media)
+        unblocked-country: $(unblocked_country)
+        created-after: $(datetime)
+        created-before: $(datetime)
+        modified-after: $(datetime)
+        modified-before: $(datetime)
+        live-started-before: $(datetime)
+        subscriptions: $(date)
+        subscriptions-weekly: $(date)
+        hub: $(hub)
+        price: $(price)
+        stag: '[^/]+'
+        recorded-from: $(video)
+        game: $(game)
+        topic: $(freebase_tag)
+        topic-mid: $(mid)
+        more-views: $(uint)
+        less-views: $(uint)
+        blacklistedvideos: $(user)
+        less-duration: $(uint)
+        more-duration: $(uint)
+        repost: $(video)
+    options:
+        visibility: public
+        strict_optionals_order: false
+        extra_parameters_as_query_string: true
+        type: list
+        model: DM_Video
+        backends:
+            php: DM_Selector_Backend_PHP_Videos
+            algolia: DM_Selector_Backend_Algolia_Videos
+            es: DM_Selector_Backend_ES_Videos
+            mysql: DM_Selector_Backend_Mysql_Videos
+        shadows:
+            user: video_list_user
+            playlist: video_list_playlist
+            channel: video_list_channel
+
+video_featured_list:
+    url: /:sf_format/:localization/videofeatured(/:sort/:filters/=channel/=video/=user)/:pagination
+    param:
+        module: videofeatured
+        action: list
+        sf_format: html
+        sort: recent
+        filters: ~
+        pagination: '1:14'
+        localization: ~
+        channel: ~
+        video: ~
+        user: ~
+    requirements:
+        action: list
+        sf_format: $(formats:html)
+        filters: $(filters:)
+        sort: $(sort:recent)
+        pagination: $(pagination)
+        localization: '(all|en|ar|be|br|ca|dk|de|es|gr|fr|in|ie|it|mx|nl|at|pl|pt|ru|ro|ch|se|tr|gb|us|jp|kr|cn|tw|ca-fr|ca-en|ch-fr|ch-de|ch-it|be-fr|be-nl|zw|au|ma|es-ca|tn|vn|aa-ar|id|pk)'
+        channel: $(channel)
+        video: $(video)
+        user: $(user)
+    options:
+        visibility: public
+        strict_optionals_order: false
+        type: list
+        model: DM_VideoFeatured
+        backends:
+            mysql: DM_Selector_Backend_Mysql_VideosFeatured
+
+skin_featured_list:
+    url: /:sf_format/:localization/skinfeatured(/:sort/:filters/=channel/=user/=skin/=begin-before/=begin-after/=end-before/=end-after)/:pagination
+    param:
+        module: skinfeatured
+        action: list
+        sf_format: html
+        sort: recent
+        filters: ~
+        pagination: '1:14'
+        localization: ~
+        begin-before: ~
+        begin-after: ~
+        end-before: ~
+        end-after: ~
+        channel: ~
+        user: ~
+        skin: ~
+    requirements:
+        action: list
+        sf_format: $(formats:html)
+        filters: $(filters:)
+        sort: $(sort:recent|startdesc|startasc|enddesc|endasc)
+        pagination: $(pagination)
+        localization: '(all|en|ar|be|br|ca|dk|de|es|gr|fr|in|ie|it|mx|nl|at|pl|pt|ru|ro|ch|se|tr|gb|us|jp|kr|cn|tw|ca-fr|ca-en|ch-fr|ch-de|ch-it|be-fr|be-nl|zw|au|ma|es-ca|tn|vn|aa-ar|id|pk)'
+        begin-before: '[0-9]{4}\-[0-9]{2}\-[0-9]{2}(\s|_)[0-9]{2}\:[0-9]{2}\:[0-9]{2}'
+        begin-after: '[0-9]{4}\-[0-9]{2}\-[0-9]{2}(\s|_)[0-9]{2}\:[0-9]{2}\:[0-9]{2}'
+        end-before: '[0-9]{4}\-[0-9]{2}\-[0-9]{2}(\s|_)[0-9]{2}\:[0-9]{2}\:[0-9]{2}'
+        end-after: '[0-9]{4}\-[0-9]{2}\-[0-9]{2}(\s|_)[0-9]{2}\:[0-9]{2}\:[0-9]{2}'
+        channel: $(channel)
+        user: $(user)
+        skin: $(skin)
+    options:
+        visibility: public
+        strict_optionals_order: false
+        type: list
+        model: DM_SkinFeatured
+        backends:
+            mysql: DM_Selector_Backend_Mysql_SkinsFeatured
+
+password:
+    url: /password/:action
+    param:
+        controller: Page_PasswordController
+        module: password
+    requirements:
+        action: (?:reset|recover)
+
+# Temporary old url redirect to /settings.
+# TODO : clean every profile urls before removing.
+profile:
+    url: /profile/:action
+    param:
+        script: profile.php # Redirect to /settings/:action.
+        action: ~
+    options:
+        extra_parameters_as_query_string: true
+
+monetization:
+    url: /monetization
+    param:
+        controller: Page_MonetizationController
+
+domainverificationfile:
+    url: /domainverificationfile/:code
+    param:
+        controller: Page_DomainVerificationFileController
+
+settings:
+    url: /settings/:action
+    param:
+        controller: Page_SettingsController
+        module: user
+        action: overview
+    requirements:
+        action: (?:avatar|personalinfo|promotedvideos|partneragreement|channel|account|notifications|tools|newsletters|social|widget|developer|developer/new|connections|analyticstools|public|videobranding|featuredusers|playerpresets|playercustomization|videomonetization|paidcontent|yoursites|logooverlay|monetization|bankinginfos|websitemonetization|payments|mcnagreement|mcnnetwork|mcninvitechannels|business-rules)
+    options:
+        extra_parameters_as_query_string: true
+
+mcninvitation:
+    url: /settings/:action/:sender
+    param:
+        controller: Page_SettingsController
+        module: user
+        action: overview
+    requirements:
+        action: (?:mcninvitation)
+
+
+unote_list:
+    url: /:sf_format/:localization/unotes(/:sort/:filters/=user/=author)/:pagination
+    param:
+        controller: Page_CommentsController
+        action: list
+        sf_format: html
+        sort: recent
+        filters: ~
+        pagination: '1:10'
+        localization: ~
+        user: ~
+        author: ~
+    requirements:
+        action: list
+        sf_format: $(formats:html|rss|atom)
+        filters: $(filters:)
+        sort: $(sort:recent)
+        pagination: $(pagination)
+        localization: $(localization)
+        user: $(user)
+        author: $(user)
+    options:
+        visibility: public
+        strict_optionals_order: false
+        type: list
+        model: DM_UserNote
+        backends:
+            mysql: DM_Selector_Backend_Mysql_UserNotes
+
+videos_archived_hf:
+    url: /archives_hf
+    param:
+        sf_format: html
+        module: archives
+        action: index
+        page: Html_Archived
+    options:
+        visibility: public
+        strict_optionals_order: false
+
+cleeng_log:
+    url: /cleeng_log
+    param:
+        script: cleeng_log.php
+
+external_widget_upload:
+    url: /:sf_format/upload/
+    param:
+        controller: Page_ExternalUploadController
+        module: upload
+    requirements:
+        sf_format: widget
+    options:
+        strict_optionals_order: false
+        extra_parameters_as_query_string: true
+
+register_activate:
+    url: /register/activate
+    param:
+        module: register
+        action: activate
+        controller: Page_ActivateController
+    options:
+        extra_parameters_as_query_string: true
+
+user_list_user_compat:
+    class: DM_UserCompatRoute
+    url: /:sf_format/users/:user/:pagination
+    param:
+        sf_format: ~
+        module: ~
+        pagination: ~
+    requirements:
+        sf_format: $(formats:html|rss)
+        module: users
+        user: $(user)
+        pagination: $(pagination)
+    options:
+        strict_optionals_order: false
+        rewrite: true
+        goto: user_list
+
+user_list:
+    url: /:sf_format/:localization/users(/:sort/:filters/=list/=usrs/=user/=tag/=lang/=country/=search/=subscribedby/=subscribedto/=credentials/=credentialsgroups/=min-videos/=parent/=child/=recommendedfor/=recommendedforchannel/=channel/=blacklistedusers/=relatedto/=featuredby/=usernames)/:pagination
+    param:
+        module: user
+        action: list
+        sf_format: html
+        sort: recent
+        filters: ~
+        list: ~
+        pagination: '1:18'
+        localization: ~
+        usrs: ~
+        uids: ~
+        user: ~
+        tag: ~
+        lang: ~
+        country: ~
+        search: ~
+        subscribedby: ~
+        subscribedto: ~
+        credentials: ~
+        credentialsgroups: ~
+        min-videos: ~
+        parent: ~
+        child: ~
+        recommendedfor: ~
+        recommendedforchannel: ~
+        kids: ~
+        channel: ~
+        blacklistedusers : ~
+        relatedto: ~
+        featuredby: ~
+        usernames: ~
+    requirements:
+        action: list
+        sf_format: $(formats:html|rss|iphonerss|atom|opensearch|htmlchunk|widget)
+        filters: $(filters:featured|most-relevant|mostpopular|official|admin|watchdog|adpartner|no-description|dailyteam|premium|no-explicit|no-autoexplict|promoted-on-games|partner|verified|has-analytics-services)
+        sort: $(sort:recent|relevance|popular|daily|weekly|monthly|commented|alpha|alphaaz|alphaza|random|activity|custom)
+        list: 'recommended'
+        pagination: $(pagination)
+        localization: $(localization)
+        usrs: '[^/]+'
+        user: $(user)
+        tag: $(tags)
+        lang: $(language_code)
+        country: $(country_code)
+        search: $(search)
+        subscribedby: $(user)
+        subscribedto: $(user)
+        credentials: '[^/]+'
+        credentialsgroups: '[^/]+'
+        min-videos: $(uint)
+        parent: $(user)
+        child: $(user)
+        rollupinviteduser: $(user)
+        rollupsender: $(user)
+        recommendedfor: $(user)
+        channel: $(channel)
+        blacklistedusers: $(user)
+        relatedto: $(user)
+        featuredby: $(user)
+    options:
+        extra_parameters_as_query_string: true
+        visibility: public
+        strict_optionals_order: false
+        type: list
+        model: DM_User
+        backends:
+            algolia: DM_Selector_Backend_Algolia_Channel
+            es: DM_Selector_Backend_ES_Users
+            mysql: DM_Selector_Backend_Mysql_Users
+        shadows:
+            subscribedby: user_follower
+            subscribedto: user_follower
+
+mini_stats:
+    url: /stats/mini/:action
+    param:
+        module: stats
+
+sas:
+    url: /sas/:partner/:target
+    param:
+        page: Html_Sas
+        target: index.html
+        module: sas
+    requirements:
+        partner: (?:[a-zA-Z0-9_-]+)
+        target: (?:[a-zA-Z0-9_-]+(\.(html|swf))?|index.php)
+    options:
+        extra_parameters_as_query_string: true
+
+sharer:
+    url: /sharer
+    param:
+        script: sharer.php
+        module: sharer
+    options:
+        extra_parameters_as_query_string: true
+
+external_widget:
+    url: /:sf_format/:action
+    param:
+        controller: Page_ExternalWidgetController
+        module: widget
+    requirements:
+        sf_format: widget
+        action: (?:login|register)
+    options:
+        extra_parameters_as_query_string: true
+
+oauth_authorize2:
+    url: /oauth/authorize2
+    param:
+        controller: Page_OauthController
+
+oauth_logout:
+    url: /oauth/logout
+    params:
+        script: ../partners/api/src/oauth/logout.php
+    options:
+        extra_parameters_as_query_string: true
+
+# Dailymotion Cloud Callback URL
+encoder_callback:
+    url: /encoder/callback/:video_id/:task_id
+    params:
+        module: cloud
+    requirements:
+        video_id: '[0-9]+'
+        task_id: '[0-9]+'
+
+facebookvideotab:
+    url: /facebookvideotab
+    param:
+        controller: Page_FacebookVideoTabController
+
+about:
+    url: /:localization/about
+    param:
+        module: about
+        controller: Page_AboutController
+        localization: ~
+    requirements:
+        localization: $(localization)
+
+contact_list_usercompat:
+    url: /:sf_format/contacts/=user/:pagination
+    param:
+        module: user
+        action: list
+        sf_format: html
+        sort: recent
+        pagination: '1:10'
+    requirements:
+        action: list
+        sf_format: $(formats:html|rss)
+        pagination: $(pagination)
+        user: $(user)
+    options:
+        strict_optionals_order: false
+        type: list
+        model: DM_User
+        backends:
+            mysql: DM_Selector_Backend_Mysql_Contacts
+
+channel_list:
+    url: /:sf_format/:localization/channels(/:sort/:filters/:pagination)
+    param:
+        module: channel
+        action: list
+        sf_format: html
+        sort: recent
+        filters: ~
+        pagination: '1:100'
+        localization: ~
+    requirements:
+        action: list
+        sf_format: $(formats:html|rss|iphonerss|atom|widget)
+        filters: $(filters:)
+        sort: $(sort:recent|popular)
+        pagination: $(pagination)
+        localization: $(localization)
+    options:
+        visibility: public
+        strict_optionals_order: false
+        extra_parameters_as_query_string: true
+        type: list
+        model: DM_Channel
+        backends:
+            php: DM_Selector_Backend_PHP_Channels
+
+comment_list_user_compat:
+    class: DM_UserCompatRoute
+    url: /:sf_format/comments/:user/:pagination
+    param:
+        sf_format: ~
+        module: ~
+        pagination: ~
+    requirements:
+        sf_format: $(formats:html|rss)
+        module: comments
+        user: $(user)
+        pagination: $(pagination)
+    options:
+        strict_optionals_order: false
+        rewrite: true
+        goto: comment_list
+
+comment_list:
+    url: /:sf_format/:localization/comments(/:sort/:filters/=user/=video/=group/=onuser/=comment-history/=comment-url-history/=lang/=country)/:pagination
+    param:
+        module: comment
+        action: list
+        sf_format: html
+        sort: recent
+        filters: ~
+        pagination: '1:10'
+        localization: ~
+        user: ~
+        video: ~
+        group: ~
+        onuser: ~
+        comment-history: ~
+        comment-url-history: ~
+        lang: ~
+        country: ~
+        search: ~
+    requirements:
+        action: list
+        sf_format: $(formats:html|rss|atom|widget|json|xml)
+        filters: $(filters:)
+        sort: $(sort:recent|alpha|old)
+        pagination: $(pagination)
+        localization: $(localization)
+        user: $(user)
+        video: $(video)
+        group: $(group_name)
+        onuser: $(user)
+        comment-history: $(comment-history)
+        comment-url-history: $(comment-url-history)
+        lang: $(language_code)
+        country: $(country_code)
+    options:
+        visibility: public
+        extra_parameters_as_query_string: true
+        strict_optionals_order: false
+        type: list
+        model: DM_Comment
+        backends:
+            mysql: DM_Selector_Backend_Mysql_Comments
+        shadows:
+            user: comment_user
+            video: comment_video
+
+# [/<sort>]/search/<search>[/<pagination>]
+video_list_search_alias:
+    class: DM_GotoRoute
+    url: /:localization/:sort/=search/:pagination
+    param:
+        sort: ~
+        localization: ~
+        pagination: ~
+    requirements:
+        sort: $(sort:recent|commented|duration|popular|relevance|visited)
+        pagination: $(pagination)
+        localization: $(localization)
+        search: $(search)
+    options:
+        strict_optionals_order: false
+        route: video_list
+
+# NEW ROUTES HERE
+# at this point, the most heavily trafficked routes have been handled.
+
+setpartner:
+    url: /setpartner/:status
+    param:
+        controller: Page_BecomePartnerController
+        status: false
+
+potplayer_recommendation:
+    url: /recommendations/potplayer
+    param:
+        controller: Page_PotPlayerRecommendationController
+
+webhooks_monetization:
+    url: /webhooks/partnernotifications/:template/:action
+    param:
+        script: monetization_webhooks.php
+    requirements:
+        template: (?:websiteverification|payment)
+    options:
+        extra_parameters_as_query_string: true
+
+webhooks_mandrill:
+    url: /webhooks/mandrill
+    param:
+        script: mandrill.php
+
+webhooks_mailchimp:
+    url: /webhooks/mailchimp
+    param:
+        script: mailchimp.php
+
+webhooks_events:
+    url: /webhooks/events
+    param:
+        script: events.php
+
+extras:
+    url: /:localization/extras/:action(/:user)
+    param:
+        controller: Page_ExtrasController
+        localization: ~
+        action: ~
+        user: ~
+    requirements:
+        action: (mass_uploader|jukebox|operatv|badge|facebookvideotab)
+        user: $(user)
+    options:
+        strict_optionals_order: false
+
+ligue1:
+    url: /ligue1/:subpage(/:club/:pagination)
+    param:
+        controller: Page_Ligue1Controller
+        subpage: home
+        pagination: ~
+        club: ~
+    requirements:
+        subpage: (?:home|breves|classement|videos-par-match|clubs|club)
+        pagination: $(pagination)
+        club: (?:st-etienne|bastia|nantes|lyon|toulouse|monaco|marseille|evian-thonon-gaillard|reims|paris-saint-germain|montpellier|lorient|nice|lille|guingamp|bordeaux|rennes|caen|lens|metz)
+    options:
+        strict_optionals_order: false
+        extra_parameters_as_query_string: true
+
+external_widget_video_edit:
+    url: /:sf_format/video/edit/:video
+    param:
+        module: video
+        controller: Page_ExternalWidgetController
+    requirements:
+        sf_format: widget
+        video: $(video)
+    options:
+        extra_parameters_as_query_string: true
+
+# UPLOAD
+
+upload_new:
+    url: /upload_new/(:result/)
+    param:
+        result: ~
+        controller: Page_UploadController
+    options:
+        strict_optionals_order: false
+
+upload_basic:
+    url: /upload-basic
+    param:
+        module: onestep
+
+
+# ADVANCED STATS #
+
+stats_video_data:
+    url: /stats/:user/video/:video/data/:stats_id
+    param:
+        module: stats
+        action: advanced/video
+    requirements:
+        user: $(user)
+        video: $(video)
+        stats_id: (?:[a-zA-Z0-9_-]+)
+    options:
+        extra_parameters_as_query_string: true
+
+stats_user_data:
+    url: /stats/:user/data/:stats_id
+    param:
+        module: stats
+        action: advanced/user
+    requirements:
+        user: $(user)
+        stats_id: (?:[a-zA-Z0-9_-]+)
+    options:
+        extra_parameters_as_query_string: true
+
+stats_monetization:
+    url: /stats(/:user)/:product
+    param:
+        user: ~
+        controller: Page_AdvancedStats_MonetizationController
+    requirements:
+        user: $(user)
+        product: (?:videomonetization|websitemonetization|paidcontent)
+    options:
+        strict_optionals_order: false
+        extra_parameters_as_query_string: true
+
+stats_overview:
+    url: /stats/:user
+    param:
+        controller: Page_AdvancedStats_OverviewController
+    requirements:
+        user: $(user)
+
+stats_video:
+    url: /stats/:user/video/:video
+    param:
+        controller: Page_AdvancedStats_VideoController
+    requirements:
+        video: $(video)
+        user: $(user)
+
+stats_social:
+    url: /stats/:user/social
+    param:
+        controller: Page_AdvancedStats_SocialController
+    requirements:
+        video: $(video)
+        user: $(user)
+
+stats_children:
+    url: /stats/:user/children/:pagination
+    param:
+        controller: Page_AdvancedStats_ChildrenController
+        user: ~
+        pagination: ~
+    requirements:
+        user: $(user)
+        pagination: $(pagination)
+
+stats_export:
+    url: /stats/:user/export
+    param:
+        controller: Page_AdvancedStats_ExportController
+    requirements:
+        user: $(user)
+
+stats_user_data_export:
+    url: /stats/:user/export/data
+    param:
+        module: stats
+        action: advanced/user_export
+    requirements:
+        user: $(user)
+    options:
+        extra_parameters_as_query_string: true
+
+stats_video_data_export:
+    url: /stats/:user/video/:video/export/data
+    param:
+        module: stats
+        action: advanced/video_export
+    requirements:
+        user: $(user)
+        video: $(video)
+    options:
+        extra_parameters_as_query_string: true
+
+# END ADVANCED STATS #
+
+# THESE ROUTES MUST APPEAR BEFORE user_home
+
+my_purchases:
+    url: /my-purchases
+    param:
+        controller: Page_UserPurchasesController
+
+cleeng_redirect:
+    url: /cleeng_redirect
+    param:
+        script: cleeng_redirect.php
+    options:
+        extra_parameters_as_query_string: true
+
+register_denied:
+    url: /register_denied
+    param:
+        controller: Page_RegisterDeniedController
+
+dmrss:
+    url: /dmrss
+    param:
+        script: dmrss.php
+
+access_denied:
+    url: /access_denied
+    param:
+        controller: Page_AccessDeniedController
+
+account_deleted:
+    url: /account_deleted
+    param:
+        controller: Page_AccountDeletedController
+
+api_player:
+    url: /apiplayer
+    params:
+        script: video.swf.php
+        action: index
+        sf_format: swf
+        enableApi: 1
+        chromeless: 1
+    options:
+        handle_404: false
+        extra_parameters_as_query_string: true
+
+copyright_owner:
+    url: /copyrightowner
+    param:
+        page: Html_CopyrightOwner
+
+healthcheck:
+    url: /healthcheck
+    param:
+        script: healthcheck.php
+
+player_presentation:
+    url: /player
+    param:
+        controller: Page_PlayerPresentationController
+    options:
+        strict_optionals_order: false
+
+repost_presentation:
+    url: /repost
+    param:
+        controller: Page_RepostPresentationController
+    options:
+        strict_optionals_order: false
+
+following:
+    url: /following
+    param:
+        controller: Page_FollowingController
+    options:
+        strict_optionals_order: false
+
+logout:
+    url: /logout
+    param:
+        script: logout.php
+        module: logout
+    options:
+        extra_parameters_as_query_string: true
+
+pages:
+    url: /pages
+    param:
+        controller: Page_PagesController
+    options:
+        strict_optionals_order: false
+
+promo_premium:
+    url: /promo-premium
+    params:
+        controller: Page_PromoPremiumController
+    options:
+        extra_parameters_as_query_string: true
+
+url_shortener:
+    url: /urlshortener
+    params:
+        script: urlshortener.php
+    options:
+        extra_parameters_as_query_string: true
+
+zendesk:
+    url: /zendesk
+    param:
+        script: zendesk.php
+        module: zendesk
+    options:
+        extra_parameters_as_query_string: true
+
+chromecast:
+    url: /chromecast-receiver
+    params:
+        script: ../partners/chromecast/index.php
+    options:
+        extra_parameters_as_query_string: true
+
+global_views_stats:
+    url: /views
+    param:
+        module: global_views
+        action: index
+
+mira_login_redirect:
+    url: /__login_redirect__
+    options:
+        extra_parameters_as_query_string: true
+
+# for backward compat, a user home should be also used as a video_list (all video from user x)
+user_home:
+    url: /:user
+    class: DM_UserCompatRoute
+    param:
+        controller: Page_UserController
+        # page: Html_User
+        # module: user
+        # action: home
+        sf_format: html
+        sort: recent
+        pagination: '1:8'
+    requirements:
+        user: $(user)
+    options:
+        user_compat_param: user
+        visibility: public
+        strict_optionals_order: false
+        type: list
+        model: DM_Video
+        backends:
+            es: DM_Selector_Backend_ES_Videos
+            mysql: DM_Selector_Backend_Mysql_Videos
+        extra_parameters_as_query_string: true
+
+# This route shouldn't exist, but because of the lack of real controllers, we need
+user_home_rss:
+    url: /rss/:user
+    class: DM_UserCompatRoute
+    param:
+        script: rss/user_entry.php
+        module: user
+        action: home
+        sf_format: rss
+        sort: recent
+        pagination: '1:8'
+    requirements:
+        sf_format: rss
+        user: $(user)
+    options:
+        visibility: public
+        strict_optionals_order: false
+        type: list
+        model: DM_Video
+        backends:
+            es: DM_Selector_Backend_ES_Videos
+            mysql: DM_Selector_Backend_Mysql_Videos
+
+# This route must not be any higher, otherwise it matches all sorts of things
+video_list_user_compat:
+    class: DM_UserCompatRoute
+    url: /:sf_format/:module/:user/:pagination
+    param:
+        sf_format: ~
+        module: ~
+        pagination: ~
+    requirements:
+        sf_format: $(formats:html|rss|videowall|videozap)
+        module: videos
+        user: $(user)
+        pagination: $(pagination)
+    options:
+        strict_optionals_order: false
+        rewrite: true
+        goto: video_list
+
+# URL to the best stream format for crawler, with reverse DNS access control
+crawler_stream_url:
+    url: /crawler/=video
+    params:
+        module: crawler
+        action: video
+        sf_format: redirect
+        script: crawler/video.php
+    requirements:
+        video: $(video_short)
+
+fmle_config:
+  url: /fmle/=video
+  param:
+      module: live
+      action: fmle
+      script: fmle_conf.php
+  requirements:
+      video: $(video)
+
+video_views_stats:
+    url: /views/=video
+    param:
+        module: views
+        action: index
+        sf_format: html
+    requirements:
+        video: $(video)
+
+everywhere:
+    url: /:localization/everywhere(/:type)
+    param:
+        controller: Page_DailymotionEverywhereController
+        module: content
+        type: ~
+        localization: ~
+    requirements:
+        localization: $(localization)
+        type: (mobile|tablet|tv)
+    options:
+        strict_optionals_order: false
+
+live_create:
+    url: /live/create
+    param:
+        controller: Page_LiveCreateController
+        action: create
+        module: live
+        sf_format: html
+
+live_discover:
+    url: /live/discover
+    param:
+        controller: Page_LiveDiscoverController
+        module: live
+        sf_format: html
+
+
+video_edit:
+    url: /video/edit/:video
+    param:
+        controller: Page_VideoEditController
+        module: video
+        edit: 1
+    requirements:
+        video: $(video)
+
+upload_faq:
+    url: /upload/faq
+    param:
+        controller: Page_UploadFaqController
+        module: faq
+
+ad_capping:
+    url: /ad/cb/:key
+    param:
+        script: adcb.php
+    requirements:
+        key: '[a-zA-Z0-9_-]+'
+    options:
+        extra_parameters_as_query_string: true
+
+external_promote:
+    url: /promote/:list
+    param:
+        controller: Page_ExternalPromoteController
+    requirements:
+        list: .*
+
+follower_management:
+    url: /followers/:subscribedto/:pagination
+    param:
+        module: followers
+        action: list
+        sf_format: html
+        sort: recent
+        pagination: '1:18'
+        controller: Page_SubscriptionsController
+    requirements:
+        pagination: $(pagination)
+        subscribedto: $(user)
+    options:
+        strict_optionals_order: false
+        extra_parameters_as_query_string: true
+        type: list
+        model: DM_User
+        backends:
+            mysql: DM_Selector_Backend_Mysql_Users
+
+opensearch:
+    url: /:typeFormat/opensearch/:search
+    param:
+        script: opensearch.php
+    requirements:
+        typeFormat: (json|xml)
+        search: $(search)
+    options:
+        extra_parameters_as_query_string: true
+
+subscription_management:
+    url: /subscriptions(/:hash/:user)/:pagination
+    param:
+        module: user
+        action: list
+        sf_format: html
+        sort: recent
+        pagination: '1:18'
+        hash: ~
+        user: ~
+        controller: Page_SubscriptionsController
+    requirements:
+        pagination: $(pagination)
+        hash: $(hash_unlogged)
+        user: $(user)
+    options:
+        strict_optionals_order: false
+        extra_parameters_as_query_string: true
+        type: list
+        model: DM_User
+        backends:
+            mysql: DM_Selector_Backend_Mysql_MySubscriptions
+        shadows:
+            user: user_follower
+
+hub_list:
+    url: /:sf_format/:localization/admin/hubs(/:sort/:filters/=slug/=channel/=country/=lang/=added-since/=modified-since/=search)/:pagination
+    param:
+        controller: Page_HubsController
+        action: list
+        sf_format: html
+        sort: recent
+        pagination: '1:20'
+        localization: ~
+        slug: ~
+        channel: ~
+        search: ~
+        filters: published
+        country: ~
+        lang: ~
+        added-since: ~
+        modified-since: ~
+    requirements:
+        action: list
+        sf_format: $(formats:html)
+        sort: $(sort:alpha|recent|relevance)
+        pagination: $(pagination)
+        localization: $(localization)
+        slug: $(slug)
+        channel: $(channel)
+        search: $(search)
+        filters: $(filters:published|unpublished)
+        country: $(country_code)
+        lang: $(language_code)
+        added-since: $(time_window)
+        modified-since: $(time_window)
+    options:
+        visibility: public
+        strict_optionals_order: false
+        type: list
+        model: DM_Hub
+        backends:
+            mysql: DM_Selector_Backend_Mysql_Hubs
+            es: DM_Selector_Backend_ES_Hubs
+
+subtitle_create:
+    url: /video/subtitle/create/:video
+    param:
+        page: Html_Subtitle
+        module: video
+        action: create
+        video: ~
+    requirements:
+        video: $(video)
+
+video_annotations:
+    url: /video/annotations/:video
+    param:
+        controller: Page_VideoAnnotationsController
+        module: video
+        video: ~
+    requirements:
+        video: $(video)
+
+topic_item:
+    url: /:sf_format/:localization/topic/:topic
+    params:
+        sf_format: html
+        controller: Page_TopicController
+        localization: ~
+    requirements:
+        sf_format: html
+        localization: $(localization)
+        topic: $(freebase_tag)
+    options:
+        strict_optionals_order: false
+
+api_farmer_crud:
+    url: /farmer/:farm/:node
+    param:
+        script: farmer.php
+        module: farmer
+        action: crud
+    requirements:
+        farm: $(farmer_farm)
+        node: '[a-z0-9.-]+'
+    options:
+        handle_404: false
+
+search_videos:
+    url: /json/search_videos/:context/(:id/):search
+    param:
+        script: ajax/search_videos.php
+    requirements:
+        context: (reader)
+        id: '[0-9]+'
+        search: $(search)
+    options:
+        strict_optionals_order: false
+
+player_data:
+    url: /player/:action/video(/:video_id)
+    param:
+        script: player/data.php
+        video_id: ~
+    requirements:
+        action: 'metadata|config|endscreen|vmap_ad|vast_ad'
+        video_id: '[\w\.-]+'
+    options:
+        visibility: public
+        strict_optionals_order: false
+        extra_parameters_as_query_string: true
+
+wirecast_destination:
+    url: /api/wirecast/destination.xml
+    sf_format: xml
+    param:
+        module: wirecast
+        action: get
+        script: wirecast/destination.php
+
+wirecast_discovery:
+  url: /api/wirecast/discovery.xml
+  sf_format: xml
+  param:
+      module: wirecast
+      action: get
+      script: wirecast/discovery.php
+
+live_diagnostic:
+    url: /diagnostic/:video
+    param:
+        controller: Page_LiveDiagnostic_LiveDiagnosticController
+    requirements:
+        video: $(video)
+
+autocomplete_skins:
+    url: /json/complete_skins
+    param:
+        script: autocomplete_skins.json.php
+    options:
+        extra_parameters_as_query_string: true
+
+premium_unsubscribe:
+    url: /cancel-subscription/:offer_id
+    param:
+        controller: Page_CancelSubscriptionController
+    requirements:
+        offer_id: (?:[A-Z0-9_-]+)
+
+masscast:
+    url: /masscast/*
+    params:
+        script: masscast.php
+        action: index
+    options:
+        extra_parameters_as_query_string: true
+
+activity_list:
+    url: /:sf_format/:localization/activities(/:sort/:filters/=feed/=user/=uids/=tiles/=ignore-tiles/=activity/=sender/=target/=complement/=video/=playlist/=targetuser/=type)/:pagination
+    param:
+        module: activity
+        action: list
+        sf_format: html
+        sort: recent
+        filters: ~
+        pagination: '1:100'
+        localization: ~
+        feed: ~
+        user: ~
+        uids: ~
+        tiles: ~
+        ignore-tiles: ~
+        activity: ~
+        sender: ~
+        target: ~
+        complement: ~
+        video: ~
+        playlist: ~
+        targetuser: ~
+        type: ~
+    requirements:
+        action: list
+        sf_format: $(formats:html|rss)
+        filters: $(filters:videos|subscriptions|sender_uniq|top)
+        sort: $(sort:recent)
+        pagination: $(pagination)
+        localization: $(localization)
+        feed: $(user)
+        user: $(user)
+        uids: $(uids)
+        tiles: '[a-zA-Z0-9_-]+(:? [a-zA-Z0-9_-]+)*'
+        ignore-tiles: '[a-zA-Z0-9_-]+(:? [a-zA-Z0-9_-]+)*'
+        activity: $(activity)
+        sender: '[a-z]+'
+        target: '[a-z]+'
+        complement: '[a-z]+'
+        video: $(video)
+        playlist: $(playlist)
+        targetuser: $(user)
+        type: '[a-zA-Z\.]+(:?\-[a-zA-Z\.]+)*'
+    options:
+        visibility: public
+        strict_optionals_order: false
+        type: list
+        model: DM_Activity_Event
+        backends:
+            mysql: DM_Selector_Backend_Mysql_Activities
+
+tile_list:
+    url: /:sf_format/:localization/tiles(/=filters/=search/=interests/=ids/=exclude/=tileset)/:pagination
+    param:
+        module: tile
+        action: list
+        sf_format: html
+        pagination: '1:100'
+        localization: ~
+        sort: ~
+        filters: ~
+        search: ~
+        interests: ~
+        ids: ~
+        exclude: ~
+        tileset: ~
+        last: ~
+    requirements:
+        action: list
+        sf_format: $(formats:html)
+        pagination: $(pagination)
+        localization: $(localization)
+        sort: $(sort:relevance|recent|visited)
+        filters: $(filters:universal)
+        search: $(search)
+        interests: '[a-z]+(?:\+[a-z]+)*'
+        ids: '[a-zA-Z0-9_-]+(:? [a-zA-Z0-9_-]+)*'
+        exclude: '[a-zA-Z0-9_-]+(:? [a-zA-Z0-9_-]+)*'
+        tileset: '[a-z0-9_-]+'
+        last: \d+
+    options:
+        visibility: private
+        strict_optionals_order: false
+        type: list
+        model: DM_Tile
+        backends:
+            php: DM_Selector_Backend_PHP_Tiles
+
+description_spam_list:
+    url: /:sf_format/:localization/description-spam(/=text)/:pagination
+    param:
+        module: description-spam
+        action: list
+        sf_format: html
+        sort: recent
+        filters: ~
+        pagination: '1:30'
+        localization: ~
+        text: ~
+    requirements:
+        action: list
+        sf_format: $(formats:html|rss|atom|widget|json|xml)
+        filters: $(filters:)
+        sort: $(sort:recent|old)
+        pagination: $(pagination)
+        localization: $(localization)
+    options:
+        visibility: private
+        strict_optionals_order: false
+        type: list
+        model: DM_DescriptionSpam
+        backends:
+            mysql: DM_Selector_Backend_Mysql_DescriptionsSpam
+
+alert_list:
+    url: /:sf_format/:localization/alerts(/:sort/:filters/=status/=with-job)/:pagination
+    param:
+        module: alert
+        action: list
+        sf_format: html
+        sort: recent
+        filters: ~
+        pagination: '1:100'
+        localization: ~
+        status: ~
+        with-job: ~
+    requirements:
+        action: list
+        sf_format: $(formats:html)
+        filters: $(filters:)
+        sort: $(sort:recent)
+        pagination: $(pagination)
+        localization: $(localization)
+        status: '(?:init|wait|run|cancel|error|done|realtime)'
+        with-job: '[0-9]+'
+    options:
+        visibility: private
+        strict_optionals_order: false
+        type: list
+        model: DM_Alert
+        backends:
+            mysql: DM_Selector_Backend_Mysql_Alerts
+
+alert_param_list:
+    url: /:sf_format/:localization/alert-params(/:sort/:filters/=with-alert)/:pagination
+    param:
+        module: alert-param
+        action: list
+        sf_format: html
+        sort: recent
+        filters: ~
+        pagination: '1:100'
+        localization: ~
+        with-alert: ~
+    requirements:
+        action: list
+        sf_format: $(formats:html)
+        filters: $(filters:)
+        sort: $(sort:recent)
+        pagination: $(pagination)
+        localization: $(localization)
+        with-alert: $(abuse-entry)
+    options:
+        visibility: private
+        strict_optionals_order: false
+        type: list
+        model: DM_AlertParam
+        backends:
+            mysql: DM_Selector_Backend_Mysql_AlertParams
+
+auto_explicit_entry_event_list:
+    url: /:sf_format/:localization/auto-explicit-entry-events(/:sort/:filters/=auto-explicit-entry)/:pagination
+    param:
+        module: auto-explicit-entry-event
+        action: list
+        sf_format: html
+        sort: recent
+        filters: ~
+        pagination: '1:100'
+        localization: ~
+        auto-explicit-entry: ~
+    requirements:
+        action: list
+        sf_format: $(formats:html)
+        filters: $(filters:)
+        sort: $(sort:recent)
+        pagination: $(pagination)
+        localization: $(localization)
+        auto-explicit-entry: $(auto-explicit-entry)
+    options:
+        visibility: private
+        strict_optionals_order: false
+        type: list
+        model: DM_AutoExplicitEntryEvent
+        backends:
+            mysql: DM_Selector_Backend_Mysql_AutoExplicitEntryEvents
+
+video_spam_entry_event_list:
+    url: /:sf_format/:localization/video-spam-entry-events(/:sort/:filters/=video)/:pagination
+    param:
+        module: video-spam-entry-event
+        action: list
+        sf_format: html
+        sort: recent
+        filters: ~
+        pagination: '1:100'
+        localization: ~
+        video: ~
+    requirements:
+        action: list
+        sf_format: $(formats:html)
+        filters: $(filters:)
+        sort: $(sort:recent)
+        pagination: $(pagination)
+        localization: $(localization)
+        video: $(video)
+    options:
+        visibility: private
+        strict_optionals_order: false
+        type: list
+        model: DM_VideoSpamEntryEvent
+        backends:
+            mysql: DM_Selector_Backend_Mysql_VideoSpamEntryEvents
+
+auto_explicit_entry_report_list:
+    url: /:sf_format/:localization/auto-explicit-entry-reports(/:sort/:filters/=auto-explicit-entry)/:pagination
+    param:
+        module: auto-explicit-entry-report
+        action: list
+        sf_format: html
+        sort: recent
+        filters: ~
+        pagination: '1:100'
+        localization: ~
+        auto-explicit-entry: ~
+    requirements:
+        action: list
+        sf_format: $(formats:html)
+        filters: $(filters:)
+        sort: $(sort:recent)
+        pagination: $(pagination)
+        localization: $(localization)
+        auto-explicit-entry: $(auto-explicit-entry)
+    options:
+        visibility: private
+        strict_optionals_order: false
+        type: list
+        model: DM_AutoExplicitEntryReport
+        backends:
+            mysql: DM_Selector_Backend_Mysql_AutoExplicitEntryReports
+
+comment_history_list:
+    url: /:sf_format/:localization/comment-histories(/:sort/:filters)/:pagination
+    param:
+        module: comment-history
+        action: list
+        sf_format: html
+        sort: recent
+        filters: ~
+        pagination: '1:1000'
+        localization: ~
+    requirements:
+        action: list
+        sf_format: $(formats:html)
+        filters: $(filters:expired)
+        sort: $(sort:recent)
+        pagination: $(pagination)
+        localization: $(localization)
+    options:
+        visibility: private
+        strict_optionals_order: false
+        type: list
+        model: DM_CommentHistory
+        backends:
+            mysql: DM_Selector_Backend_Mysql_CommentHistories
+
+comment_url_history_list:
+    url: /:sf_format/:localization/comment-url-histories(/:sort/:filters/=comment)/:pagination
+    param:
+        module: comment-url-history
+        action: list
+        sf_format: html
+        sort: recent
+        filters: ~
+        pagination: '1:1000'
+        localization: ~
+        comment: ~
+    requirements:
+        action: list
+        sf_format: $(formats:html)
+        filters: $(filters:expired)
+        sort: $(sort:recent)
+        pagination: $(pagination)
+        localization: $(localization)
+        comment: $(comment)
+    options:
+        visibility: private
+        strict_optionals_order: false
+        type: list
+        model: DM_CommentUrlHistory
+        backends:
+            mysql: DM_Selector_Backend_Mysql_CommentUrlHistories
+
+console_queue_event_list:
+    url: /:sf_format/:localization/console-queue-events(/:sort/:filters/=video)/:pagination
+    param:
+        module: console-queue-event
+        action: list
+        sf_format: html
+        sort: recent
+        filters: ~
+        pagination: '1:100'
+        localization: ~
+        video: ~
+    requirements:
+        action: list
+        sf_format: $(formats:html)
+        filters: $(filters:)
+        sort: $(sort:recent)
+        pagination: $(pagination)
+        localization: $(localization)
+        video: $(video)
+    options:
+        visibility: private
+        strict_optionals_order: false
+        type: list
+        model: DM_ConsoleEvent
+        backends:
+            mysql: DM_Selector_Backend_Mysql_ConsoleQueueEvents
+
+console_queue_item_list:
+    url: /:sf_format/:localization/console-queue-items(/:sort/:filters)/:pagination
+    param:
+        module: console-queue-item
+        action: list
+        sf_format: html
+        sort: recent
+        filters: ~
+        pagination: '1:1000'
+        localization: ~
+    requirements:
+        action: list
+        sf_format: $(formats:html)
+        filters: $(filters:closed)
+        sort: $(sort:recent)
+        pagination: $(pagination)
+        localization: $(localization)
+    options:
+        visibility: private
+        strict_optionals_order: false
+        type: list
+        model: DM_ConsoleQueue
+        backends:
+            mysql: DM_Selector_Backend_Mysql_ConsoleQueueItems
+
+encoder_task_list:
+    url: /:sf_format/:localization/encoder-tasks(/:sort/:filters/=status/=queue-status/=max-duration/=namespace/=video)/:pagination
+    param:
+        module: encoder-task
+        action: list
+        sf_format: html
+        sort: recent
+        filters: ~
+        pagination: '1:1000'
+        localization: ~
+        status: ~
+        queue-status: ~
+        max-duration: ~
+        namespace: ~
+        video: ~
+    requirements:
+        action: list
+        sf_format: $(formats:html)
+        filters: $(filters:queued|archived|async)
+        sort: $(sort:recent|finished|priority|format)
+        pagination: $(pagination)
+        localization: $(localization)
+        status: '(?:queued|processing|moving|finished|deleted|postponed|error)(?:\+(?:queued|processing|moving|finished|deleted|postponed|error))*'
+        queue-status: '(?:transit|ready|running|paused)(?:\+(?:transit|ready|running|paused))*'
+        max-duration: $(time)
+        namespace: $(running-env)
+        video: $(video)
+    options:
+        visibility: private
+        strict_optionals_order: false
+        type: list
+        model: DM_Encoder_Task
+        backends:
+            mysql: DM_Selector_Backend_Mysql_EncoderTasks
+
+video_copyright_list:
+    url: /:sf_format/:localization/video-copyrights(/:sort/:filters/=user/=status)/:pagination
+    param:
+        module: video-copyright
+        action: list
+        sf_format: html
+        sort: recent
+        filters: ~
+        pagination: '1:1000'
+        localization: ~
+        user: ~
+        status: ~
+    requirements:
+        action: list
+        sf_format: $(formats:html)
+        filters: $(filters:)
+        sort: $(sort:recent)
+        pagination: $(pagination)
+        localization: $(localization)
+        user: $(user)
+        status: '(?:pending|accepted|refused|opened|removed|free|tobedefined)'
+    options:
+        visibility: private
+        strict_optionals_order: false
+        type: list
+        model: DM_VideoCopyright
+        backends:
+            mysql: DM_Selector_Backend_Mysql_VideoCopyrights
+
+relation_list:
+    url: /:sf_format/:localization/relations(/:sort/:filters/=user)/:pagination
+    param:
+        module: relation
+        action: list
+        sf_format: html
+        sort: recent
+        filters: ~
+        pagination: '1:1000'
+        localization: ~
+        user: ~
+    requirements:
+        action: list
+        sf_format: $(formats:html)
+        filters: $(filters:)
+        sort: $(sort:recent)
+        pagination: $(pagination)
+        localization: $(localization)
+        user: $(user)
+    options:
+        visibility: private
+        strict_optionals_order: false
+        type: list
+        model: DM_Relation
+        backends:
+            mysql: DM_Selector_Backend_Mysql_Relations
+
+custom_skin_list:
+    url: /:sf_format/:localization/custom-skins(/:sort/:filters)/:pagination
+    param:
+        module: custom-skin
+        action: list
+        sf_format: html
+        sort: recent
+        filters: ~
+        pagination: '1:1000'
+        localization: ~
+    requirements:
+        action: list
+        sf_format: $(formats:html)
+        filters: $(filters:with-banner)
+        sort: $(sort:recent)
+        pagination: $(pagination)
+        localization: $(localization)
+    options:
+        visibility: private
+        strict_optionals_order: false
+        type: list
+        model: DM_SkinCustomized
+        backends:
+            mysql: DM_Selector_Backend_Mysql_CustomSkins
+
+copyright_holder_list:
+    url: /:sf_format/:localization/copyright-holders(/:sort/:filters)/:pagination
+    param:
+        module: copyright-holder
+        action: list
+        sf_format: html
+        sort: alpha
+        filters: ~
+        pagination: '1:5000'
+        localization: ~
+    requirements:
+        action: list
+        sf_format: $(formats:html)
+        filters: $(filters:)
+        sort: $(sort:alpha)
+        pagination: $(pagination)
+        localization: $(localization)
+    options:
+        visibility: private
+        strict_optionals_order: false
+        type: list
+        model: DM_CopyrightHolder
+        backends:
+            mysql: DM_Selector_Backend_Mysql_CopyrightHolders
+
+skin_list:
+    url: /:sf_format/:localization/skins(/:sort/:filters/=type)/:pagination
+    param:
+        module: skin
+        action: list
+        sf_format: html
+        sort: alpha
+        filters: ~
+        pagination: '1:1000'
+        localization: ~
+        type: ~
+    requirements:
+        action: list
+        sf_format: $(formats:html)
+        filters: $(filters:)
+        sort: $(sort:alpha)
+        pagination: $(pagination)
+        localization: $(localization)
+        type: '(?:private|partner|public|user)'
+    options:
+        visibility: private
+        strict_optionals_order: false
+        type: list
+        model: DM_Skin
+        backends:
+            mysql: DM_Selector_Backend_Mysql_Skins
+
+user_disable_log_list:
+    url: /:sf_format/:localization/user-disable-logs(/:sort/:filters/=user)/:pagination
+    param:
+        module: user-disable-log
+        action: list
+        sf_format: html
+        sort: recent
+        filters: ~
+        pagination: '1:1000'
+        localization: ~
+        user: ~
+    requirements:
+        action: list
+        sf_format: $(formats:html)
+        filters: $(filters:)
+        sort: $(sort:recent)
+        pagination: $(pagination)
+        localization: $(localization)
+        user: $(user)
+    options:
+        visibility: private
+        strict_optionals_order: false
+        type: list
+        model: DM_UserDisableLog
+        backends:
+            mysql: DM_Selector_Backend_Mysql_UserDisableLogs
+
+video_item_user_compat:
+    class: DM_UserCompatRoute
+    url: /:sf_format/:user/=video
+    param:
+        sf_format: ~
+    requirements:
+        sf_format: $(formats:html|rss)
+        user: $(user)
+        video: $(video)
+    options:
+        strict_optionals_order: false
+        rewrite: true
+        goto: video_item
+
+subtitle_list:
+    url: /:sf_format/subtitles/video/:video(/=language)/:pagination
+    param:
+        module: subtitle
+        action: list
+        sf_format: json
+        pagination: '1:10'
+        video: ~
+        language: ~
+    requirements:
+        action: list
+        sf_format: $(formats:rss|atom|json|xml)
+        pagination: $(pagination)
+        video: $(video)
+        language: $(language_code)
+    options:
+        visibility: private
+        strict_optionals_order: false
+        type: list
+        model: DM_VideoSubtitle
+        backends:
+            mysql: DM_Selector_Backend_PHP_Subtitles
+
+# Gaming : games.dailymotion.com
+
+game_list:
+    url: /games/=sort/(:filters/)=search/:pagination
+    params:
+        module: game
+        action: list
+        pagination: '1:20'
+        sort: audience
+        search: ~
+        filters: ~
+    requirements:
+        pagination: $(pagination)
+        search: $(search)
+        filters: $(filters:|with-audience|suggest)
+        sort: $(sort:audience|alphaaz|alphaza)
+    options:
+        type: list
+        model: DM_Game
+        strict_optionals_order: false
+        backends:
+            mysql: DM_Selector_Backend_Mysql_Games
+            es: DM_Selector_Backend_ES_Games
+
+# VERY LOW TRAFFIC ROUTES
+
+alert_pix:
+    url: /alert/:action/:alert_name/:user_id/:email/:date/pix.gif
+    param:
+        script: alert_pix.php
+        module: alert
+    requirements:
+        user_id: '[0-9]+'
+        action: '(o|c)'
+        email: '[a-zA-Z0-9._%+-]+'
+        date: '[a-zA-Z0-9._%+-]+'
+        alert_name: '[a-zA-Z0-9._%+-]+'
+    options:
+        handle_404: false
+        extra_parameters_as_query_string: true
+
+notification_unsubscribe:
+    url: /notification/unsubscribe/:alert/:user/:key
+    param:
+        controller: Page_NotificationController
+    requirements:
+        alert: $(alert)
+        user: $(user)
+        key: '[a-zA-Z0-9%%]+'
+    options:
+        handle_404: false
+        extra_parameters_as_query_string: true
+
+ams_user:
+    url: /ams/user/:user
+    param:
+        page: Html_Ams_Dashboard
+        module: ams
+    requirements:
+        user: $(user)
+
+pixelle_preview:
+    url: /pixellepreview/:type
+    param:
+        controller: Page_PixellePreviewController
+    options:
+        extra_parameters_as_query_string: true
+
+autocomplete_list_channel:
+    url: /json/complete_channel/:search
+    param:
+        script: autocomplete_channel.json.php
+    requirements:
+        search: $(search)
+    options:
+        strict_optionals_order: false
+
+botify_auth:
+    url: /botify-GDhGEmu3A8iwCMeX99i4fy0xQgMidUYs.html
+    param:
+        script: botify-GDhGEmu3A8iwCMeX99i4fy0xQgMidUYs.html.php
+
+comment:
+    url: /comment/:comment
+    requirements:
+        comment: $(comment)
+
+comment_item:
+    url: /comment/:comment
+    params:
+        module: comment
+        action: index
+    requirements:
+        comment: $(comment)
+
+comment_spam_list:
+    url: /:sf_format/:localization/comment-spam(/:sort/=user/=video/=reporter/=type/=text)/:pagination
+    param:
+        module: comment-spam
+        action: list
+        sf_format: html
+        sort: recent
+        pagination: '1:30'
+        localization: ~
+        user: ~
+        video: ~
+        reporter: ~
+        type: ~
+        text: ~
+    requirements:
+        action: list
+        sf_format: $(formats:html|rss|atom|widget|json|xml)
+        sort: $(sort:recent|old)
+        pagination: $(pagination)
+        localization: $(localization)
+        user: $(user)
+        video: $(video)
+        reporter: $(user)
+        type: '(manual|akismet)'
+    options:
+        visibility: private
+        strict_optionals_order: false
+        type: list
+        model: DM_CommentSpam
+        backends:
+            mysql: DM_Selector_Backend_Mysql_CommentsSpam
+
+contact_management:
+    url: /friends/:user/:pagination
+    param:
+        module: contacts
+        action: list
+        sf_format: html
+        sort: recent
+        pagination: '1:10'
+        controller: Page_SubscriptionsController
+    requirements:
+        pagination: $(pagination)
+        user: $(user)
+    options:
+        strict_optionals_order: false
+        extra_parameters_as_query_string: true
+        type: list
+        model: DM_User
+        backends:
+            mysql: DM_Selector_Backend_Mysql_Contacts
+
+contact_invite:
+    url: /contact/invite
+    param:
+        module: relation
+        action: invite
+
+contact_import:
+    url: /contact/import/:action_parameter
+    param:
+        script: relation/import.php
+        module: relation
+        action: import
+        action_parameter: ~
+
+openvod:
+    url: /:localization/openvod
+    param:
+        controller: Page_OpenvodController
+        module: content
+        localization: ~
+    requirements:
+        localization: $(localization)
+    options:
+        strict_optionals_order: false
+
+curator:
+    url: /curator/:user
+    requirements:
+        curator: $(user)
+
+empty_sequence:
+    url: /sequence/empty
+    param:
+        module: video
+        action: index
+        sf_format: sequence
+        type: empty
+        video: ~
+
+export_insights:
+    url: /insights/export
+    param:
+        script: insight_download.php
+    options:
+        extra_parameters_as_query_string: true
+
+hubmovies_item:
+    url: /movies/:hub
+    param:
+        controller: Page_HubMoviesController
+    requirements:
+        hub: $(hub)
+
+history_management:
+    url: /history/manage/:action/:video
+    param:
+        module: history
+        script: history/manage.php
+        video: ~
+    requirements:
+        action: (?:add|edit|delete|delete_all)
+        video: $(video)
+
+jukebox_videos:
+    url: /json/jukebox_videos
+    param:
+        script: list/video.jukebox.json.php
+    options:
+        extra_parameters_as_query_string: true
+
+playlist_reorder:
+    url: /playlist/reorder/:playlist/:pagination
+    param:
+        controller: Page_PlaylistReorderController
+        module: playlist
+        action: reorder
+        playlist: ~
+        pagination: 1
+    requirements:
+        playlist: $(playlist)
+        pagination: $(pagination)
+
+premium_subscriptions:
+    url: /premium_subscriptions/:subscriber/:pagination
+    param:
+        module: user
+        action: list
+        pagination: '1:10'
+    requirements:
+        action: list
+        pagination: $(pagination)
+        subscriber: $(user)
+    options:
+        visibility: private
+        type: list
+        model: DM_User
+        backends:
+            php: DM_Selector_Backend_PHP_Users
+
+settings_email_change:
+    url: /settings/personalinfo/email_change/:hash
+    param:
+        page: Html_User_Email
+        module: user
+
+strongtag_list:
+    url: /:localization/strong_tags(/:status/=tag_freebase_id/=video)/:pagination
+    param:
+        action: list
+        status: 'validated'
+        tag_freebase_id: ~
+        pagination: '1:20'
+        video: ~
+        localization: ~
+    requirements:
+        status: '(?:pending|blacklisted|validated|validated-auto)'
+        tag_freebase_id: '[0-9]+'
+        pagination: $(pagination)
+        video: $(video)
+        localization: $(localization)
+    options:
+        visibility: public
+        strict_optionals_order: false
+        type: list
+        model: DM_StrongTags_Freebase
+        backends:
+            mysql: DM_Selector_Backend_Mysql_StrongTags
+strong_tags:
+    url: /:localization/strong_tags(/:status/=tag_freebase_id/=video)/:pagination
+    param:
+        action: list
+        status: 'validated'
+        tag_freebase_id: ~
+        pagination: '1:20'
+        video: ~
+        localization: ~
+    requirements:
+        status: '(?:pending|blacklisted|validated|validated-auto)'
+        tag_freebase_id: '[0-9]+'
+        pagination: $(pagination)
+        video: $(video)
+        localization: $(localization)
+    options:
+        visibility: public
+        strict_optionals_order: false
+        type: list
+        model: DM_StrongTags_Freebase
+        backends:
+            mysql: DM_Selector_Backend_Mysql_StrongTags
+
+topics_list:
+    url: /:localization/topics/:pagination
+    param:
+        action: list
+        tag_freebase_id: ~
+        pagination: '1:20'
+        localization: ~
+    requirements:
+        tag_freebase_id: '[0-9]+'
+        pagination: $(pagination)
+        localization: $(localization)
+    options:
+        visibility: private
+        strict_optionals_order: false
+        type: list
+        model: DM_StrongTags_Freebase
+        backends:
+            es: DM_Selector_Backend_ES_Topics
+
+stag_metadatas:
+    url: /stag/metas/:stag
+    params:
+        stag: ~
+        script: stag_metas.php
+    requirements:
+        stag: '[^/]+'
+
+strong_tags_search:
+    url: /stag/search/:word
+    param:
+        word: '[^/.]+'
+        script: strongtags.search.php
+
+subscription_activate_link:
+    url: /subscription/activate/:user_unlogged_id/:provider_id/:hash
+    param:
+        script: subscription_activate.php
+    requirements:
+        provider_id: '[0-9]+'
+        user_unlogged_id: '[0-9]+'
+        hash: '[a-zA-Z0-9._%+-]+'
+
+unote_item:
+    url: /unote/:unote
+    params:
+        module: unote
+        action: index
+    requirements:
+        unote: $(unote)
+
+unsuscribe_ligue1:
+  url: /ligue1/unsubscribe
+  param:
+      module: ligue1
+      script: ligue1_unsubscribe.php
+
+user_action:
+    url: /user/:action/:user
+    param:
+        module: relation
+    requirements:
+        action: (?:block|unblock)
+        user: $(user)
+
+vast:
+    url: /vast/video/:id.xml
+    params:
+        script: video.vast.php
+        action: index
+        sf_format: xml
+    requirements:
+        id: '[a-zA-Z0-9_-]+'
+    options:
+        extra_parameters_as_query_string: true
+        handle_403: false
+        handle_404: false
+
+video_actions:
+    url: /video/:action/:video
+    param:
+        module: video
+        sf_format: html
+    requirements:
+        action: (?:delete|share|optional)
+        video: $(video)
+
+video_annotation:
+    url: /json/video_annotation
+    param:
+        script: video/annotation.json.php
+    options:
+        extra_parameters_as_query_string: true
+
+# STANDARD ADMIN ROUTES
+
+admin_abuse:
+    url: /admin/abuse
+    param:
+        controller: Page_Admin_Abuse
+
+admin_consoles:
+    url: /admin/consoles
+    param:
+        controller: Page_Admin_Consoles
+
+admin_visuals:
+    url: /admin/visuals(/:filters)
+    param:
+        controller: Page_Admin_VisualsController
+        module: visuals
+        filters: preview
+    requirements:
+        filters: '(?:preview|cover|avatar)'
+    options:
+        strict_optionals_order: false
+
+admin_sexy_channels:
+    url: /admin/sexychannels
+    param:
+        controller: Page_Admin_ChannelsController
+        module: sexychannels
+        filters: sexy
+
+admin_user_disable_request:
+    url: /admin/userverification(/:sort/:filters)
+    param:
+        controller: Page_Admin_ChannelsController
+        module: userdisablerequest
+        sort: recent
+        filters: not-sexy
+    requirements:
+        sort: '(?:recent)'
+        filters: '(?:pending|accepted|refused|moderation|explicit|noadfit|not-sexy)'
+    options:
+        strict_optionals_order: false
+
+admin_massremove:
+    url: /admin/massremove
+    param:
+        controller: Page_Admin_MassRemoveController
+        module: admin
+
+admin_massdisabler:
+    url: /admin/massdisabler
+    param:
+        controller: Page_Admin_MassDisablerController
+        module: admin
+
+admin_purgecontent:
+    url: /admin/purgecontent
+    param:
+        controller: Page_Admin_PurgeContentController
+        module: admin
+
+admin_moderation_history:
+    url: /admin/moderation/history
+    param:
+        page: Html_Admin_ModerationHistory
+        module: admin
+    options:
+        extra_parameters_as_query_string: true
+
+admin_home_feature:
+    url: /admin/homefeature/:language(/=video/=channel/=user/=pagination)
+    param:
+        language: ~
+        video: ~
+        channel: ~
+        user: ~
+        pagination: ~
+        controller: Page_Admin_HomeFeature
+    requirements:
+        language: ~
+        video: $(video)
+        channel: $(channel)
+        user: $(user)
+        pagination: $(pagination)
+    options:
+        strict_optionals_order: false
+
+admin_skin_feature:
+    url: /admin/skinfeature/:language(/:sort/=skin/=channel/=user/=begin-before/=begin-after/=end-before/=end-after/=pagination)
+    param:
+        language: ~
+        sort: ~
+        skin: ~
+        channel: ~
+        user: ~
+        begin-before: ~
+        begin-after: ~
+        end-before: ~
+        end-after: ~
+        pagination: ~
+        controller: Page_Admin_SkinFeature
+    requirements:
+        language: '(all|en|ar|be|br|ca|dk|de|es|gr|fr|in|ie|it|mx|nl|at|pl|pt|ru|ro|ch|se|tr|gb|us|jp|kr|cn|tw|ca-fr|ca-en|ch-fr|ch-de|ch-it|be-fr|be-nl|zw|au|ma|es-ca|tn|vn|aa-ar|id|pk)'
+        sort: $(sort:recent|startdesc|startasc|enddesc|endasc)
+        skin: $(skin)
+        channel: $(channel)
+        user: $(user)
+        begin-before: ~
+        begin-after: ~
+        end-before: ~
+        end-after: ~
+        pagination: $(pagination)
+    options:
+        strict_optionals_order: false
+
+abuse_entry_event_list:
+    url: /:sf_format/:localization/abuse-entry-events(/:sort/:filters/=abuse-entry/=user)/:pagination
+    param:
+        module: abuse-entry-event
+        action: list
+        sf_format: html
+        sort: recent
+        filters: ~
+        pagination: '1:100'
+        localization: ~
+        abuse-entry: ~
+        user: ~
+    requirements:
+        action: list
+        sf_format: $(formats:html)
+        filters: $(filters:)
+        sort: $(sort:recent)
+        pagination: $(pagination)
+        localization: $(localization)
+        abuse-entry: $(abuse-entry)
+        user: $(user)
+    options:
+        visibility: private
+        strict_optionals_order: false
+        type: list
+        model: DM_AbuseEntryEvent
+        backends:
+            mysql: DM_Selector_Backend_Mysql_AbuseEntryEvents
+
+abuse_entry_report_list:
+    url: /:sf_format/:localization/abuse-entry-reports(/:sort/:filters/=abuse-entry/=user/=video/=type)/:pagination
+    param:
+        module: abuse-entry-report
+        action: list
+        sf_format: html
+        sort: recent
+        filters: ~
+        pagination: '1:100'
+        localization: ~
+        abuse-entry: ~
+        user: ~
+        video: ~
+        type: ~
+    requirements:
+        action: list
+        sf_format: $(formats:html)
+        filters: $(filters:noempty)
+        sort: $(sort:recent)
+        pagination: $(pagination)
+        localization: $(localization)
+        abuse-entry: $(abuse-entry)
+        user: $(user)
+        video: $(video)
+    options:
+        visibility: private
+        strict_optionals_order: false
+        type: list
+        model: DM_AbuseEntryReport
+        backends:
+            mysql: DM_Selector_Backend_Mysql_AbuseEntryReports
+
+admin_crowdflower:
+    url: /admin/crowdflower
+    param:
+        controller: Page_Admin_Crowdflower
+
+admin_humble_moderation:
+    url: /admin/humble/moderation
+    param:
+        controller: Page_Admin_Humble_ModerationController
+
+admin_akismet_stats:
+    url: /admin/akismet/stats/:type
+    param:
+        controller: Page_Admin_AkismetStatsController
+        type: comments
+    requirements:
+        type: '(?:comments|descriptions)'
+
+admin_asynctask:
+    url: /admin/asynctask(/:type)
+    param:
+        controller: Page_Admin_AsyncTaskController
+        module: admin
+        type: 'current'
+    requirements:
+        type: (current|history|test)
+    options:
+        strict_optionals_order: false
+        extra_parameters_as_query_string: true
+
+admin_badwords:
+    url: /admin/words/:action
+    param:
+        module: admin
+        action: video_explicit_tag
+        page: Html_Admin_BadWords
+    requirements:
+        action: (?:video_explicit_tag|explicit_partial_word|explicit_full_word|noadfit|never_ads|never_ads_copyright|seo_blacklist)
+
+admin_console_stats:
+    url: /admin/console/:action/:year/:month/:day/:hour
+    param:
+        page: Html_Admin_ConsoleStats
+        module: admin
+        action: stats
+        year: ~
+        month: ~
+        day: ~
+        hour: ~
+    requirements:
+        action: stats
+        year: (?:[0-9]{4})
+        month: (?:[0-9]{1,2})
+        day: (?:[0-9]{1,2})
+        hour: (?:[0-9]{1,2})
+
+admin_encoder_status:
+    url: /admin/encoder_status
+    param:
+        module: admin
+        page: Html_Admin_Encoding
+        action: status
+
+admin_encoder_tail:
+    url: /admin/encoder_tail
+    param:
+        module: admin
+        page: Html_Admin_Encoding
+        status_type: all
+        action: tail
+
+admin_gatekeeper:
+    url: /admin/gatekeeper
+    param:
+        controller: Page_Admin_GatekeeperController
+        module: admin
+
+admin_gatekeeper_segments:
+    url: /admin/gatekeeper/segments
+    param:
+        controller: Page_Admin_GatekeeperSegmentsController
+        module: admin
+
+
+# seriously?
+csv_dmrss_howto:
+    url: /admin/injectorv2/:action
+    param:
+        action: ~
+        controller: Page_InjectorController
+        module: injector
+    requirements:
+        action: '(howto|csv_dmrss|validation|create_injector|check|checking|why|errors)'
+    options:
+        strict_optionals_order: false
+
+admin_insights:
+    url: /admin/insights
+    param:
+        controller: Page_Admin_InsightsController
+        module: admin
+
+admin_log:
+    url: /admin/admin_log(/=user/=video)
+    param:
+        user: ~
+        video: ~
+        controller: Page_Admin_AdminLogController
+        module: admin
+    requirements:
+        user: $(user)
+        video: $(video)
+    options:
+        strict_optionals_order: false
+
+admin_metaheader:
+    url: /admin/metaheader/:country_code
+    param:
+        controller: Page_Admin_MetaHeaderController
+        country_code: fr
+        module: admin
+
+admin_newsletter:
+    url: /:localization/admin/newsletter
+    param:
+        controller: Page_Admin_NewsletterController
+        module: admin
+        localization: ~
+    requirements:
+        localization: $(localization)
+
+admin_poster:
+    url: /admin/poster
+    param:
+        script: admin/poster.php
+    options:
+        extra_parameters_as_query_string: true
+
+admin_ranking:
+    url: /admin/ranking
+    param:
+        controller: Page_Admin_RankingController
+        module: admin
+
+admin_recording_v3:
+    url: /admin/records_v3(/=recorded-from)/:pagination
+    param:
+        controller: Page_Admin_RecordsController
+        module: admin
+        pagination: '1:10'
+        recorded-from: ~
+        filters: 'recorded-from all'
+        sort: 'recent'
+    requirements:
+        pagination: $(pagination)
+        recorded-from: $(video)
+    options:
+        strict_optionals_order: false
+        model: DM_Video
+        type: list
+        backends:
+            mysql: DM_Selector_Backend_Mysql_Videos
+
+admin_rights:
+    url: /admin/rights/:action/:user
+    param:
+        page: Html_Admin_Rights_Promote
+        module: admin
+        action: promote
+        user: ~
+    requirements:
+        user: $(user)
+        action: '(?:promote|manage|search|[a-z]+)'
+
+admin_search_highlight:
+    url: /admin/search_highlight/:pagination
+    param:
+        controller: Page_Admin_SearchHighlightController
+        pagination: '1:10'
+    requirements:
+        pagination: $(pagination)
+
+admin_strongtags:
+    url: /admin/strongtags/:pagination
+    param:
+        controller: Page_Admin_StrongtagsController
+        module: admin
+        pagination: '1:10'
+    requirements:
+        pagination: $(pagination)
+    options:
+        extra_parameters_as_query_string: true
+
+admin_skin:
+    url: /admin/skin/:skin_name
+    param:
+        controller: Page_Admin_Skin
+        module: admin
+        skin_name: ~
+
+admin_toolkit:
+    url: /admin/toolkit/:action/:sub_action
+    param:
+        controller: Page_Admin_ToolkitController
+        module: admin
+        action: components
+        sub_action: buttons
+
+admin_fonticon:
+    url: /admin/font-icons
+    param:
+        controller: Page_Admin_FonticonController
+        module: admin
+
+admin_topbuzz:
+    url: /admin/topbuzz
+    param:
+        page: Html_Admin_TopBuzz
+        module: admin
+    options:
+        extra_parameters_as_query_string: true
+
+admin_topcomm:
+    url: /admin/topcomm
+    param:
+        page: Html_Admin_TopComments
+        module: admin
+    options:
+        extra_parameters_as_query_string: true
+
+admin_topup:
+    url: /admin/topup
+    param:
+        page: Html_Admin_TopUploaders
+        module: admin
+    options:
+        extra_parameters_as_query_string: true
+
+admin_vast:
+    url: /admin/vast
+    param:
+        page: Html_Admin_Vast
+        module: admin
+    options:
+        extra_parameters_as_query_string: true
+
+admin_xgeoip:
+    url: /admin/xgeoip
+    param:
+        page: Html_Admin_XGeoIP
+        module: admin
+
+# LOW-TRAFFIC ADMIN ROUTES
+
+admin_alert_tracking:
+    url: /admin/alert_tracking
+    param:
+        module: admin
+        page: Html_Admin_AlertTracking
+        action: view
+    options:
+        extra_parameters_as_query_string: true
+
+admin_banip:
+    url: /admin/banip
+    param:
+        module: admin
+        page: Html_Admin_BanIp
+
+admin_comment:
+    url: /admin/comments
+    param:
+        controller: Page_Admin_CommentsController
+        module: admin
+
+admin_comments:
+    url: /:lang/admin/comments/:pagination
+    param:
+        controller: Page_Admin_CommentsController
+        pagination: ~
+        lang: ~
+        module: admin
+    requirements:
+        pagination: $(pagination)
+    options:
+        strict_optionals_order: false
+
+admin_checksum:
+    url: /admin/checksum
+    param:
+        module: admin
+        page: Html_Admin_Checksum
+
+admin_cookies:
+    url: /admin/cookies
+    param:
+        controller: Page_Admin_CookiesController
+        module: admin
+    options:
+        strict_optionals_order: false
+
+admin_description:
+    url: /admin/descriptions
+    param:
+        controller: Page_Admin_DescriptionsController
+        module: admin
+
+admin_descriptions:
+    url: /:lang/admin/descriptions/:pagination
+    param:
+        controller: Page_Admin_DescriptionsController
+        pagination: ~
+        lang: ~
+        module: admin
+    requirements:
+        pagination: $(pagination)
+    options:
+        strict_optionals_order: false
+
+admin_email_viewer:
+    url: /admin/emailviewer
+    param:
+        controller: Page_Admin_EmailViewerController
+    options:
+        extra_parameters_as_query_string: true
+
+admin_framenewsletter:
+    url: /admin/frame_newsletter
+    param:
+        module: admin
+        script: admin/newsletter.php
+
+hub_create:
+    url: /admin/hub/create
+    param:
+        module: hub
+        action: create
+        page: Html_Admin_Hub
+
+hub_admin:
+    url: /admin/=hub
+    param:
+        module: hub
+        action: edit
+        page: Html_Admin_Hub
+    requirements:
+        hub: $(hub)
+
+admin_insights:
+    url: /admin/insights
+    param:
+        controller: Page_Admin_InsightsController
+        module: admin
+
+admin_newsletter_old:
+    url: /admin/newsletter
+    param:
+        module: admin
+        script: admin/redirect-newsletter.php
+
+admin_playerrules:
+    url: /admin/playerv4rules
+    param:
+        page: Html_Admin_PlayerV4Rules
+        module: admin
+
+admin_playerskin:
+    url: /admin/playerskin
+    param:
+        controller: Page_Admin_PlayerSkinController
+        module: admin
+
+admin_users_ad_filter:
+    url: /admin/usersadfilter/:role/:pagination
+    param:
+        module: admin
+        action: list
+        controller: Page_UsersAdFilterController
+        pagination: '1:50'
+        role: ~
+    requirements:
+        role: $(filters:noadfit|set-no-adfit|no-instream|force-instream|no-ad-capping|ads-on-live|contract|userbrand)
+    options:
+        strict_optionals_order: false
+        extra_parameters_as_query_string: true
+        type: list
+        model: DM_User
+        backends:
+           mysql: DM_Selector_Backend_Mysql_Users
+
+admin_player_rules:
+    url: /admin/player_rules/:context/=user/=video/=hub/:pagination
+    param:
+        module: admin
+        action: list
+        page: Html_Admin_PlayerV4Rules
+        pagination: '1:14'
+        context: ~
+        user: ~
+        video: ~
+        hub: ~
+    requirements:
+        context: '(?:internal|external)'
+        user: $(user)
+        video: $(video)
+        hub: $(hub)
+    options:
+        strict_optionals_order: false
+        type: list
+        model: DM_PlayerRules
+        backends:
+            mysql: DM_Selector_Backend_Mysql_PlayerRules
+
+admin_player_rules_listing:
+    url: /admin/player_rules_listing/:context/=user/=video/=hub/:pagination
+    param:
+        module: admin
+        action: list
+        page: Html_Admin_PlayerRulesListing
+        pagination: '1:20'
+        context: ~
+        user: ~
+        video: ~
+        hub: ~
+    requirements:
+        context: '(?:internal|external)'
+        user: $(user)
+        video: $(video)
+        hub: $(hub)
+    options:
+        strict_optionals_order: false
+        type: list
+        model: DM_PlayerRules
+        backends:
+            mysql: DM_Selector_Backend_Mysql_PlayerRules
+
+admin_player_rule:
+    url: /admin/player_rule/:player_rule
+    param:
+       module: admin
+       player_rule: ~
+    requirements:
+       player_rule: $(player_rule)
+
+admin_users_ad_filter:
+    url: /admin/usersadfilter/:role/:pagination
+    param:
+        module: admin
+        action: list
+        controller: Page_UsersAdFilterController
+        pagination: '1:50'
+        role: ~
+    requirements:
+        role: $(filters:noadfit|set-no-adfit|no-instream|force-instream|no-ad-capping|ads-on-live|contract|userbrand)
+    options:
+        strict_optionals_order: false
+        extra_parameters_as_query_string: true
+        type: list
+        model: DM_User
+        backends:
+           mysql: DM_Selector_Backend_Mysql_Users
+
+admin_roles:
+    url: /admin/roles
+    param:
+        module: admin
+        page: Html_Admin_Roles
+
+admin_static_stats:
+    url: /admin/statics
+    param:
+        controller: Page_Admin_StaticsController
+    options:
+        strict_optionals_order: false
+        extra_parameters_as_query_string: true
+
+admin_stream:
+    url: /admin/stream
+    param:
+        module: admin
+        page: Html_Admin_Stream
+
+admin_urlshortener:
+    url: /admin/urlshortener/(=hash/):pagination
+    param:
+        controller: Page_Admin_UrlShortenerController
+        sort: recent
+        pagination: '1:10'
+        hash: ~
+    requirements:
+        pagination: $(pagination)
+        hash: '(?:[A-Za-z0-9_-]+)'
+    options:
+        strict_optionals_order: false
+        extra_parameters_as_query_string: true
+        model: DM_ShortUrl
+        type: list
+        backends:
+            mysql: DM_Selector_Backend_Mysql_ShortsUrl
+
+admin_watchlist:
+    url: /admin/watchlist/:pagination
+    param:
+        module: admin
+        page: Html_Admin_Watchlist
+        pagination: ~
+    options:
+        extra_parameters_as_query_string: true
+
+admin_tests_output:
+    url: /admin/tests(/:tab)
+    param:
+        controller: Page_Admin_TestsController
+        tab: ~
+    options:
+        strict_optionals_order: false
+
+admin_watchlist_list:
+    url: /:sf_format/:localization/admin-watchlist(/:sort/:filters)/:pagination
+    param:
+        module: admin
+        action: list
+        sf_format: html
+        sort: alpha
+        filters: ~
+        pagination: '1:1000'
+        localization: ~
+    requirements:
+        action: list
+        sf_format: $(formats:html)
+        filters: $(filters:)
+        sort: $(sort:recent|alpha)
+        pagination: $(pagination)
+        localization: $(localization)
+    options:
+        visibility: private
+        strict_optionals_order: false
+        type: list
+        model: DM_AdminWatchlist
+        backends:
+            mysql: DM_Selector_Backend_Mysql_AdminWatchlist
+
+download: #only for admins
+    url: /download/:video
+    param:
+        script: download.php
+        module: download
+    requirements:
+        video: $(video)
+
+gatekeeper_history_list:
+    url: /gatekeeper-history/:label/:pagination
+    param:
+        module: gatekeeper-history
+        action: list
+        sort: recent
+        pagination: '1:30'
+        label: ~
+    requirements:
+        action: list
+        sort: $(sort:recent|old)
+        pagination: $(pagination)
+        label: ~
+    options:
+        visibility: private
+        strict_optionals_order: false
+        type: list
+        model: DM_GateKeeperHistory
+        backends:
+            mysql: DM_Selector_Backend_Mysql_GateKeepers
+
+so_monitoring:
+    url: /admin/somonitoring
+    param:
+        action: ~
+        controller: Page_Admin_SOMonitoringController
+    options:
+        strict_optionals_order: false
+
+admin_player_issues:
+    url: /admin/player/issues
+    param:
+        action: ~
+        controller: Page_Admin_Player_IssuesController
+    options:
+        extra_parameters_as_query_string: true
+
+# ADMIN CATCH-ALL
+admin:
+    url: /admin/:action
+    param:
+        module: admin
+    options:
+        extra_parameters_as_query_string: true
+
+# redirect to the channel route
+channel_home_redirect:
+    url: /:sf_format/:localization/category/:channel(/:filters)
+    param:
+        script: channel_redirect.php
+        sf_format: html
+        sort: recent
+        pagination: '1:14'
+        localization: ~
+        filters: featured
+    requirements:
+        sf_format: html
+        filters: $(filters:featured)
+        channel: $(channel)
+        localization: $(localization)
+    options:
+        visibility: public
+        strict_optionals_order: false
+
+encoder_action:
+    url: /encoder/:action/:task_id
+    param:
+        module: encoder
+    requirements:
+        action: (?:status|store|error|ina/dispatch)
+        task_id: '[0-9]+'
+    options:
+        handle_404: false
+
+encoder_next:
+    url: /encoder/next
+    param:
+        module: encoder
+        action: next
+    options:
+        handle_404: false
+
+encoder_stored:
+    url: /encoder/stored/:task_id/:filer_id
+    param:
+        module: encoder
+        action: stored
+    requirements:
+        task_id: '[0-9]+'
+        filer_id: '[0-9]+'
+    options:
+        handle_404: false
+
+jobs:
+    url: /:country/jobs/:type/:published
+    param:
+        script: jobs_redirect.php
+        module: jobs
+        country: ~
+        type: ~
+        published: ~
+    requirements:
+        country: $(country_code)
+        type: '(internship|job)'
+        published: '(unpublished|published)'
+    options:
+        visibility: public
+        strict_optionals_order: false
+        extra_parameters_as_query_string: true
+
+massuploader_download:
+  url: /massuploader/:filename
+  param:
+      module: massuplodaer
+      action: get
+      script: massuploader.php
+  requirements:
+      filename: '[a-zA-Z0-9._%+-]+\.air'
+
+webapp_ads_mopub:
+    url: /webapp/ads-mopub
+    param:
+        script: webapp_ads_mopub.php
+
+pushdevice_list:
+    url: /:sf_format/devices/=user/:pagination
+    param:
+        module: device
+        action: list
+        sf_format: html
+        sort: recent
+        pagination: '1:10'
+        user: ~
+    requirements:
+        action: list
+        sf_format: $(formats:json)
+        pagination: $(pagination)
+        user: $(user)
+    options:
+        type: list
+        model: DM_Push_Device
+        backends:
+            mysql: DM_Selector_Backend_Mysql_PushDevices
+
+pushsubscription_list:
+    url: /:sf_format/pushsubscription(/=user/=device/=event)/:pagination
+    param:
+        module: pushsubscription
+        action: list
+        sf_format: html
+        sort: recent
+        pagination: '1:10'
+        user: ~
+        device: ~
+        event: ~
+    requirements:
+        action: list
+        sf_format: $(formats:json)
+        pagination: $(pagination)
+        user: $(user)
+        device: $(device)
+        event: $(event)
+    options:
+        type: list
+        model: DM_Push_Subscription
+        strict_optionals_order: false
+        backends:
+            mysql: DM_Selector_Backend_Mysql_PushSubscriptions
+
+# Catch-all 404 route, this must be the last
+notfound:
+    url: /*
+    param:
+        script: 404.php
+        vs_pagename: not_found
