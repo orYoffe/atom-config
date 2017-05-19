@@ -75,7 +75,7 @@ export function getESLintFromDirectory(modulesDir, config, projectPath) {
   const { path: ESLintDirectory } = findESLintDirectory(modulesDir, config, projectPath)
   try {
     // eslint-disable-next-line import/no-dynamic-require
-    return require(Path.join(ESLintDirectory, 'lib', 'cli.js'))
+    return require(ESLintDirectory)
   } catch (e) {
     if (config.useGlobalEslint && e.code === 'MODULE_NOT_FOUND') {
       throw new Error(
@@ -83,7 +83,7 @@ export function getESLintFromDirectory(modulesDir, config, projectPath) {
       )
     }
     // eslint-disable-next-line import/no-dynamic-require
-    return require(Path.join(Cache.ESLINT_LOCAL_PATH, 'lib', 'cli.js'))
+    return require(Cache.ESLINT_LOCAL_PATH)
   }
 }
 
@@ -104,16 +104,21 @@ export function getESLintInstance(fileDir, config, projectPath) {
 export function getConfigPath(fileDir) {
   const configFile =
     findCached(fileDir, [
-      '.eslintrc.js', '.eslintrc.yaml', '.eslintrc.yml', '.eslintrc.json', '.eslintrc'
+      '.eslintrc.js', '.eslintrc.yaml', '.eslintrc.yml', '.eslintrc.json', '.eslintrc', 'package.json'
     ])
   if (configFile) {
+    if (Path.basename(configFile) === 'package.json') {
+      // eslint-disable-next-line import/no-dynamic-require
+      if (require(configFile).eslintConfig) {
+        return configFile
+      }
+      // If we are here, we found a package.json without an eslint config
+      // in a dir without any other eslint config files
+      // (because 'package.json' is last in the call to findCached)
+      // So, keep looking from the parent directory
+      return getConfigPath(Path.resolve(Path.dirname(configFile), '..'))
+    }
     return configFile
-  }
-
-  const packagePath = findCached(fileDir, 'package.json')
-  // eslint-disable-next-line import/no-dynamic-require
-  if (packagePath && Boolean(require(packagePath).eslintConfig)) {
-    return packagePath
   }
   return null
 }
@@ -130,24 +135,16 @@ export function getRelativePath(fileDir, filePath, config) {
   return Path.basename(filePath)
 }
 
-export function getArgv(type, config, rules, filePath, fileDir, givenConfigPath) {
-  let configPath
-  if (givenConfigPath === null) {
-    configPath = config.eslintrcPath || null
-  } else configPath = givenConfigPath
-
-  const argv = [
-    process.execPath,
-    'a-b-c' // dummy value for eslint executable
-  ]
-  if (type === 'lint') {
-    argv.push('--stdin')
+export function getCLIEngineOptions(type, config, rules, filePath, fileDir, givenConfigPath) {
+  const cliEngineConfig = {
+    rules,
+    ignore: !config.disableEslintIgnore,
+    fix: type === 'fix'
   }
-  argv.push('--format', Path.join(__dirname, 'reporter.js'))
 
   const ignoreFile = config.disableEslintIgnore ? null : findCached(fileDir, '.eslintignore')
   if (ignoreFile) {
-    argv.push('--ignore-path', ignoreFile)
+    cliEngineConfig.ignorePath = ignoreFile
   }
 
   if (config.eslintRulesDir) {
@@ -155,23 +152,15 @@ export function getArgv(type, config, rules, filePath, fileDir, givenConfigPath)
     if (!Path.isAbsolute(rulesDir)) {
       rulesDir = findCached(fileDir, rulesDir)
     }
-    argv.push('--rulesdir', rulesDir)
-  }
-  if (configPath) {
-    argv.push('--config', resolveEnv(configPath))
-  }
-  if (rules && Object.keys(rules).length > 0) {
-    argv.push('--rule', JSON.stringify(rules))
-  }
-  if (config.disableEslintIgnore) {
-    argv.push('--no-ignore')
-  }
-  if (type === 'lint') {
-    argv.push('--stdin-filename', filePath)
-  } else if (type === 'fix') {
-    argv.push(filePath)
-    argv.push('--fix')
+    if (rulesDir) {
+      cliEngineConfig.rulePaths = [rulesDir]
+    }
   }
 
-  return argv
+  if (givenConfigPath === null && config.eslintrcPath) {
+    // If we didn't find a configuration use the fallback from the settings
+    cliEngineConfig.configFile = resolveEnv(config.eslintrcPath)
+  }
+
+  return cliEngineConfig
 }

@@ -1,33 +1,22 @@
 { CompositeDisposable } = require 'atom'
-{ EventEmitter2 } = require 'eventemitter2'
-d = (require 'debug/browser') 'refactor:watcher'
+d = (require './debug') 'refactor:watcher'
 
 module.exports =
-class Watcher extends EventEmitter2
+class Watcher
 
   constructor: (@moduleManager, @editor) ->
-    super()
     @disposables = new CompositeDisposable
-    @disposables.add @editor.onDidDestroy @onDestroyed
     @disposables.add @editor.onDidStopChanging @onBufferChanged
     @disposables.add @editor.onDidChangeCursorPosition @onCursorMoved
     @disposables.add @moduleManager.onActivated @verifyGrammar
     @verifyGrammar()
 
   dispose: =>
-    @removeAllListeners()
     @deactivate()
-
     @disposables.dispose()
-    delete @moduleManager
-    delete @editor
-    delete @module
-
-  onDestroyed: =>
-    d 'onDestroyed'
-    return unless @eventDestroyed
-    @emit 'destroyed', @
-
+    @moduleManager = null
+    @editor = null
+    @module = null
 
   ###
   Grammar valification process
@@ -53,7 +42,6 @@ class Watcher extends EventEmitter2
 
     # Start listening
     @eventCursorMoved = on
-    @eventDestroyed = on
     @eventBufferChanged = on
 
     d 'activate and parse'
@@ -61,25 +49,23 @@ class Watcher extends EventEmitter2
 
   deactivate: ->
     d 'deactivate'
+
+    if @ripper?
+      @ripper.dispose?()
+      @ripper = null
+
     # Stop listening
     @cursorMoved = false
 
     @eventCursorMoved = off
-    @eventDestroyed = off
     @eventBufferChanged = off
-    clearTimeout @bufferChangedTimeoutId
     clearTimeout @cursorMovedTimeoutId
 
-    # Destruct instances
-    @ripper?.destruct()
-
     # Remove references
-    delete @bufferChangedTimeoutId
-    delete @cursorMovedTimeoutId
-    delete @module
-    delete @ripper
-    delete @renamingCursor
-    delete @renamingMarkers
+    @cursorMovedTimeoutId = null
+    @module = null
+    @renamingCursor = null
+    @renamingMarkers = null
 
 
   ###
@@ -120,7 +106,7 @@ class Watcher extends EventEmitter2
     return unless @errorMarkers?
     for marker in @errorMarkers
       marker.destroy()
-    delete @errorMarkers
+    @errorMarkers = null
 
   createErrors: (errors) =>
     d 'create errors'
@@ -205,7 +191,6 @@ class Watcher extends EventEmitter2
       @editor.addSelectionForBufferRange marker.getBufferRange()
 
     # Start renaming life cycle.
-    @eventCursorMoved = off
     @eventCursorMoved = 'abort'
 
     # Returns true not to abort keyboard binding.
@@ -295,16 +280,3 @@ class Watcher extends EventEmitter2
 
   isActive: ->
     @module? and atom.workspace.getActivePaneItem() is @editor
-
-  # Range to pixel based start and end range for each row.
-  rangeToRows: ({ start, end }) ->
-    for raw in [start.row..end.row] by 1
-      rowRange = @editor.buffer.rangeForRow raw
-      point =
-        left : if raw is start.row then start else rowRange.start
-        right: if raw is end.row then end else rowRange.end
-      pixel =
-        tl: @editorView.pixelPositionForBufferPosition point.left
-        br: @editorView.pixelPositionForBufferPosition point.right
-      pixel.br.top += @editorView.lineHeight
-      pixel

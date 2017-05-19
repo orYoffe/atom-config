@@ -1,188 +1,196 @@
 PinnedTabsState = require './pinned-tabs-state'
 {CompositeDisposable} = require 'atom'
 
+ABOUT_URI = 'About'
+CONFIG_URI = 'atom://config'
+
 module.exports = PinnedTabs =
-    config:
-        animated:
-            title: 'Disable animations'
-            description: 'Tick this to disable all animation related to Pinned Tabs'
-            default: false
-            type: 'boolean'
-        closeUnpinned:
-            title: 'Disable the \'Close Unpinned Tabs\' option'
-            description: 'Tick this to hide the \'Close Unpinned Tabs\' from the context menu'
-            default: true
-            type: 'boolean'
-        modified:
-            title: 'Disable the modified icon on pinned tabs'
-            description: 'Tick this to disable the modified icon when hovering over pinned tabs'
-            default: false
-            type: 'boolean'
-
-    PinnedTabsState: undefined
-
-
-    activate: (state) ->
-        @observers()
-        @prepareConfig()
-        @setCommands()
-
-        # Recover the serialized session or start a new serializable state.
-        @PinnedTabsState =
-            if state.deserializer == 'PinnedTabsState'
-                atom.deserializers.deserialize state
-            else
-                new PinnedTabsState { }
-
-        if @PinnedTabsState.__reset == undefined
-            @PinnedTabsState.__reset = true
-            @PinnedTabsState.data = []
-
-        # Restore the serialized session.
-        # This timeout ensures that the DOM elements can be edited.
-        setTimeout (=>
-            tabbars = document.querySelectorAll '.tab-bar'
-            state = @PinnedTabsState.data
-
-            for tabbar in tabbars
-                for i in [0...tabbar.children.length]
-                    tab = tabbar.children[i]
-                    info = @getTabInformation tab
-
-                    if state.indexOf(info.itemId) >= 0
-                        tab.classList.add 'pinned'
-                    else if state.indexOf(info.itemURI) >= 0
-                        tab.classList.add 'pinned'
-            ), 1
-
-    serialize: ->
-        @PinnedTabsState.serialize()
-
-
-    # Register commands for this package.
-    setCommands: ->
-        @subscriptions = new CompositeDisposable
-        @subscriptions.add atom.commands.add 'atom-workspace', 'pinned-tabs:pin': => @pinActive()
-        @subscriptions.add atom.commands.add 'atom-workspace', 'pinned-tabs:pin-selected': => @pinSelected()
-        @subscriptions.add atom.commands.add 'atom-workspace', 'pinned-tabs:close-unpinned': => @closeUnpinned()
-
-    # Observer panes
-    observers: ->
-        # Move new tabs after pinned tabs
-        atom.workspace.onDidAddPaneItem (e) =>
-            setTimeout (=>
-                tabs = e.pane.items
-                pinnedCounter = 0
-                for i in [0..(tabs.length - 1)]
-                    if @PinnedTabsState.data.indexOf(tabs[i].id) >= 0
-                        pinnedCounter += 1
-
-                if e.index < pinnedCounter
-                    e.pane.moveItem(e.item, pinnedCounter)
-            ), 1
-
-        # Reduce the amount of pinned tabs when one is destoryed
-        atom.workspace.onWillDestroyPaneItem (e) =>
-            index = @PinnedTabsState.data.indexOf e.item.id
-            @PinnedTabsState.data.splice(index, 1) if index >= 0
-
-    setCommands: ->
-        @subscriptions = new CompositeDisposable
-        @subscriptions.add atom.commands.add 'atom-workspace', 'pinned-tabs:pin': => @pinActive()
-        @subscriptions.add atom.commands.add 'atom-workspace', 'pinned-tabs:pin-selected': => @pinSelected()
-        @subscriptions.add atom.commands.add 'atom-workspace', 'pinned-tabs:close-unpinned': => @closeUnpinnedTabs()
-
-
-	# Pin tabs
-    closeUnpinnedTabs: ->
-        activePane = document.querySelector '.pane.active'
-        tabbar = activePane.querySelector '.tab-bar'
-
-        activePane = atom.workspace.getActivePane()
-        tabs = tabbar.querySelectorAll '.tab'
-        for i in [(tabs.length - 1)..0]
-            if !tabs[i].classList.contains('pinned')
-                activePane.destroyItem activePane.itemAtIndex(i)
-
-    pinActive: ->
-        @pin document.querySelector('.tab-bar .tab.active')
-
-    pinSelected: ->
-        @pin atom.contextMenu.activeElement
-
-    pin: (e) ->
-        return unless info = @getTabInformation e
-
-        if info.tabIsPinned
-            index = @PinnedTabsState.data.indexOf info.itemId
-            @PinnedTabsState.data.splice(index, 1) if index >= 0
-            info.pane.moveItem(info.item, info.unpinIndex)
+  config:
+    animated:
+      _change: (enable) ->
+        body = document.querySelector 'body'
+        body.classList.toggle 'pinned-tabs-animated', enable
+      title: 'Enable animations'
+      description: 'Tick this to enable all animation related to pinned tabs'
+      default: true
+      type: 'boolean'
+    closeUnpinned:
+      _change: (enable) ->
+        body = document.querySelector 'body'
+        body.classList.toggle 'close-unpinned', enable
+      title: 'Enable the \'Close Unpinned Tabs\' option'
+      description: 'Tick this to show the \'Close Unpinned Tabs\' from the context menu'
+      default: false
+      type: 'boolean'
+    modified:
+      _change: (value) ->
+        body = document.querySelector 'body'
+        if value == 'dont'
+          body.classList.remove 'pinned-tabs-modified-always'
+          body.classList.remove 'pinned-tabs-modified-hover'
+        else if value == 'hover'
+          body.classList.remove 'pinned-tabs-modified-always'
+          body.classList.add 'pinned-tabs-modified-hover'
         else
-            @PinnedTabsState.data.push info.itemId
-            info.pane.moveItem(info.item, info.pinIndex)
+          body.classList.add 'pinned-tabs-modified-always'
+          body.classList.remove 'pinned-tabs-modified-hover'
+      title: 'Use an indicator for when a pinned tab has unsaved modifications'
+      default: 'always'
+      type: 'string'
+      enum: [
+        { value: 'dont', description: 'Don\'t use this feature' }
+        { value: 'hover', description: 'Only show this when I hover over the tab' }
+        { value: 'always', description: 'Always show this when a tab is modified' }
+      ]
+  state: new PinnedTabsState({ })
+  subscriptions: new CompositeDisposable()
 
-        setTimeout (-> e.classList.toggle 'pinned' ), 1
+  activate: (state) ->
+    @state = atom.deserializers.deserialize state if state.deserializer == 'PinnedTabsState'
 
-    getTabInformation: (e) ->
-        return if e == null
+    # Reset states from older versions
+    @state.data = { } if @state.data == undefined
+    for key, value of @state.data
+      @state.data[key] = [] if value != undefined && not Array.isArray value
 
-        tabbarNode = e.parentNode
-        paneNode = tabbarNode.parentNode
-        axisNode = paneNode.parentNode
+    # Initialize commands/config/etc.
+    @initCommands()
+    @initConfig()
+    @initObservers()
+    @initTabs()
 
-        pinIndex = tabbarNode.querySelectorAll('.pinned').length
-        tabbars = document.querySelectorAll('.tab-bar')
+  serialize: ->
+    @state.serialize()
 
-        tabIndex = Array.prototype.indexOf.call(tabbarNode.children, e)
-        tabbarIndex = Array.prototype.indexOf.call(tabbars, tabbarNode)
-        paneIndex = Array.prototype.indexOf.call(axisNode.children, paneNode)
+  # Initalization
+  initCommands: ->
+    atom.commands.add 'atom-workspace', 'pinned-tabs:pin-active', => @pinActive()
+    atom.commands.add 'atom-workspace', 'pinned-tabs:pin-selected', => @pinSelected()
+    atom.commands.add 'atom-workspace', 'pinned-tabs:close-unpinned', => @closeUnpinnedTabs()
 
-        pane = atom.workspace.getPanes()[paneIndex / 2]
-        item = pane.itemAtIndex(tabIndex)
+  initConfig: ->
+    atom.config.onDidChange 'pinned-tabs.animated', ({newValue}) =>
+      @config.animated._change newValue
+    @config.animated._change atom.config.get('pinned-tabs.animated')
 
-        itemId = item.id if item
-        itemURI = item.getURI() if item && item.getURI
+    atom.config.onDidChange 'pinned-tabs.closeUnpinned', ({newValue}) =>
+      @config.closeUnpinned._change newValue
+    @config.closeUnpinned._change atom.config.get('pinned-tabs.closeUnpinned')
 
-        return {
-            tabIndex: tabIndex,
-            tabbarIndex: tabbarIndex,
+    atom.config.onDidChange 'pinned-tabs.modified', ({newValue}) =>
+      @config.modified._change newValue
+    @config.modified._change atom.config.get('pinned-tabs.modified')
 
-            pinIndex: pinIndex,
-            unpinIndex: pinIndex - 1,
+  initObservers: ->
+    atom.workspace.onDidAddPaneItem ({index, item, pane}) =>
+      setTimeout =>
+        tab = document.querySelector '.tab-bar .tab.active'
+        pinnedTabs = tab.parentNode.querySelectorAll '.pinned'
+        if index < pinnedTabs.length
+          pane.moveItem item, pinnedTabs.length
+      , 1
 
-            item: item,
-            itemId: itemId || itemURI,
-            pane: pane,
+    atom.workspace.onDidDestroyPane ({pane}) =>
+      delete @state.data[pane.id] if @state.data[pane.id] != undefined
 
-            tabIsPinned: e.classList.contains 'pinned'
-        }
+    atom.workspace.onWillDestroyPaneItem ({item, pane}) =>
+      return if not Array.isArray @state.data[pane.id]
+      @state.data[pane.id] = @state.data[pane.id].filter (id) => id isnt @getItemID(item)
 
+  initTabs: ->
+    activePane = atom.workspace.getActivePane()
+    for pane in atom.workspace.getPanes()
+      continue if @state.data[pane.id] == undefined
 
-    # Configuration
-    prepareConfig: ->
-        animated = 'pinned-tabs.animated'
-        atom.config.onDidChange animated, ({newValue, oldValue}) =>
-            @animated newValue
-        @animated atom.config.get(animated)
+      for target in @state.data[pane.id]
+        for item in pane.getItems()
+          if target == @getItemID item
+            setTimeout (pane, item) =>
+              pane.activate()
+              paneNode = document.querySelector '.pane.active'
+              return if paneNode == null
 
-        closeUnpinned = 'pinned-tabs.closeUnpinned'
-        atom.config.onDidChange closeUnpinned, ({newValue, oldValue}) =>
-            @closeUnpinned newValue
-        @closeUnpinned atom.config.get(closeUnpinned)
+              if item.getTitle
+                title = paneNode.querySelector '.title[data-name="' + item.getTitle() + '"]'
+                tab = title.parentNode if title != null
+              if !tab && item.filePath
+                  title = paneNode.querySelector '.title[data-path="' + item.filePath.replace(/\\/g, '\\\\') + '"]'
+                  tab = title.parentNode if title != null
+              if item.element && item.element.classList.contains 'about'
+                tab = paneNode.querySelector '.tab[data-type="AboutView"]'
+              if item.element && item.element.classList.contains 'settings-view'
+                tab = paneNode.querySelector '.tab[data-type="SettingsView"]'
 
-        modified = 'pinned-tabs.modified'
-        atom.config.onDidChange modified, ({newValue, oldValue}) =>
-            @modified newValue
-        @modified atom.config.get(modified)
+              @pin item, tab if tab != undefined
+              activePane.activate() if activePane != undefined
+            , 1, pane, item
 
-    animated: (enable) ->
-        body = document.querySelector 'body'
-        body.classList.toggle 'pinned-tabs-animated', !enable
+  # Pin tabs
+  pinActive: ->
+    tab = document.querySelector '.tab.active'
+    item = atom.workspace.getActivePaneItem()
+    @pin item, tab if tab != null && item != null
 
-    closeUnpinned: (enable) ->
-        body = document.querySelector 'body'
-        body.classList.toggle 'close-unpinned', !enable
+  pinSelected: ->
+    tab = atom.contextMenu.activeElement
+    item = @getEditor tab
+    @pin item, tab if tab != null && item != null
 
-    modified: (enable) ->
-        body = document.querySelector 'body'
-        body.classList.toggle 'pinned-tabs-modified', !enable
+  pin: (item, tab) ->
+    return false if item == null || tab == null
+
+    pane = atom.workspace.paneForItem item
+    pinnedTabs = tab.parentNode.querySelectorAll '.pinned'
+    @state.data[pane.id] = [] if @state.data[pane.id] == undefined
+
+    if @isPinned tab
+      @state.data[pane.id] = @state.data[pane.id].filter (id) => id isnt @getItemID(item)
+      pane.moveItem item, pinnedTabs.length - 1
+      tab.classList.remove 'pinned'
+    else
+      @state.data[pane.id].push @getItemID(item) if not @state.data[pane.id].includes @getItemID(item)
+      pane.moveItem item, pinnedTabs.length
+      tab.classList.add 'pinned'
+
+      # Watch for filename changes and update the state accordingly
+      if item.onDidChangeTitle
+        oldId = @getItemID item
+        item.onDidChangeTitle =>
+            return if not @state.data[pane.id].includes oldId # Prevent tabs that are no longer pinned from being repinned
+            @state.data[pane.id] = @state.data[pane.id].filter (id) => id isnt oldId
+            @state.data[pane.id].push @getItemID(item) if not @state.data[pane.id].includes @getItemID(item)
+
+  # Misc
+  closeUnpinnedTabs: ->
+    activePane = document.querySelector '.pane.active'
+    tabbar = activePane.querySelector '.tab-bar'
+
+    activePane = atom.workspace.getActivePane()
+    tabs = tabbar.querySelectorAll '.tab'
+    for i in [tabs.length - 1..0]
+      if !tabs[i].classList.contains 'pinned'
+        activePane.destroyItem activePane.itemAtIndex i
+
+  getEditor: (tab) ->
+    return null if tab == null
+
+    tabbarNode = tab.parentNode
+    paneNode = tabbarNode.parentNode
+    axisNode = paneNode.parentNode
+
+    tabIndex = Array.prototype.indexOf.call tabbarNode.children, tab
+    paneIndex = Array.prototype.indexOf.call axisNode.children, paneNode
+
+    pane = atom.workspace.getPanes()[paneIndex / 2]
+    return pane.itemAtIndex tabIndex
+
+  getItemID: (item) ->
+    if item.getURI && item.getURI()
+      uri = item.getURI()
+      uri = 'markdown-preview://' + item.editorForId(item.editorId).getFileName() if uri.match(/markdown-preview:\/\//)
+      return uri
+    else if item.getTitle
+      return item.getTitle()
+
+  isPinned: (tab) ->
+    tab.classList.contains 'pinned'

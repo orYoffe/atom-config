@@ -18,7 +18,7 @@ const chalk = require("chalk"),
  * @returns {string} The original word with an s on the end if count is not one.
  */
 function pluralize(word, count) {
-    return (count === 1 ? word : word + "s");
+    return (count === 1 ? word : `${word}s`);
 }
 
 //------------------------------------------------------------------------------
@@ -28,32 +28,31 @@ function pluralize(word, count) {
 module.exports = function(results) {
 
     let output = "\n",
-        total = 0,
         errors = 0,
         warnings = 0,
         summaryColor = "yellow";
 
-    results.forEach(function(result) {
+    results.forEach(result => {
         const messages = result.messages;
 
         if (messages.length === 0) {
             return;
         }
 
-        total += messages.length;
-        output += chalk.underline(result.filePath) + "\n";
+        errors += result.errorCount;
+        warnings += result.warningCount;
 
-        output += table(
-            messages.map(function(message) {
+        output += `${chalk.underline(result.filePath)}\n`;
+
+        output += `${table(
+            messages.map(message => {
                 let messageType;
 
                 if (message.fatal || message.severity === 2) {
                     messageType = chalk.red("error");
                     summaryColor = "red";
-                    errors++;
                 } else {
                     messageType = chalk.yellow("warning");
-                    warnings++;
                 }
 
                 return [
@@ -71,12 +70,10 @@ module.exports = function(results) {
                     return chalk.stripColor(str).length;
                 }
             }
-        ).split("\n").map(function(el) {
-            return el.replace(/(\d+)\s+(\d+)/, function(m, p1, p2) {
-                return chalk.dim(p1 + ":" + p2);
-            });
-        }).join("\n") + "\n\n";
+        ).split("\n").map(el => el.replace(/(\d+)\s+(\d+)/, (m, p1, p2) => chalk.dim(`${p1}:${p2}`))).join("\n")}\n\n`;
     });
+
+    const total = errors + warnings;
 
     if (total > 0) {
         output += chalk[summaryColor].bold([

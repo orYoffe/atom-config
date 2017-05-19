@@ -5,7 +5,8 @@
       "auto-update-packages"
       "linter-htmlhint"
       "clipboard-history"
-      "file-icons"
+      "seti-icons"
+      "hyperclick"
     ]
     ignoredNames: [
       ".git"
@@ -23,7 +24,7 @@
       "monokai"
     ]
   editor:
-    fontSize: 11
+    fontSize: 13
     preferredLineLength: 140
     zoomFontWhenCtrlScrolling: true
   "exception-reporting":

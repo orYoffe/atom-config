@@ -5,6 +5,12 @@
 "use strict";
 
 //------------------------------------------------------------------------------
+// Requirements
+//------------------------------------------------------------------------------
+
+const astUtils = require("../ast-utils");
+
+//------------------------------------------------------------------------------
 // Rule Definition
 //------------------------------------------------------------------------------
 
@@ -58,9 +64,11 @@ module.exports = {
                 requireForBlockBody &&
                 node.params.length === 1 &&
                 node.params[0].type === "Identifier" &&
-                node.body.type !== "BlockStatement"
+                !node.params[0].typeAnnotation &&
+                node.body.type !== "BlockStatement" &&
+                !node.returnType
             ) {
-                if (token.type === "Punctuator" && token.value === "(") {
+                if (astUtils.isOpeningParenToken(token)) {
                     context.report({
                         node,
                         message: requireForBlockBodyMessage,
@@ -82,7 +90,7 @@ module.exports = {
                 requireForBlockBody &&
                 node.body.type === "BlockStatement"
             ) {
-                if (token.type !== "Punctuator" || token.value !== "(") {
+                if (!astUtils.isOpeningParenToken(token)) {
                     context.report({
                         node,
                         message: requireForBlockBodyNoParensMessage,
@@ -95,8 +103,13 @@ module.exports = {
             }
 
             // "as-needed": x => x
-            if (asNeeded && node.params.length === 1 && node.params[0].type === "Identifier") {
-                if (token.type === "Punctuator" && token.value === "(") {
+            if (asNeeded &&
+                node.params.length === 1 &&
+                node.params[0].type === "Identifier" &&
+                !node.params[0].typeAnnotation &&
+                !node.returnType
+            ) {
+                if (astUtils.isOpeningParenToken(token)) {
                     context.report({
                         node,
                         message: asNeededMessage,

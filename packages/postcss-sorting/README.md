@@ -4,7 +4,7 @@
 
 ![Screenshot](https://lysyi3m-pluto.s3.amazonaws.com/dropshare/Screen-Recording-2016-03-31-02-15-19.gif)
 
-Atom editor plugin to sort CSS rules content with specified order.
+Atom editor plugin to sort CSS rules content with specified order. The following syntaxes are currently supported: CSS, SASS/SCSS and PostCSS (aka SugarSS).
 
 ## Installation
 
@@ -19,13 +19,13 @@ You can select one of the bundled presets: _default_, _csscomb_, _yandex_ and _z
 
 If any of the following config files exist, they will override the selected preset. They are loaded in the following order of priority:
 
-1. `.postcss-sorting.json` at the root of your project
+1. `.postcss-sorting.json` or `postcss-sorting.json` at the root of your project
 
 2. A `"postcssSortingConfig": { ... }` object in your project `package.json`
 
 3. Custom `~/path/to/your/config.json` (if specified in package settings)
 
-4. `~/.postcss-sorting.json` (in your `HOME` directory)
+4. `~/.postcss-sorting.json` or `~/postcss-sorting.json` file in your `HOME` directory
 
 Files can be processed "On Save" (not enabled by default).
 

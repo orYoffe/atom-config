@@ -55,10 +55,30 @@ atom-workspace {
         margin-right: 5px !important;
         position: relative;
         vertical-align: middle;
+
+        .platform-win32 & {
+          top: 9px;
+        }
       }
 
       .title.icon:before {
         vertical-align: text-bottom;
+      }
+    }
+
+    // Sidebar
+    .entries.list-tree .file .icon::before {
+      .platform-win32 & {
+        top: 7px;
+      }
+    }
+
+    // Fuzzy Finder
+    .fuzzy-finder {
+      .icon::before {
+        .platform-win32 & {
+          top: 3px;
+        }
       }
     }
 
@@ -116,4 +136,49 @@ atom-workspace {
       }
     }
   }
+
+  // Spacegray Dark
+  &.theme-spacegray-dark-ui {
+    // Sidebar
+    .entries.list-tree .file .icon::before {
+      vertical-align: middle;
+      top: 0;
+    }
+
+    // Tab Bar
+    .tab-bar .tab {
+      margin-left: 28px;
+
+      .title::before {
+        font-size: 22px;
+        line-height: 9px;
+        margin-left: -26px;
+        margin-top: 10px;
+        position: absolute;
+      }
+    }
+  }
+}
+
+// One Dark, One Light with minimum tab sizing
+.one-dark-light-theme-minimum-tab-sizing() {
+  .tab-bar .tab .title {
+    &::before {
+      position: static;
+      margin-top: 0;
+      margin-left: 0;
+      display: inline-block;
+      vertical-align: middle;
+    }
+  }
+}
+
+@media (max-width: 1000px) {
+  [theme-one-dark-ui-tabsizing="auto"], [theme-one-light-ui-tabsizing="auto"] {
+    .one-dark-light-theme-minimum-tab-sizing();
+  }
+}
+
+[theme-one-dark-ui-tabsizing="minimum"], [theme-one-light-ui-tabsizing="minimum"] {
+  .one-dark-light-theme-minimum-tab-sizing();
 }

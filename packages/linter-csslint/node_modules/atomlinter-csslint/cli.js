@@ -439,15 +439,15 @@ cli({
 
     readFile: function(filename){
         if(path.basename(filename) === '-'){
-            var deferred = Promise.defer()
-            var data = []
-            process.stdin.on('data', function(chunk){
-                data.push(chunk.toString())
+            return new Promise(function(resolve, reject) {
+                var data = []
+                process.stdin.on('data', function(chunk){
+                    data.push(chunk.toString())
+                  })
+                process.stdin.on('end', function(){
+                    resolve(data.join(''))
+                })
             })
-            process.stdin.on('end', function(){
-                deferred.resolve(data.join(''))
-            })
-            return deferred.promise
         }
         try {
             return fs.readFileSync(filename, "utf-8");

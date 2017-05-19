@@ -1,7 +1,152 @@
+### 2.61.0
+  - Add support for CSS grid [linename] values.
+  - Fix 2.59.1
+  
+### 2.60.0
+  - Allow non-css snippets inside styled-componenets tags.
+
+### 2.59.1
+  - Fix Flow function arrow parameters when on same line as declaration. Issue #361
+
+### 2.59.0
+  - Add class implements support for flow.
+
+### 2.58.0
+  - Add new template syntax for Relay.
+
+### 2.57.7
+  - ASI grammar also missing terminators for default.
+
+### 2.57.6
+  - ASI grammar was missing terminators for break and case keywords. Issue #354
+
+### 2.57.5
+  - Fixing grammar in 2.57.4 [commit](https://github.com/gandm/language-babel/commit/6db89e3c13415a17382962fe1aa5064a271725c7) caused some themes to highlight non-constant shorthand object keys as constants.
+
+### 2.57.4
+  - Flow type definition not highlighting arrow operator. Fixes #351
+
+### 2.57.3
+  - Grammar incorrectly parsed object key expression containing array. Fixes #349
+
+### 2.57.2
+  - Bump depedency to Atom 1.15 to fix fs-plus now on v3 needing Node 6. (#343)
+  - PR #343 from AlexyRaspopov to support yield returning JSX expression.
+  - Remove grammar regex detecting certain comment types inside JSX. Fixes #345 .
+
+### 2.57.1
+  - Fix multiline arrow functions containing flow types. Issue #342
+
+### 2.57.0
+  - Add support for SVG attributes used as CSS properties inside styled-components. Issue #339
+  - Remove grammar 1000 character/line parsing restriction introduced in Atom 1.15 for this grammar. Issue #340
+
+### 2.56.2
+  - Allow tagged template grammar extension grammars to override object properties named template which are currently handled by language-mustache as no default Atom grammar exists for Angular.
+
+### 2.56.1
+  - Fix issue #337 closing backtick was assumed to be a escaped backtick if preceded by a escaped backslash
+
+### 2.56.0
+  - Allow autocomplete-plus to work inside styled-component css templates containing embedded JS. language-css stopped this from happening.
+
+### 2.55.6
+  - Add some missing scopes from JSDdoc parsing.
+
+### 2.55.5
+  - Scope Obj literal shorthand property keys with all uppercase as constants.
+
+### 2.55.4
+  - Wow! that was a bad release.
+
+### 2.55.3
+  - Read bracket-matcer config to determine how to complete backticks. Issue #330
+
+### 2.55.2
+  - Fix cases where lines following a flow polymorph were incorrectly indented. Fixes Issue #329
+
+### 2.55.1
+  - Fix insert newline/tab after starting back-tick. Issue #328
+
+### 2.55.0
+  - Improve support for JSDoc highlighting.
+  - The Atom bracket-matcher package doesn't auto-close back-ticks following a function tag. This package now provides that functionality. This allows a more sensitive use of auto-indent when a new line is placed between consecutive back-ticks.
+  - The package configuration schema is now inside package.json.
+
+### 2.54.1
+  - Fix incorrect generation of ttl grammars when using certain regex strings.
+
+### 2.54.0
+  - Add scope of meta.conmments.flowtype to flowtype comment style.
+  - Use Oniguruma to parse taggedTemplateGrammar regex - allows use of backtracking.
+
+### 2.53.0
+  - Changed the status bar indicator to use a name of `Babel` rather than `Babel ES6 JavaScript`. Now ES2016 and ES2017 are being released it seems more appropriate and succinct. `Babel ES6 JavaScript` is still the internal grammar name as shown on the list of grammars to ensure compatibility with packages that use this keyword. e.g. atom-beautify.
+
+### 2.52.2
+  - Change styled-components auto-complete property values to position cursor after closing semi-colon.
+  - Allow pseudo selectors to appear at top level of styled-components string without implicit parent. css `::pseudo-value`
+
+### 2.52.0
+  - Add support for auto-completing styled-components CSS.
+
+### 2.51.0
+  - Add support for the new flow shorthand for importing types in the same declaration that imports values: import {someValue, type someType, typeof someOtherValue} from 'foo'
+  - Remove meta scope and tidy decorator support in grammar - Issue #320
+
+### 2.50.1
+  - Change regex for detecting flow type casts. Fixes Issue #317
+
+### 2.50.0
+  - Add support for TC39 dynamic import 'function'.
+  - Add support for Relay to use graphql as a tagged template name.
+  - Stop any autoIndentJSX from working inside embedded template literals.
+
+### 2.49.4
+  - Add additional closing space after auto-commenting styled-components. Issue #303
+  - Fix incorrect scope names for methods/functions called witrh more than one object arg. Issue #299
+  - Add additional scope name for start/end braces of object literals. Issue #301
+
+### 2.49.3
+  - Fix #296 Closing backtick terminates styled-component css property.
+  - Fix #297 for...of and for...in loops with let|const|var property grammar parsing.
+  - Fix #291 Add support for autoindenting and terminating styled-component backtick.
+
+### 2.49.2
+  - Fix styled componenet nested wrappper function tags Fixes #294
+  - Fix handling unit types after interpolation closures. Fixes #295
+
+### 2.49.1
+  - Fix #290
+
+### 2.49.0 (Atom >=1.13)
+  - Add support for Atom 1.13
+
+### 2.48.5
+  - Fix #296 Closing backtick terminates styled-component css property.
+  - Fix #297 for...of and for...in loops with let|const|var property grammar parsing.
+  - Fix #291 Add support for autoindenting and terminating styled-component backtick.
+
+### 2.48.4
+  - Fix styled componenet nested wrappper function tags Fixes #294
+  - Fix handling unit types after interpolation closures. Fixes #295
+
+### 2.48.3
+  - Fix #290 styled components interpolation.
+
+### 2.48.2
+  - Add support for indentation of paren blocks inside JSX as well as allowing addition indents on some contraints.
+
+### 2.48.0 (Atom <=1.12)
+  - Cease package support.
+  - Remove auto indent option as default.
+  - Add indent/outdent for Atom jsx
+  - Add option to export type {name} from 'module'
+
 ### 2.47.0
   - Fix bad regression in arrow function detections that also impacted performance. [Fixes #281](https://github.com/gandm/language-babel/issues/281)
   - Change default autoIndentJSX to be on. See [PR #283](https://github.com/gandm/language-babel/issues/283)
-  
+
 ### 2.46.0
   - Minor grammar improvements/fixes. Issues #272, #273, #274, #275, #276, #277 and #278
   - Change keyword shortcut commenting in styled-components to return empty string in interpolations.

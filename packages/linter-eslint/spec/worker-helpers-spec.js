@@ -2,7 +2,8 @@
 
 import * as Path from 'path'
 import * as Helpers from '../lib/worker-helpers'
-import { getFixturesPath } from './common'
+
+const getFixturesPath = path => Path.join(__dirname, 'fixtures', path)
 
 describe('Worker Helpers', () => {
   describe('findESLintDirectory', () => {
@@ -139,6 +140,16 @@ describe('Worker Helpers', () => {
     it('finds .eslintrc.json', () => {
       const fileDir = getFixturesPath(Path.join('configs', 'json'))
       const expectedPath = Path.join(fileDir, '.eslintrc.json')
+      expect(Helpers.getConfigPath(fileDir)).toBe(expectedPath)
+    })
+    it('finds package.json with an eslintConfig property', () => {
+      const fileDir = getFixturesPath(Path.join('configs', 'package-json'))
+      const expectedPath = Path.join(fileDir, 'package.json')
+      expect(Helpers.getConfigPath(fileDir)).toBe(expectedPath)
+    })
+    it('ignores package.json with no eslintConfig property', () => {
+      const fileDir = getFixturesPath(Path.join('configs', 'package-json', 'nested'))
+      const expectedPath = getFixturesPath(Path.join('configs', 'package-json', 'package.json'))
       expect(Helpers.getConfigPath(fileDir)).toBe(expectedPath)
     })
   })

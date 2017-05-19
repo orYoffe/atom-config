@@ -11,7 +11,7 @@ exports.refreshModulesPath = refreshModulesPath;
 exports.getESLintInstance = getESLintInstance;
 exports.getConfigPath = getConfigPath;
 exports.getRelativePath = getRelativePath;
-exports.getArgv = getArgv;
+exports.getCLIEngineOptions = getCLIEngineOptions;
 
 var _path = require('path');
 
@@ -37,7 +37,7 @@ var _consistentPath2 = _interopRequireDefault(_consistentPath);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-var Cache = {
+const Cache = {
   ESLINT_LOCAL_PATH: _path2.default.normalize(_path2.default.join(__dirname, '..', 'node_modules', 'eslint')),
   NODE_PREFIX_PATH: null,
   LAST_MODULES_PATH: null
@@ -45,7 +45,7 @@ var Cache = {
 
 function getNodePrefixPath() {
   if (Cache.NODE_PREFIX_PATH === null) {
-    var npmCommand = process.platform === 'win32' ? 'npm.cmd' : 'npm';
+    const npmCommand = process.platform === 'win32' ? 'npm.cmd' : 'npm';
     try {
       Cache.NODE_PREFIX_PATH = _child_process2.default.spawnSync(npmCommand, ['get', 'prefix'], {
         env: Object.assign(Object.assign({}, process.env), { PATH: (0, _consistentPath2.default)() })
@@ -58,11 +58,11 @@ function getNodePrefixPath() {
 }
 
 function findESLintDirectory(modulesDir, config, projectPath) {
-  var eslintDir = null;
-  var locationType = null;
+  let eslintDir = null;
+  let locationType = null;
   if (config.useGlobalEslint) {
     locationType = 'global';
-    var prefixPath = config.globalNodePath || getNodePrefixPath();
+    const prefixPath = config.globalNodePath || getNodePrefixPath();
     if (process.platform === 'win32') {
       eslintDir = _path2.default.join(prefixPath, 'node_modules', 'eslint');
     } else {
@@ -99,17 +99,17 @@ function findESLintDirectory(modulesDir, config, projectPath) {
 function getESLintFromDirectory(modulesDir, config, projectPath) {
   var _findESLintDirectory = findESLintDirectory(modulesDir, config, projectPath);
 
-  var ESLintDirectory = _findESLintDirectory.path;
+  const ESLintDirectory = _findESLintDirectory.path;
 
   try {
     // eslint-disable-next-line import/no-dynamic-require
-    return require(_path2.default.join(ESLintDirectory, 'lib', 'cli.js'));
+    return require(ESLintDirectory);
   } catch (e) {
     if (config.useGlobalEslint && e.code === 'MODULE_NOT_FOUND') {
       throw new Error('ESLint not found, Please install or make sure Atom is getting $PATH correctly');
     }
     // eslint-disable-next-line import/no-dynamic-require
-    return require(_path2.default.join(Cache.ESLINT_LOCAL_PATH, 'lib', 'cli.js'));
+    return require(Cache.ESLINT_LOCAL_PATH);
   }
 }
 
@@ -122,30 +122,35 @@ function refreshModulesPath(modulesDir) {
 }
 
 function getESLintInstance(fileDir, config, projectPath) {
-  var modulesDir = _path2.default.dirname((0, _atomLinter.findCached)(fileDir, 'node_modules/eslint') || '');
+  const modulesDir = _path2.default.dirname((0, _atomLinter.findCached)(fileDir, 'node_modules/eslint') || '');
   refreshModulesPath(modulesDir);
   return getESLintFromDirectory(modulesDir, config, projectPath || '');
 }
 
 function getConfigPath(fileDir) {
-  var configFile = (0, _atomLinter.findCached)(fileDir, ['.eslintrc.js', '.eslintrc.yaml', '.eslintrc.yml', '.eslintrc.json', '.eslintrc']);
+  const configFile = (0, _atomLinter.findCached)(fileDir, ['.eslintrc.js', '.eslintrc.yaml', '.eslintrc.yml', '.eslintrc.json', '.eslintrc', 'package.json']);
   if (configFile) {
+    if (_path2.default.basename(configFile) === 'package.json') {
+      // eslint-disable-next-line import/no-dynamic-require
+      if (require(configFile).eslintConfig) {
+        return configFile;
+      }
+      // If we are here, we found a package.json without an eslint config
+      // in a dir without any other eslint config files
+      // (because 'package.json' is last in the call to findCached)
+      // So, keep looking from the parent directory
+      return getConfigPath(_path2.default.resolve(_path2.default.dirname(configFile), '..'));
+    }
     return configFile;
-  }
-
-  var packagePath = (0, _atomLinter.findCached)(fileDir, 'package.json');
-  // eslint-disable-next-line import/no-dynamic-require
-  if (packagePath && Boolean(require(packagePath).eslintConfig)) {
-    return packagePath;
   }
   return null;
 }
 
 function getRelativePath(fileDir, filePath, config) {
-  var ignoreFile = config.disableEslintIgnore ? null : (0, _atomLinter.findCached)(fileDir, '.eslintignore');
+  const ignoreFile = config.disableEslintIgnore ? null : (0, _atomLinter.findCached)(fileDir, '.eslintignore');
 
   if (ignoreFile) {
-    var ignoreDir = _path2.default.dirname(ignoreFile);
+    const ignoreDir = _path2.default.dirname(ignoreFile);
     process.chdir(ignoreDir);
     return _path2.default.relative(ignoreDir, filePath);
   }
@@ -153,46 +158,32 @@ function getRelativePath(fileDir, filePath, config) {
   return _path2.default.basename(filePath);
 }
 
-function getArgv(type, config, rules, filePath, fileDir, givenConfigPath) {
-  var configPath = void 0;
-  if (givenConfigPath === null) {
-    configPath = config.eslintrcPath || null;
-  } else configPath = givenConfigPath;
+function getCLIEngineOptions(type, config, rules, filePath, fileDir, givenConfigPath) {
+  const cliEngineConfig = {
+    rules,
+    ignore: !config.disableEslintIgnore,
+    fix: type === 'fix'
+  };
 
-  var argv = [process.execPath, 'a-b-c' // dummy value for eslint executable
-  ];
-  if (type === 'lint') {
-    argv.push('--stdin');
-  }
-  argv.push('--format', _path2.default.join(__dirname, 'reporter.js'));
-
-  var ignoreFile = config.disableEslintIgnore ? null : (0, _atomLinter.findCached)(fileDir, '.eslintignore');
+  const ignoreFile = config.disableEslintIgnore ? null : (0, _atomLinter.findCached)(fileDir, '.eslintignore');
   if (ignoreFile) {
-    argv.push('--ignore-path', ignoreFile);
+    cliEngineConfig.ignorePath = ignoreFile;
   }
 
   if (config.eslintRulesDir) {
-    var rulesDir = (0, _resolveEnv2.default)(config.eslintRulesDir);
+    let rulesDir = (0, _resolveEnv2.default)(config.eslintRulesDir);
     if (!_path2.default.isAbsolute(rulesDir)) {
       rulesDir = (0, _atomLinter.findCached)(fileDir, rulesDir);
     }
-    argv.push('--rulesdir', rulesDir);
-  }
-  if (configPath) {
-    argv.push('--config', (0, _resolveEnv2.default)(configPath));
-  }
-  if (rules && Object.keys(rules).length > 0) {
-    argv.push('--rule', JSON.stringify(rules));
-  }
-  if (config.disableEslintIgnore) {
-    argv.push('--no-ignore');
-  }
-  if (type === 'lint') {
-    argv.push('--stdin-filename', filePath);
-  } else if (type === 'fix') {
-    argv.push(filePath);
-    argv.push('--fix');
+    if (rulesDir) {
+      cliEngineConfig.rulePaths = [rulesDir];
+    }
   }
 
-  return argv;
+  if (givenConfigPath === null && config.eslintrcPath) {
+    // If we didn't find a configuration use the fallback from the settings
+    cliEngineConfig.configFile = (0, _resolveEnv2.default)(config.eslintrcPath);
+  }
+
+  return cliEngineConfig;
 }

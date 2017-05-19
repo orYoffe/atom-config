@@ -161,14 +161,14 @@
 //                                       ^                             punctuation.section.embedded.begin.jsx
 //                                        ^^ ^^                        meta.function.arrow.js
 //                                        ^                            punctuation.definition.parameters.begin.js
+//                                        ^^                 ^  ^      meta.brace.round.js
 //                                         ^                           punctuation.definition.parameters.end.js
 //                                           ^^                        storage.type.function.arrow.js
 //                                              ^^^^                   variable.language.this.js
 //                                                  ^                  keyword.operator.accessor.js
 //                                                   ^^^^^^^^^^^^      meta.method-call.with-arguments.js
 //                                                   ^^^^^^^^          entity.name.function.js
-//                                                           ^  ^      meta.brace.round.js
-//                                                            ^^       meta.brace.curly.js
+//                                                            ^^       meta.brace.curly.litobj.js
 //                                                               ^     punctuation.section.embedded.end.jsx
           <div class-Name= 'MyClass' key />
 //        ^^^^ ^^^^^^^^^^^ ^^^^^^^^^ ^^^ ^^  meta.tag.jsx
@@ -360,5 +360,3 @@
 //^^^^  meta.tag.jsx
 //   ^  punctuation.definition.tag.jsx
 //^^^   entity.name.tag.close.jsx
-
-// >> only:source.js.jsx

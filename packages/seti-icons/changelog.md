@@ -1,5 +1,28 @@
 ## Change Log
 
+### v1.4.3 (2017-03-12)
+
+- Fix alignment in tab bar on Windows for Material UI ([cf25937](https://github.com/wyze/atom-seti-icons/commit/cf25937))
+
+### v1.4.2 (2017-03-05)
+
+- Add override for Material UI (Windows) theme ([794862e](https://github.com/wyze/atom-seti-icons/commit/794862e)), closes [#56](https://github.com/wyze/atom-seti-icons/issues/56)
+- Quick cleanup ([bbf1e54](https://github.com/wyze/atom-seti-icons/commit/bbf1e54))
+
+### v1.4.1 (2017-03-02)
+
+- Fix alignment issues on Windows ([e293b75](https://github.com/wyze/atom-seti-icons/commit/e293b75)), closes [#54](https://github.com/wyze/atom-seti-icons/issues/54)
+
+### v1.4.0 (2017-03-01)
+
+- Add a few partials for case sensative files ([95522ae](https://github.com/wyze/atom-seti-icons/commit/95522ae))
+- Add issue_template.md ([ae9a3b5](https://github.com/wyze/atom-seti-icons/commit/ae9a3b5))
+- Add override for One Dark/Light Theme's minimally sized tabs (#51) ([a8b79e2](https://github.com/wyze/atom-seti-icons/commit/a8b79e2)), closes [#39](https://github.com/wyze/atom-seti-icons/issues/39)
+- Formatting some styles ([2a34e99](https://github.com/wyze/atom-seti-icons/commit/2a34e99))
+- Meta file updates ([62e5ce5](https://github.com/wyze/atom-seti-icons/commit/62e5ce5))
+- Spacegray Dark UI (#49) ([03ccc6c](https://github.com/wyze/atom-seti-icons/commit/03ccc6c)), closes [#47](https://github.com/wyze/atom-seti-icons/issues/47)
+- Update fonts, icons and file types from seti-ui version 1.6.1 (#53) ([7faf950](https://github.com/wyze/atom-seti-icons/commit/7faf950))
+
 ### v1.3.4 (2016-09-29)
 
 - Add override for nova-atom-ui ([d60335f](https://github.com/wyze/atom-seti-icons/commit/d60335f))

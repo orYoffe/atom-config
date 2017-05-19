@@ -1,5 +1,50 @@
 # Changelog
 
+## v8.1.7
+
+*   Let ESLint handle configuration where possible ([#896](https://github.com/AtomLinter/linter-eslint/pull/896))
+
+## v8.1.6
+
+*   Reduce package activation time ([#875](https://github.com/AtomLinter/linter-eslint/pull/875))
+*   Async-ify the specs ([#878](https://github.com/AtomLinter/linter-eslint/pull/878))
+*   Cancel pending idle callbacks on deactivate ([#880](https://github.com/AtomLinter/linter-eslint/pull/880))
+
+## v8.1.5
+
+*   Move to the `CLIEngine` API ([#873](https://github.com/AtomLinter/linter-eslint/pull/873))
+*   Attempt to restore cursor position after fixing ([#853](https://github.com/AtomLinter/linter-eslint/pull/853))
+
+## v8.1.4
+
+*   Improve package.json eslintConfig support ([#848](https://github.com/AtomLinter/linter-eslint/pull/848))
+
+## v8.1.3
+
+*   Log the file scope in debug command ([#835](https://github.com/AtomLinter/linter-eslint/pull/835))
+*   Don't specify rulesDir if not found ([#843](https://github.com/AtomLinter/linter-eslint/pull/843))
+*   Update specs for ESLint v3.17.0 ([#844](https://github.com/AtomLinter/linter-eslint/pull/844))
+
+## v8.1.2
+
+*   Update `atom-linter` bringing in a fix for #765 ([#817](https://github.com/AtomLinter/linter-eslint/pull/817))
+
+## v8.1.1
+
+*   Exclude `.babelrc` from releases ([#809](https://github.com/AtomLinter/linter-eslint/pull/809))
+*   Use cursor scope instead of file when checking fix-on-save ([#811](https://github.com/AtomLinter/linter-eslint/pull/811))
+*   Handle undefined package path ([#812](https://github.com/AtomLinter/linter-eslint/pull/812))
+*   Temporarily disable an intermittent spec ([#813](https://github.com/AtomLinter/linter-eslint/pull/813))
+*   Remove custom styling on rules ([#814](https://github.com/AtomLinter/linter-eslint/pull/814))
+
+## v8.1.0
+
+*   Handle invalid points gracefully ([#761](https://github.com/AtomLinter/linter-eslint/pull/761))
+*   Warn on partial fixes ([#777](https://github.com/AtomLinter/linter-eslint/pull/777))
+*   Ignore `~/.eslintrc` when determining `disableWhenNoEslintConfig` status ([#778](https://github.com/AtomLinter/linter-eslint/pull/778))
+*   Allow rules to be excluded from fix runs ([#795](https://github.com/AtomLinter/linter-eslint/pull/795))
+
+
 ## v8.0.0
 
 *   Update ESLint to v3.5.0 ([#692](https://github.com/AtomLinter/linter-eslint/pull/692))

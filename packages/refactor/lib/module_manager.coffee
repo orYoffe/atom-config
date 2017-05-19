@@ -7,21 +7,15 @@ isFunction = (func) -> (typeof func) is 'function'
 module.exports =
 class ModuleManager
 
-  modules: {}
-  version: '0.0.0'
-
   constructor: ->
     { @version } = require '../package.json'
+    @modules = {}
     @emitter = new Emitter
     #TODO update when package is enabled
-    # atom.config.on 'updated.core-disabledPackages', @update
-    # atom.workspace.on 'coffee-refactor-became-active', @update
     @update()
 
   dispose: ->
-    # atom.config.off 'updated.core-disabledPackages', @update
-    # atom.workspace.off 'coffee-refactor-became-active', @update
-    @modules = {}
+    @modules = null
     @emitter.dispose()
 
   onActivated: (callback) ->

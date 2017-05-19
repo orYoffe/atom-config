@@ -2,40 +2,40 @@
   "_args": [
     [
       {
-        "raw": "/private/var/folders/9f/ww0z6qpn3570l__fqn1h30wh0000gp/T/d-116912-2205-19alwqn/package.tgz",
+        "raw": "/private/var/folders/vr/hv5l80qs7ms61mdx6w_n4fv5g23cpd/T/d-117311-4095-q4v70s/package.tgz",
         "scope": null,
         "escapedName": null,
         "name": null,
-        "rawSpec": "/private/var/folders/9f/ww0z6qpn3570l__fqn1h30wh0000gp/T/d-116912-2205-19alwqn/package.tgz",
-        "spec": "/private/var/folders/9f/ww0z6qpn3570l__fqn1h30wh0000gp/T/d-116912-2205-19alwqn/package.tgz",
+        "rawSpec": "/private/var/folders/vr/hv5l80qs7ms61mdx6w_n4fv5g23cpd/T/d-117311-4095-q4v70s/package.tgz",
+        "spec": "/private/var/folders/vr/hv5l80qs7ms61mdx6w_n4fv5g23cpd/T/d-117311-4095-q4v70s/package.tgz",
         "type": "local"
       },
-      "/private/var/folders/9f/ww0z6qpn3570l__fqn1h30wh0000gp/T/apm-install-dir-116912-2205-fkoylm"
+      "/private/var/folders/vr/hv5l80qs7ms61mdx6w_n4fv5g23cpd/T/apm-install-dir-117311-4095-1tf7r1g"
     ]
   ],
-  "_from": "../d-116912-2205-19alwqn/package.tgz",
-  "_id": "refactor@0.10.0",
+  "_from": "../d-117311-4095-q4v70s/package.tgz",
+  "_id": "refactor@0.11.4",
   "_inCache": true,
   "_installable": true,
   "_location": "/refactor",
   "_phantomChildren": {},
   "_requested": {
-    "raw": "/private/var/folders/9f/ww0z6qpn3570l__fqn1h30wh0000gp/T/d-116912-2205-19alwqn/package.tgz",
+    "raw": "/private/var/folders/vr/hv5l80qs7ms61mdx6w_n4fv5g23cpd/T/d-117311-4095-q4v70s/package.tgz",
     "scope": null,
     "escapedName": null,
     "name": null,
-    "rawSpec": "/private/var/folders/9f/ww0z6qpn3570l__fqn1h30wh0000gp/T/d-116912-2205-19alwqn/package.tgz",
-    "spec": "/private/var/folders/9f/ww0z6qpn3570l__fqn1h30wh0000gp/T/d-116912-2205-19alwqn/package.tgz",
+    "rawSpec": "/private/var/folders/vr/hv5l80qs7ms61mdx6w_n4fv5g23cpd/T/d-117311-4095-q4v70s/package.tgz",
+    "spec": "/private/var/folders/vr/hv5l80qs7ms61mdx6w_n4fv5g23cpd/T/d-117311-4095-q4v70s/package.tgz",
     "type": "local"
   },
   "_requiredBy": [
     "#USER"
   ],
-  "_resolved": "file:../d-116912-2205-19alwqn/package.tgz",
-  "_shasum": "3bf2af073bee26b50f7de42fd1400f1b88ba1a2a",
+  "_resolved": "file:../d-117311-4095-q4v70s/package.tgz",
+  "_shasum": "5dbdf380a5f9fe0b6a9bb5fb12d3e83d65dca7be",
   "_shrinkwrap": null,
-  "_spec": "/private/var/folders/9f/ww0z6qpn3570l__fqn1h30wh0000gp/T/d-116912-2205-19alwqn/package.tgz",
-  "_where": "/private/var/folders/9f/ww0z6qpn3570l__fqn1h30wh0000gp/T/apm-install-dir-116912-2205-fkoylm",
+  "_spec": "/private/var/folders/vr/hv5l80qs7ms61mdx6w_n4fv5g23cpd/T/d-117311-4095-q4v70s/package.tgz",
+  "_where": "/private/var/folders/vr/hv5l80qs7ms61mdx6w_n4fv5g23cpd/T/apm-install-dir-117311-4095-1tf7r1g",
   "auther": {
     "name": "Daisuke Mino",
     "url": "http://dsk.mn"
@@ -52,8 +52,7 @@
   ],
   "dependencies": {
     "debug": "^2.0.0",
-    "eventemitter2": "^0.4.14",
-    "semver": "^2.3.1"
+    "semver": "^5.3.0"
   },
   "description": "Refactoring support",
   "devDependencies": {
@@ -78,5 +77,5 @@
   "scripts": {
     "test": "apm test"
   },
-  "version": "0.10.0"
+  "version": "0.11.4"
 }

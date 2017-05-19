@@ -1,7 +1,8 @@
 Context = require './Context'
 { parse } = require './parser'
 { Range } = require 'atom'
-d = (require 'debug/browser') 'ripper'
+{ locator } = require './util'
+d = (require './debug') 'js-refactor:ripper'
 
 module.exports =
 class Ripper
@@ -16,31 +17,11 @@ class Ripper
   ]
 
   parseOptions:
-    loc: true
-    range: true
-    tokens: true
-    tolerant: true
     sourceType: 'module'
+    allowImportExportEverywhere: true
     allowReturnOutsideFunction: true
-    plugins: [
-      'asyncFunctions'
-      'asyncGenerators'
-      'classConstructorCall'
-      'classProperties'
-      'decorators'
-      'doExpressions'
-      'exponentiationOperator'
-      'exportExtensions'
-      'flow'
-      'functionBind'
-      'functionSent'
-      'jsx'
-      'objectRestSpread'
-      'trailingFunctionCommas'
-    ]
-    # Other options which maybe useful
-    # ecmaVersion: Infinity
-    # allowHashBang: true
+    allowSuperOutsideMethod: true
+    plugins: ['*']
 
   constructor: ->
     @context = new Context
@@ -52,7 +33,7 @@ class Ripper
     try
       # d 'parse', code
       rLine = /.*(?:\r?\n|\n?\r)/g
-      @lines = (result[0].length while (result = rLine.exec code)?)
+      @locator = locator(code)
       @parseError = null
       @context.setCode code, @parseOptions
       callback() if callback
@@ -72,12 +53,9 @@ class Ripper
   find: ({ row, column }) ->
     return if @parseError?
     d 'find', row, column
-    pos = 0
-    while --row >= 0
-      pos += @lines[row]
-    pos += column
 
-    binding = @context.identify pos
+    loc = @locator row, column
+    binding = @context.identify loc
     return [] unless binding
 
     declRange =
@@ -94,8 +72,9 @@ class Ripper
 
     ranges = [declRange]
 
-    # filter undefined for ImportDefault
-    refPaths = binding.referencePaths.filter (p) -> p
+    refPaths = binding.referencePaths
+      .filter (p) => p  # filter undefined for ImportDefault
+      .filter (p) => !p.isExportDeclaration()  # filter exports
 
     ranges = ranges.concat refPaths.map (p) ->
       range = Ripper.locToRange p.node.loc

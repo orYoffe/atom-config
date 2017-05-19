@@ -1,9 +1,9 @@
-'use babel'
+'use strict'
 
 /*
   The following hack clears the require cache of all the paths to the minimap when this file is laoded. It should prevents errors of partial reloading after an update.
  */
-import path from 'path'
+const path = require('path')
 
 if (!atom.inSpecMode()) {
   Object.keys(require.cache).filter((p) => {
@@ -13,10 +13,10 @@ if (!atom.inSpecMode()) {
   })
 }
 
-import include from './decorators/include'
-import PluginManagement from './mixins/plugin-management'
+const include = require('./decorators/include')
+const PluginManagement = require('./mixins/plugin-management')
 
-let Emitter, CompositeDisposable, Minimap, MinimapElement, MinimapPluginGeneratorElement
+let Emitter, CompositeDisposable, Minimap, MinimapElement, MinimapPluginGeneratorElement, KiteWrapper
 
 /**
  * The `Minimap` package provides an eagle-eye view of text buffers.
@@ -24,8 +24,12 @@ let Emitter, CompositeDisposable, Minimap, MinimapElement, MinimapPluginGenerato
  * It also provides API for plugin packages that want to interact with the
  * minimap and be available to the user through the minimap settings.
  */
-@include(PluginManagement)
+
 class Main {
+  static initClass () {
+    include(this, PluginManagement)
+    return this
+  }
   /**
    * Used only at export time.
    *
@@ -382,19 +386,26 @@ class Main {
    */
   initSubscriptions () {
     this.subscriptions.add(atom.workspace.observeTextEditors((textEditor) => {
+      if (!KiteWrapper) { KiteWrapper = require('./kite-wrapper') }
       let minimap = this.minimapForEditor(textEditor)
       let minimapElement = atom.views.getView(minimap)
 
       this.emitter.emit('did-create-minimap', minimap)
-
       minimapElement.attach()
+
+      if (KiteWrapper.isLegible(textEditor) &&
+          !atom.config.get('minimap.disablePythonDocLinks')) {
+        KiteWrapper.handle(textEditor, minimapElement)
+      }
     }))
   }
 }
+
+Main.initClass()
 
 /**
  * The exposed instance of the `Main` class.
  *
  * @access private
  */
-export default new Main()
+module.exports = new Main()

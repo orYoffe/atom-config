@@ -8,7 +8,7 @@
 // Requirements
 //------------------------------------------------------------------------------
 
-const getPropertyName = require("../ast-utils").getStaticPropertyName;
+const astUtils = require("../ast-utils");
 
 //------------------------------------------------------------------------------
 // Rule Definition
@@ -22,7 +22,9 @@ module.exports = {
             recommended: false
         },
 
-        schema: []
+        schema: [],
+
+        fixable: "code"
     },
 
     create(context) {
@@ -39,7 +41,13 @@ module.exports = {
             context.report({
                 node: node.parent.parent,
                 message: "The function binding is unnecessary.",
-                loc: node.parent.property.loc.start
+                loc: node.parent.property.loc.start,
+                fix(fixer) {
+                    const firstTokenToRemove = context.getSourceCode()
+                        .getFirstTokenBetween(node.parent.object, node.parent.property, astUtils.isNotClosingParenToken);
+
+                    return fixer.removeRange([firstTokenToRemove.range[0], node.parent.parent.range[1]]);
+                }
             });
         }
 
@@ -64,7 +72,7 @@ module.exports = {
                 grandparent.arguments.length === 1 &&
                 parent.type === "MemberExpression" &&
                 parent.object === node &&
-                getPropertyName(parent) === "bind"
+                astUtils.getStaticPropertyName(parent) === "bind"
             );
         }
 

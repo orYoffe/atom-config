@@ -1,3 +1,9 @@
+## v0.10.0 on 2016-10-09
+
+* Thank @Alhadis to fix #16, #18 and #23
+* Use Atom Emitter/Disposable to refactor old code
+* Allow incremental update for future usage
+
 ## v0.9.2 on 2016-06-30
 
 * Add keymap example to README, and fix link to keymap.cson
