@@ -164,7 +164,7 @@ class Watcher
     #TODO Cursor::clearAutoScroll()
 
     # Register the triggered cursor.
-    @renamingCursor = cursor
+    @renamingCursor = cursor.getBufferPosition()
     # Select references.
     # Register the markers of the references' ranges.
     # Highlight these markers.
@@ -230,7 +230,7 @@ class Watcher
     @eventCursorMoved = off
 
     # Reset cursor's position to the triggerd cursor's position.
-    @editor.setCursorBufferPosition @renamingCursor.getBufferPosition()
+    @editor.setCursorBufferPosition @renamingCursor
     delete @renamingCursor
     # Remove all markers for renaming.
     for marker in @renamingMarkers

@@ -2,40 +2,39 @@
   "_args": [
     [
       {
-        "raw": "/private/var/folders/vr/hv5l80qs7ms61mdx6w_n4fv5g23cpd/T/d-117416-5966-1pk49nk.dc2yjsjor/package.tgz",
+        "raw": "/private/var/folders/vr/hv5l80qs7ms61mdx6w_n4fv5g23cpd/T/d-117527-17604-16wulcs.1bzmy4x6r/package.tgz",
         "scope": null,
         "escapedName": null,
         "name": null,
-        "rawSpec": "/private/var/folders/vr/hv5l80qs7ms61mdx6w_n4fv5g23cpd/T/d-117416-5966-1pk49nk.dc2yjsjor/package.tgz",
-        "spec": "/private/var/folders/vr/hv5l80qs7ms61mdx6w_n4fv5g23cpd/T/d-117416-5966-1pk49nk.dc2yjsjor/package.tgz",
+        "rawSpec": "/private/var/folders/vr/hv5l80qs7ms61mdx6w_n4fv5g23cpd/T/d-117527-17604-16wulcs.1bzmy4x6r/package.tgz",
+        "spec": "/private/var/folders/vr/hv5l80qs7ms61mdx6w_n4fv5g23cpd/T/d-117527-17604-16wulcs.1bzmy4x6r/package.tgz",
         "type": "local"
       },
-      "/private/var/folders/vr/hv5l80qs7ms61mdx6w_n4fv5g23cpd/T/apm-install-dir-117416-5966-1ri9zlk.5nxnp3z0k9"
+      "/private/var/folders/vr/hv5l80qs7ms61mdx6w_n4fv5g23cpd/T/apm-install-dir-117527-17604-wza98h.k5k7rv0a4i"
     ]
   ],
-  "_from": "../d-117416-5966-1pk49nk.dc2yjsjor/package.tgz",
-  "_id": "pinned-tabs@1.0.3",
+  "_from": "../d-117527-17604-16wulcs.1bzmy4x6r/package.tgz",
+  "_id": "pinned-tabs@1.2.0",
   "_inCache": true,
-  "_installable": true,
   "_location": "/pinned-tabs",
   "_phantomChildren": {},
   "_requested": {
-    "raw": "/private/var/folders/vr/hv5l80qs7ms61mdx6w_n4fv5g23cpd/T/d-117416-5966-1pk49nk.dc2yjsjor/package.tgz",
+    "raw": "/private/var/folders/vr/hv5l80qs7ms61mdx6w_n4fv5g23cpd/T/d-117527-17604-16wulcs.1bzmy4x6r/package.tgz",
     "scope": null,
     "escapedName": null,
     "name": null,
-    "rawSpec": "/private/var/folders/vr/hv5l80qs7ms61mdx6w_n4fv5g23cpd/T/d-117416-5966-1pk49nk.dc2yjsjor/package.tgz",
-    "spec": "/private/var/folders/vr/hv5l80qs7ms61mdx6w_n4fv5g23cpd/T/d-117416-5966-1pk49nk.dc2yjsjor/package.tgz",
+    "rawSpec": "/private/var/folders/vr/hv5l80qs7ms61mdx6w_n4fv5g23cpd/T/d-117527-17604-16wulcs.1bzmy4x6r/package.tgz",
+    "spec": "/private/var/folders/vr/hv5l80qs7ms61mdx6w_n4fv5g23cpd/T/d-117527-17604-16wulcs.1bzmy4x6r/package.tgz",
     "type": "local"
   },
   "_requiredBy": [
     "#USER"
   ],
-  "_resolved": "file:../d-117416-5966-1pk49nk.dc2yjsjor/package.tgz",
-  "_shasum": "54d2c5cae85740b39cd97043d870c44f4f35ad7d",
+  "_resolved": "file:../d-117527-17604-16wulcs.1bzmy4x6r/package.tgz",
+  "_shasum": "3e18aa3fafb15260af7239068746fb8d0c023f0c",
   "_shrinkwrap": null,
-  "_spec": "/private/var/folders/vr/hv5l80qs7ms61mdx6w_n4fv5g23cpd/T/d-117416-5966-1pk49nk.dc2yjsjor/package.tgz",
-  "_where": "/private/var/folders/vr/hv5l80qs7ms61mdx6w_n4fv5g23cpd/T/apm-install-dir-117416-5966-1ri9zlk.5nxnp3z0k9",
+  "_spec": "/private/var/folders/vr/hv5l80qs7ms61mdx6w_n4fv5g23cpd/T/d-117527-17604-16wulcs.1bzmy4x6r/package.tgz",
+  "_where": "/private/var/folders/vr/hv5l80qs7ms61mdx6w_n4fv5g23cpd/T/apm-install-dir-117527-17604-wza98h.k5k7rv0a4i",
   "bugs": {
     "url": "https://github.com/ericcornelissen/pinned-tabs-for-atom/issues"
   },
@@ -61,5 +60,19 @@
     "type": "git",
     "url": "git+https://github.com/ericcornelissen/pinned-tabs-for-atom.git"
   },
-  "version": "1.0.3"
+  "version": "1.2.0",
+  "_atomModuleCache": {
+    "version": 1,
+    "dependencies": [],
+    "extensions": {
+      ".coffee": [
+        "lib/pinned-tabs-state.coffee",
+        "lib/pinned-tabs.coffee"
+      ],
+      ".json": [
+        "package.json"
+      ]
+    },
+    "folders": []
+  }
 }

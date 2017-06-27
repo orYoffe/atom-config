@@ -26,10 +26,13 @@
   editor:
     fontSize: 13
     preferredLineLength: 140
+    softWrap: true
     zoomFontWhenCtrlScrolling: true
   "exception-reporting":
     userId: "b43cee21-9f0c-8d81-ffc4-adce37402810"
   "file-icons": {}
+  "linter-ui-default":
+    panelHeight: 81
   "postcss-sorting":
     checkForConfigFile: true
     shouldUpdateOnSave: true

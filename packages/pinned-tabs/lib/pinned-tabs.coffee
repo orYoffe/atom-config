@@ -106,9 +106,11 @@ module.exports = PinnedTabs =
         for item in pane.getItems()
           if target == @getItemID item
             setTimeout (pane, item) =>
-              pane.activate()
-              paneNode = document.querySelector '.pane.active'
-              return if paneNode == null
+              paneNode = pane.element
+              if paneNode == undefined
+                pane.activate()
+                paneNode = document.querySelector '.pane.active'
+                return if paneNode == null
 
               if item.getTitle
                 title = paneNode.querySelector '.title[data-name="' + item.getTitle() + '"]'
@@ -127,7 +129,7 @@ module.exports = PinnedTabs =
 
   # Pin tabs
   pinActive: ->
-    tab = document.querySelector '.tab.active'
+    tab = document.querySelector '.tab.active:not([data-type="TreeView"])'
     item = atom.workspace.getActivePaneItem()
     @pin item, tab if tab != null && item != null
 
@@ -174,15 +176,21 @@ module.exports = PinnedTabs =
   getEditor: (tab) ->
     return null if tab == null
 
-    tabbarNode = tab.parentNode
-    paneNode = tabbarNode.parentNode
-    axisNode = paneNode.parentNode
+    target = null
+    atom.workspace.getPanes().forEach (pane) =>
+      return if target != null
+      pane.items.forEach (item) =>
+        return if target != null
+        if item.filePath
+          target = item if tab.querySelector '.title[data-path="' + item.filePath.replace(/\\/g, '\\\\') + '"]'
+        if item.getTitle
+          target = item if tab.querySelector '.title[data-name="' + item.getTitle() + '"]'
+        if item.element && item.element.classList.contains 'about'
+          target = item if tab.getAttribute('data-type') == 'AboutView'
+        if item.element && item.element.classList.contains 'settings-view'
+          target = item if tab.getAttribute('data-type') == 'SettingsView'
 
-    tabIndex = Array.prototype.indexOf.call tabbarNode.children, tab
-    paneIndex = Array.prototype.indexOf.call axisNode.children, paneNode
-
-    pane = atom.workspace.getPanes()[paneIndex / 2]
-    return pane.itemAtIndex tabIndex
+    return target
 
   getItemID: (item) ->
     if item.getURI && item.getURI()

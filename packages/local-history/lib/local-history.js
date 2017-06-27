@@ -16,23 +16,45 @@ module.exports = {
     // 256 KB
     fileSizeLimit: {
       type: 'integer',
-      default: 262144
+      default: 262144,
+      description: 'Size max in byte. The files heavier than the defined size will not be saved.'
     },
 
     // in days
     daysLimit: {
       type: 'integer',
-      default: 30
+      default: 30,
+      description: 'Days retention limit by original files. '
+        + 'The oldest revision files are deleted when purging (local-history:purge)'
+    },
+
+    // enable automatic purge
+    autoPurge: {
+      type: 'boolean',
+      default: false,
+      title: 'Automatic purge',
+      description: 'Enable or Disable the automatic purge. Triggered, max 1 time per day.'
     },
 
     historyStoragePath: {
       type: 'string',
-      default: utils.getLocalHistoryPath()
+      default: utils.getLocalHistoryPath(),
+      title: 'History storage path.',
+      description: 'Path where the revision files are stored.',
     },
 
     difftoolCommand: {
       type: 'string',
-      default: 'meld "{current-file}" "{revision-file}"'
+      default: 'meld "{current-file}" "{revision-file}"',
+      description: 'A custom command to open your favorite diff tool'
+    },
+
+    // show error message in a message panel
+    difftoolCommandShowErrorMessage: {
+      type: 'boolean',
+      default: true,
+      title: 'Show the errors of the diff tool command',
+      description: 'Display the errors in a message panel'
     }
   },
 
@@ -59,7 +81,7 @@ module.exports = {
 
     atom.commands.add(
       'atom-workspace',
-      'local-history:current-file', 
+      'local-history:current-file',
       function() {
         let view = _this.getView();
 
@@ -69,8 +91,8 @@ module.exports = {
     );
 
     atom.commands.add(
-      'atom-workspace', 
-      'local-history:difftool-current-file', 
+      'atom-workspace',
+      'local-history:difftool-current-file',
       function() {
         let view = _this.getView();
 
@@ -80,8 +102,8 @@ module.exports = {
     );
 
     atom.commands.add(
-      'atom-workspace', 
-      'local-history:purge', 
+      'atom-workspace',
+      'local-history:purge',
       function() {
         let view = _this.getView();
 
@@ -110,4 +132,3 @@ module.exports = {
     return this.localHistoryView;
   }
 };
-

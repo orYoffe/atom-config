@@ -1,7 +1,35 @@
+### 2.66.0
+  - Add meta scope to flowtype objects to allow additional themeing - Issue #382
+  - Existing editors instantiated using autoIndentJSX should observe the config for changes.
+   
+### 2.65.3
+  - Fix incorrect closing tag position autoIndentJSX  
+  
+### 2.65.2
+  - Fix scope on import/export to allow Atom's toggle quotes to work.
+  - Fix way ternaries inside JSX were auto indented. Fixes [#369](https://github.com/gandm/language-babel/issues/369#issuecomment-308108180)
+
+### 2.65.1
+  - Fix how we handle unexpected flowtypes that changed in 2.64.0 - Issue #376
+
+### 2.65.0
+  - Add support for styled-components styled(Comp).attrs() form of template.
+
+### 2.64.0
+ - Change parsing of possible multiline arrow functions.
+
+### 2.63.0
+  - Changed format for shortcut commenting inside styled-components. Prettier used a template commenting format that was different to language-babel. We have agreed to use a common format that allows co-existence. i.e. \`{'' /&ast; color: red; &ast;/}\`. This will cause issues for already commented lines inside styled-component tags that need to be uncommented which is regrettable. Also prettier-atom has yet to be updated to have this new format.
+  - Add support for styled-components V2.
+
+### 2.62.0
+  - Support interpolations inside css url(). #368
+  - Allow backtick insertion to wrap selected text. #370
+
 ### 2.61.0
   - Add support for CSS grid [linename] values.
   - Fix 2.59.1
-  
+
 ### 2.60.0
   - Allow non-css snippets inside styled-componenets tags.
 

@@ -1,5 +1,7 @@
 # Refactor Package
 
+[![Greenkeeper badge](https://badges.greenkeeper.io/hax/refactor.svg)](https://greenkeeper.io/)
+
 Let's refactor code!
 With this package, you can rename the name of variables and functions easily.
 
