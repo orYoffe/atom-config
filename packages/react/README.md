@@ -6,6 +6,12 @@ Visit [orktes.github.io/atom-react](https://orktes.github.io/atom-react) for mor
 
 # Changelog (notable changes)
 
+## v0.17.0 (10 November 2017)
+- Fix plugin to work with latest Atom (v1.22.0)
+
+## v0.16.3 (30 October 2017)
+- Update snippets
+
 ## v0.16.2 (29 December 2016)
 - Fix highlighting issues caused by ternary operations and other `?` after updating to atom 0.12.7
 

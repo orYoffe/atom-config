@@ -1,6 +1,6 @@
 // A class to keep all changes to the buffer in sync with tsserver. This is mainly used with
 // the editor panes, but is also useful for editor-less buffer changes (renameRefactor).
-import {CompositeDisposable} from "atom"
+import {CompositeDisposable, Disposable} from "atom"
 import {TypescriptServiceClient as Client} from "../client/client"
 import {EventEmitter} from "events"
 import {isTypescriptFile} from "./atom/utils"
@@ -55,18 +55,17 @@ export class TypescriptBuffer {
   // If there are any pending changes, flush them out to the Typescript server
   async flush() {
     if (this.changedAt > this.changedAtBatch) {
-      const prevDelay = this.buffer.stoppedChangingDelay
-      try {
-        this.buffer.stoppedChangingDelay = 0
-        this.buffer.scheduleDidStopChangingEvent()
-        await new Promise(resolve => {
-          const {dispose} = this.buffer.onDidStopChanging(() => {
-            dispose()
-            resolve()
-          })
+      let sub: Disposable | undefined
+      await new Promise(resolve => {
+        sub = this.buffer.onDidStopChanging(() => {
+          resolve()
         })
-      } finally {
-        this.buffer.stoppedChangingDelay = prevDelay
+
+        this.buffer.emitDidStopChangingEvent()
+      })
+
+      if (sub) {
+        sub.dispose()
       }
     }
   }
@@ -85,7 +84,7 @@ export class TypescriptBuffer {
   on(name: "opened", callback: () => void): this // the file is opened
   on(name: "closed", callback: (filePath: string) => void): this // the file is closed
   on(name: "changed", callback: () => void): this // tsserver view of the file has changed
-  on(name: string, callback: () => void): this {
+  on(name: string, callback: (() => void) | ((filePath: string) => void)): this {
     this.events.on(name, callback)
     return this
   }
@@ -107,7 +106,7 @@ export class TypescriptBuffer {
   onDidSave = async () => {
     // Check if there isn't a onDidStopChanging event pending.
     const {changedAt, changedAtBatch} = this
-    if (changedAt && changedAt > changedAtBatch) {
+    if (changedAt && changedAtBatch && changedAt > changedAtBatch) {
       await new Promise(resolve => this.events.once("changed", resolve))
     }
 

@@ -70,6 +70,7 @@ export default function parseCode(code: string): Info {
         "asyncGenerators",
         "functionBind",
         "functionSent",
+        "dynamicImport",
       ],
     })
   } catch (parseError) {
@@ -118,6 +119,11 @@ export default function parseCode(code: string): Info {
       scopes.push(scope)
     },
     CallExpression({ node, parent }) {
+      // `import()` is an operator, not a function.
+      // `isIdentifier` doesn't work here.
+      // http://2ality.com/2017/01/import-operator.html
+      const isImport = node.callee.type === "Import"
+
       const isRequire = t.isIdentifier(node.callee, { name: "require" })
 
       const isRequireResolve =
@@ -125,34 +131,48 @@ export default function parseCode(code: string): Info {
         t.isIdentifier(node.callee.object, { name: "require" }) &&
         t.isIdentifier(node.callee.property, { name: "resolve" })
 
-      if (isRequire || isRequireResolve) {
+      if (isImport || isRequire || isRequireResolve) {
         if (t.isLiteral(node.arguments[0])) {
-          const moduleName = node.arguments[0].value
+          let moduleName
+          const arg = node.arguments[0]
+          if (t.isLiteral(arg)) {
+            moduleName = arg.value
+          }
+          if (
+            moduleName == null &&
+            t.isTemplateLiteral(arg) &&
+            arg.quasis.length === 1
+          ) {
+            const quasi = arg.quasis[0]
+            moduleName = quasi.value.cooked
+          }
           const { id } = parent
 
-          if (
-            t.isAssignmentExpression(parent) &&
-            isModuleDotExports(parent.left)
-          ) {
-            addUnboundModule(moduleName, parent.left, "default")
-          }
+          if (moduleName != null) {
+            if (
+              t.isAssignmentExpression(parent) &&
+              isModuleDotExports(parent.left)
+            ) {
+              addUnboundModule(moduleName, parent.left, "default")
+            }
 
-          paths.push({
-            imported: "default",
-            moduleName,
-            range: {
-              start: node.arguments[0].start,
-              end: node.arguments[0].end,
-            },
-          })
-
-          if (t.isIdentifier(id)) {
-            addModule(moduleName, id)
-          }
-          if (t.isObjectPattern(id) || t.isArrayPattern(id)) {
-            findIdentifiers(id).forEach(identifier => {
-              addModule(moduleName, identifier)
+            paths.push({
+              imported: "default",
+              moduleName,
+              range: {
+                start: node.arguments[0].start,
+                end: node.arguments[0].end,
+              },
             })
+
+            if (t.isIdentifier(id)) {
+              addModule(moduleName, id)
+            }
+            if (t.isObjectPattern(id) || t.isArrayPattern(id)) {
+              findIdentifiers(id).forEach(identifier => {
+                addModule(moduleName, identifier)
+              })
+            }
           }
         }
       }

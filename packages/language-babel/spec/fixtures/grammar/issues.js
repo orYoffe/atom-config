@@ -1,5 +1,777 @@
 // SYNTAX TEST "source.js.jsx"
 
+// Issue 428 
+let x = ( '\'(', "\")", ("",'') ) => {}
+// <- storage.type.js
+ // <- storage.type.js
+//^                                      storage.type.js
+//  ^ ^ ^ ^^^^^^ ^^^^^^ ^^^^^^^ ^ ^^ ^^  meta.function.arrow.js
+//  ^                                    entity.name.function.js
+//    ^                                  keyword.operator.assignment.js
+//      ^                                punctuation.definition.parameters.begin.js
+//      ^               ^     ^ ^        meta.brace.round.js
+//        ^^^^^^ ^^^^^^ ^^^^^^^          meta.function.parameters.js
+//        ^^^^^             ^^           string.quoted.single.js
+//        ^      ^       ^  ^            punctuation.definition.string.begin.js
+//         ^^     ^^                     constant.character.escape
+//            ^      ^    ^  ^           punctuation.definition.string.end.js
+//             ^      ^                  meta.delimiter.comma.js
+//               ^^^^^   ^^              string.quoted.double.js
+//                              ^        punctuation.definition.parameters.end.js
+//                                ^^     storage.type.function.arrow.js
+//                                   ^^  meta.brace.curly.js
+
+// Issue 453
+import typeof * from ''
+// <- keyword.control.module.js
+ // <- keyword.control.module.js
+//^^^^          ^^^^     keyword.control.module.js
+//     ^^^^^^            keyword.other.typedef.flowtype
+//            ^          keyword.operator.module.all.js
+//                   ^^  string.quoted.module.js
+//                   ^   punctuation.definition.string.begin.js
+//                    ^  punctuation.definition.string.end.js
+
+// Issue 450
+let a = {
+// <- storage.type.js
+ // <- storage.type.js
+//^        storage.type.js
+//  ^      variable.other.readwrite.js
+//    ^    keyword.operator.assignment.js
+//      ^  meta.brace.curly.litobj.js
+ b: (a) =>
+ // <- meta.function.json.arrow.js entity.name.function.js
+//^ ^^^ ^^   meta.function.json.arrow.js
+//^          punctuation.separator.key-value.js
+//  ^        punctuation.definition.parameters.begin.js
+//  ^ ^      meta.brace.round.js
+//   ^       meta.function.parameters.js
+//   ^       variable.other.readwrite.js
+//    ^      punctuation.definition.parameters.end.js
+//      ^^   storage.type.function.arrow.js
+  a(aNNN),
+//^^^^^^^   meta.function-call.with-arguments.js
+//^         entity.name.function.js
+// ^    ^   meta.brace.round.js
+//  ^^^^    variable.other.readwrite.js
+//       ^  meta.delimiter.comma.js
+c: (a) =>
+// <- meta.function.json.arrow.js entity.name.function.js
+ // <- meta.function.json.arrow.js punctuation.separator.key-value.js
+// ^^^ ^^   meta.function.json.arrow.js
+// ^        punctuation.definition.parameters.begin.js
+// ^ ^      meta.brace.round.js
+//  ^       meta.function.parameters.js
+//  ^       variable.other.readwrite.js
+//   ^      punctuation.definition.parameters.end.js
+//     ^^   storage.type.function.arrow.js
+  a(aNNN),
+//^^^^^^^     meta.function-call.with-arguments.js
+//^           entity.name.function.js
+// ^    ^     meta.brace.round.js
+//  ^^^^      variable.other.readwrite.js
+//       ^    meta.delimiter.comma.js
+}
+// <- meta.brace.curly.litobj.js
+
+// Issue #449
+<A render = {() => (
+// <- meta.tag.jsx punctuation.definition.tag.jsx
+ // <- meta.tag.jsx entity.name.tag.open.jsx support.class.component.open.jsx
+// ^^^^^^ ^ ^^^ ^^ ^  meta.tag.jsx
+// ^^^^^^ ^ ^^^ ^^ ^  JSXAttrs
+// ^^^^^^             entity.other.attribute-name.jsx
+//        ^           keyword.operator.assignment.jsx
+//          ^^^ ^^ ^  meta.embedded.expression.js
+//          ^         punctuation.section.embedded.begin.jsx
+//           ^^ ^^    meta.function.arrow.js
+//           ^        punctuation.definition.parameters.begin.js
+//           ^^    ^  meta.brace.round.js
+//            ^       punctuation.definition.parameters.end.js
+//              ^^    storage.type.function.arrow.js
+)}/>
+
+// Issue #444
+
+export const formatResponseWrapper: $Transform<
+// <- keyword.control.module.js
+ // <- keyword.control.module.js
+//^^^^                                           keyword.control.module.js
+//     ^^^^^                                     storage.type.js
+//           ^^^^^^^^^^^^^^^^^^^^^               variable.other.readwrite.js
+//                                ^              punctuation.type.flowtype
+//                                  ^^^^^^^^^^   support.type.class.flowtype
+//                                            ^  punctuation.flowtype
+  // we accept the shape of either wrapper -- but require result is provided in minimum
+//^^ ^^ ^^^^^^ ^^^ ^^^^^ ^^ ^^^^^^ ^^^^^^^ ^^ ^^^ ^^^^^^^ ^^^^^^ ^^ ^^^^^^^^ ^^ ^^^^^^^  comment.line.double-slash.js
+//^^                                                                                     punctuation.definition.comment.js
+  | $Shape<Dash$SuccessWrapper & {| result: 'success' |}>
+//^                                                        kewyword.operator.union.flowtype
+//  ^^^^^^ ^^^^^^^^^^^^^^^^^^^                             support.type.class.flowtype
+//        ^                                             ^  punctuation.flowtype
+//                             ^                           kewyword.operator.intersection.flowtype
+//                               ^^ ^^^^^^^ ^^^^^^^^^ ^^   meta.object.flowtype
+//                               ^                         meta.brace.curly.open.flowtype
+//                                ^                   ^    kewyword.operator.only.flowtype
+//                                  ^^^^^^                 variable.other.readwrite.js
+//                                        ^                punctuation.type.flowtype
+//                                          ^^^^^^^^^      string.quoted.single.js
+//                                          ^              punctuation.definition.string.begin.js
+//                                                  ^      punctuation.definition.string.end.js
+//                                                     ^   meta.brace.curly.close.flowtype
+  | ({| result: 'error' |} & $Shape<Dash$ErrorWrapper>),
+//^                                                       kewyword.operator.union.flowtype
+//  ^                                                 ^   meta.brace.round.js
+//   ^^ ^^^^^^^ ^^^^^^^ ^^                                meta.object.flowtype
+//   ^                                                    meta.brace.curly.open.flowtype
+//    ^                 ^                                 kewyword.operator.only.flowtype
+//      ^^^^^^                                            variable.other.readwrite.js
+//            ^                                           punctuation.type.flowtype
+//              ^^^^^^^                                   string.quoted.single.js
+//              ^                                         punctuation.definition.string.begin.js
+//                    ^                                   punctuation.definition.string.end.js
+//                       ^                                meta.brace.curly.close.flowtype
+//                         ^                              kewyword.operator.intersection.flowtype
+//                           ^^^^^^ ^^^^^^^^^^^^^^^^^     support.type.class.flowtype
+//                                 ^                 ^    punctuation.flowtype
+//                                                     ^  meta.delimiter.comma.js
+  Dash$ResponseWrapper,
+//^^^^^^^^^^^^^^^^^^^^   support.type.class.flowtype
+//                    ^  meta.delimiter.comma.js
+> = createTransformer(transformResponseWrapper);
+// <- punctuation.flowtype
+//^                                               keyword.operator.assignment.js
+//  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^   meta.function-call.with-arguments.js
+//  ^^^^^^^^^^^^^^^^^                             entity.name.function.js
+//                   ^                        ^   meta.brace.round.js
+//                    ^^^^^^^^^^^^^^^^^^^^^^^^    variable.other.readwrite.js
+//                                             ^  punctuation.terminator.statement.js
+export const formatErrorResponse: $Transform<
+// <- keyword.control.module.js
+ // <- keyword.control.module.js
+//^^^^                                         keyword.control.module.js
+//     ^^^^^                                   storage.type.js
+//           ^^^^^^^^^^^^^^^^^^^               variable.other.readwrite.js
+//                              ^              punctuation.type.flowtype
+//                                ^^^^^^^^^^   support.type.class.flowtype
+//                                          ^  punctuation.flowtype
+  {| errorMessage?: string |} & $Shape<Dash$ErrorResponse> & {| errorMessage: string |},
+//   ^^^^^^^^^^^^                                                                         support.type.primitive.flowtype
+//               ^                                                                        keyword.operator.maybe.flowtype
+//                ^                                                         ^             punctuation.type.flowtype
+//                ^ ^^^^^^                                                    ^^^^^^      support.type.builtin.primitive.flowtype
+//                            ^                            ^                              kewyword.operator.intersection.flowtype
+//                              ^^^^^^ ^^^^^^^^^^^^^^^^^^                                 support.type.class.flowtype
+//                                    ^                  ^                                punctuation.flowtype
+//                                                           ^^ ^^^^^^^^^^^^^ ^^^^^^ ^^   meta.object.flowtype
+//                                                           ^                            meta.brace.curly.open.flowtype
+//                                                            ^                      ^    kewyword.operator.only.flowtype
+//                                                              ^^^^^^^^^^^^              variable.other.readwrite.js
+//                                                                                    ^   meta.brace.curly.close.flowtype
+//                                                                                     ^  meta.delimiter.comma.js
+  Dash$ErrorResponse,
+//^^^^^^^^^^^^^^^^^^   support.type.class.flowtype
+//                  ^  meta.delimiter.comma.js
+> = createTransformer(transformErrorResponse);
+// <- punctuation.flowtype
+//^                                             keyword.operator.assignment.js
+//  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^   meta.function-call.with-arguments.js
+//  ^^^^^^^^^^^^^^^^^                           entity.name.function.js
+//                   ^                      ^   meta.brace.round.js
+//                    ^^^^^^^^^^^^^^^^^^^^^^    variable.other.readwrite.js
+//                                           ^  punctuation.terminator.statement.js
+export const formatResponseWrapper: $Transform<
+// <- keyword.control.module.js
+ // <- keyword.control.module.js
+//^^^^                                           keyword.control.module.js
+//     ^^^^^                                     storage.type.js
+//           ^^^^^^^^^^^^^^^^^^^^^               variable.other.readwrite.js
+//                                ^              punctuation.type.flowtype
+//                                  ^^^^^^^^^^   support.type.class.flowtype
+//                                            ^  punctuation.flowtype
+  // we accept the shape of either wrapper -- but require result is provided in minimum
+//^^ ^^ ^^^^^^ ^^^ ^^^^^ ^^ ^^^^^^ ^^^^^^^ ^^ ^^^ ^^^^^^^ ^^^^^^ ^^ ^^^^^^^^ ^^ ^^^^^^^  comment.line.double-slash.js
+//^^                                                                                     punctuation.definition.comment.js
+  | $Shape<Dash$SuccessWrapper & {| result: 'success' |}>
+//^                                                        kewyword.operator.union.flowtype
+//  ^^^^^^ ^^^^^^^^^^^^^^^^^^^                             support.type.class.flowtype
+//        ^                                             ^  punctuation.flowtype
+//                             ^                           kewyword.operator.intersection.flowtype
+//                               ^^ ^^^^^^^ ^^^^^^^^^ ^^   meta.object.flowtype
+//                               ^                         meta.brace.curly.open.flowtype
+//                                ^                   ^    kewyword.operator.only.flowtype
+//                                  ^^^^^^                 variable.other.readwrite.js
+//                                        ^                punctuation.type.flowtype
+//                                          ^^^^^^^^^      string.quoted.single.js
+//                                          ^              punctuation.definition.string.begin.js
+//                                                  ^      punctuation.definition.string.end.js
+//                                                     ^   meta.brace.curly.close.flowtype
+  | ($Shape<Dash$ErrorWrapper>) & ({| result: 'error' |}),
+//^                                                         kewyword.operator.union.flowtype
+//  ^                         ^   ^                     ^   meta.brace.round.js
+//   ^^^^^^ ^^^^^^^^^^^^^^^^^                               support.type.class.flowtype
+//         ^                 ^                              punctuation.flowtype
+//                              ^                           kewyword.operator.intersection.flowtype
+//                                 ^^ ^^^^^^^ ^^^^^^^ ^^    meta.object.flowtype
+//                                 ^                        meta.brace.curly.open.flowtype
+//                                  ^                 ^     kewyword.operator.only.flowtype
+//                                    ^^^^^^                variable.other.readwrite.js
+//                                          ^               punctuation.type.flowtype
+//                                            ^^^^^^^       string.quoted.single.js
+//                                            ^             punctuation.definition.string.begin.js
+//                                                  ^       punctuation.definition.string.end.js
+//                                                     ^    meta.brace.curly.close.flowtype
+//                                                       ^  meta.delimiter.comma.js
+  Dash$ResponseWrapper,
+//^^^^^^^^^^^^^^^^^^^^   support.type.class.flowtype
+//                    ^  meta.delimiter.comma.js
+> = createTransformer(transformResponseWrapper);
+// <- punctuation.flowtype
+//^                                               keyword.operator.assignment.js
+//  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^   meta.function-call.with-arguments.js
+//  ^^^^^^^^^^^^^^^^^                             entity.name.function.js
+//                   ^                        ^   meta.brace.round.js
+//                    ^^^^^^^^^^^^^^^^^^^^^^^^    variable.other.readwrite.js
+//                                             ^  punctuation.terminator.statement.js
+
+// Issue #441
+async function f() { for await () {} }
+// <- meta.function.js storage.type.js
+ // <- meta.function.js storage.type.js
+//^^^ ^^^^^^^^ ^^^ ^ ^^^ ^^^^^ ^^ ^^ ^  meta.function.js
+//^^^                                   storage.type.js
+//    ^^^^^^^^                          storage.type.function.js
+//             ^                        entity.name.function.js
+//              ^                       punctuation.definition.parameters.begin.js
+//              ^^             ^^       meta.brace.round.js
+//               ^                      punctuation.definition.parameters.end.js
+//                 ^              ^^ ^  meta.brace.curly.js
+//                   ^^^ ^^^^^ ^^       meta.for.js
+//                   ^^^                keyword.control.loop.js
+//                       ^^^^^          keyword.control.flow.js
+
+// Issue #440
+type test = {
+// <- keyword.other.typedef.flowtype
+ // <- keyword.other.typedef.flowtype
+//^^           keyword.other.typedef.flowtype
+//   ^^^^      support.type.primitive.flowtype
+//        ^    keyword.operator.assignment.js
+//          ^  meta.object.flowtype
+//          ^  meta.brace.curly.js
+  foo: Array<<U>(data: T) => U>
+//^^^^ ^^^^^^^^^^^^^^^ ^^ ^^ ^^  meta.object.flowtype
+//^^^            ^^^^            variable.other.readwrite.js
+//   ^               ^           punctuation.type.flowtype
+//     ^^^^^                     support.type.builtin.class.flowtype
+//          ^^ ^              ^  punctuation.flowtype
+//            ^        ^     ^   support.type.class.flowtype
+//              ^                punctuation.definition.parameters.begin.js
+//              ^       ^        meta.brace.round.js
+//               ^^^^^ ^         meta.function.parameters.js
+//                      ^        punctuation.definition.parameters.end.js
+//                        ^^     storage.type.function.arrow.js
+}
+// <- meta.object.flowtype meta.brace.curly.js
+
+// Issue #439
+declare module 'axios' {
+// <- keyword.other.declare.flowtype
+ // <- keyword.other.declare.flowtype
+//^^^^^                   keyword.other.declare.flowtype
+//      ^^^^^^            storage.type.module.flowtype
+//             ^^^^^^^    string.quoted.single.js
+//             ^          punctuation.definition.string.begin.js
+//                   ^    punctuation.definition.string.end.js
+//                     ^  punctuation.section.class.begin.js
+  declare export type AxiosConfig = AxiosXHRConfig<*>
+//^^^^^^^ ^^^^^^ ^^^^ ^^^^^^^^^^^ ^ ^^^^^^^^^^^^^^^^^  meta.class.body.js
+//^^^^^^^                                              keyword.other.declare.flowtype
+//        ^^^^^^                                       keyword.control.module.js
+//               ^^^^                                  keyword.other.typedef.flowtype
+//                    ^^^^^^^^^^^   ^^^^^^^^^^^^^^     support.type.class.flowtype
+//                                ^                    keyword.operator.assignment.js
+//                                                ^ ^  punctuation.flowtype
+//                                                 ^   kewyword.operator.existential.flowtype
+}
+// <- punctuation.section.class.end.js
+
+// Issue 434
+let a = async (
+// <- storage.type.js
+ // <- storage.type.js
+//^     ^^^^^    storage.type.js
+//  ^ ^ ^^^^^ ^  meta.function.arrow.js
+//  ^            entity.name.function.js
+//    ^          keyword.operator.assignment.js
+//            ^  punctuation.definition.parameters.begin.js
+//            ^  meta.brace.round.js
+  arg
+//^^^  meta.function.arrow.js
+//^^^  meta.function.parameters.js
+//^^^  variable.other.readwrite.js
+) => {}
+// <- meta.function.arrow.js punctuation.definition.parameters.end.js meta.brace.round.js
+//^^ ^^  meta.function.arrow.js
+//^^     storage.type.function.arrow.js
+//   ^^  meta.brace.curly.js
+a = async (
+// <- meta.function.arrow.js entity.name.function.js
+//^ ^^^^^ ^  meta.function.arrow.js
+//^          keyword.operator.assignment.js
+//  ^^^^^    storage.type.js
+//        ^  punctuation.definition.parameters.begin.js
+//        ^  meta.brace.round.js
+  arg
+//^^^   meta.function.arrow.js
+//^^^   meta.function.parameters.js
+//^^^   variable.other.readwrite.js
+) => {}
+// <- meta.function.arrow.js punctuation.definition.parameters.end.js meta.brace.round.js
+//^^ ^^  meta.function.arrow.js
+//^^     storage.type.function.arrow.js
+//   ^^  meta.brace.curly.js
+let a = {
+// <- storage.type.js
+ // <- storage.type.js
+//^        storage.type.js
+//  ^      variable.other.readwrite.js
+//    ^    keyword.operator.assignment.js
+//      ^  meta.brace.curly.litobj.js
+  a: async arg => {
+//^^ ^^^^^ ^^^ ^^    meta.function.json.arrow.js
+//^                  entity.name.function.js
+// ^                 keyword.operator.assignment.js
+//   ^^^^^           storage.type.js
+//         ^^^       meta.function.parameters.js
+//         ^^^       variable.other.readwrite.js
+//             ^^    storage.type.function.arrow.js
+//                ^  meta.brace.curly.js
+  },
+//^   meta.brace.curly.js
+// ^  meta.delimiter.comma.js
+  a: async (arg
+//^^ ^^^^^ ^^^^  meta.function.json.arrow.js
+//^              entity.name.function.js
+// ^             punctuation.separator.key-value.js
+//   ^^^^^       storage.type.js
+//         ^     punctuation.definition.parameters.begin.js
+//         ^     meta.brace.round.js
+//          ^^^  meta.function.parameters.js
+//          ^^^  variable.other.readwrite.js
+  ) {},
+//^ ^^   meta.function.json.arrow.js
+//^      punctuation.definition.parameters.end.js
+//^      meta.brace.round.js
+//    ^  meta.delimiter.comma.js
+  'aaa': async <A>(arg: A
+//^^^^^^ ^^^^^ ^^^^^^^^ ^  meta.function.json.arrow.js
+//^^^^^                    string.quoted.js
+//^                        punctuation.definition.string.begin.js
+// ^^^                     entity.name.function.js
+//    ^                    punctuation.definition.string.end.js
+//     ^                   punctuation.separator.key-value.js
+//       ^^^^^             storage.type.js
+//             ^ ^         punctuation.flowtype
+//              ^       ^  support.type.class.flowtype
+//                ^        punctuation.definition.parameters.begin.js
+//                ^        meta.brace.round.js
+//                 ^^^^ ^  meta.function.parameters.js
+//                 ^^^     variable.other.readwrite.js
+//                    ^    punctuation.type.flowtype
+  ): A => {},
+//^^ ^ ^^ ^^   meta.function.json.arrow.js
+//^            punctuation.definition.parameters.end.js
+//^            meta.brace.round.js
+// ^           punctuation.type.flowtype
+//   ^         support.type.class.flowtype
+//     ^^      storage.type.function.arrow.js
+//        ^^   meta.brace.curly.js
+//          ^  meta.delimiter.comma.js
+  "aaaa": async (
+//^^^^^^^ ^^^^^ ^  meta.function.json.arrow.js
+//^^^^^^           string.quoted.js
+//^                punctuation.definition.string.begin.js
+// ^^^^            entity.name.function.js
+//     ^           punctuation.definition.string.end.js
+//      ^          punctuation.separator.key-value.js
+//        ^^^^^    storage.type.js
+//              ^  punctuation.definition.parameters.begin.js
+//              ^  meta.brace.round.js
+    arg1,
+//  ^^^^^  meta.function.json.arrow.js
+//  ^^^^^  meta.function.parameters.js
+//  ^^^^   variable.other.readwrite.js
+//      ^  meta.delimiter.comma.js
+    arg2: number
+//  ^^^^^ ^^^^^^  meta.function.json.arrow.js
+//  ^^^^^ ^^^^^^  meta.function.parameters.js
+//  ^^^^          variable.other.readwrite.js
+//      ^         punctuation.type.flowtype
+//        ^^^^^^  support.type.builtin.primitive.flowtype
+  ): number => {}
+//^^ ^^^^^^ ^^ ^^  meta.function.json.arrow.js
+//^                punctuation.definition.parameters.end.js
+//^                meta.brace.round.js
+// ^               punctuation.type.flowtype
+//   ^^^^^^        support.type.builtin.primitive.flowtype
+//          ^^     storage.type.function.arrow.js
+//             ^^  meta.brace.curly.js
+}
+// <- meta.brace.curly.litobj.js
+
+// Issue #421
+class A {
+  func = (a1, a2) => (a1) => {
+//^^^^ ^ ^^^^ ^^^ ^^ ^^^^ ^^ ^  meta.class.body.js
+//^^^^ ^ ^^^^ ^^^ ^^ ^^^^ ^^ ^  meta.function.arrow.js
+//^^^^                          entity.name.function.js
+//     ^                        keyword.operator.assignment.js
+//       ^           ^          punctuation.definition.parameters.begin.js
+//       ^      ^    ^  ^       meta.brace.round.js
+//        ^^^ ^^      ^^        meta.function.parameters.js
+//        ^^  ^^      ^^        variable.other.readwrite.js
+//          ^                   meta.delimiter.comma.js
+//              ^       ^       punctuation.definition.parameters.end.js
+//                ^^      ^^    storage.type.function.arrow.js
+//                           ^  meta.brace.curly.js
+    if (variable < 2) {}
+//  ^^ ^^^^^^^^^ ^ ^^ ^^  meta.class.body.js
+//  ^^ ^^^^^^^^^ ^ ^^ ^^  meta.function.arrow.js
+//  ^^                    keyword.control.conditional.js
+//     ^            ^     meta.brace.round.js
+//      ^^^^^^^^          variable.other.readwrite.js
+//               ^        keyword.operator.relational.js
+//                 ^      constant.numeric.js
+//                    ^^  meta.brace.curly.js
+  }
+}
+// Issue #404
+for (const x:a<T> of a) {}
+// <- meta.for.js keyword.control.loop.js
+ // <- meta.for.js keyword.control.loop.js
+//^ ^^^^^^ ^^^^^^ ^^ ^^     meta.for.js
+//^                         keyword.control.loop.js
+//  ^                 ^     meta.brace.round.js
+//   ^^^^^                  storage.type.js
+//         ^         ^      variable.other.readwrite.js
+//          ^               punctuation.type.flowtype
+//           ^              support.type.primitive.flowtype
+//            ^ ^           punctuation.flowtype
+//             ^            support.type.class.flowtype
+//                ^^        keyword.operator.of.js
+//                      ^^  meta.brace.curly.js
+for (const x:a<T> in a) {}
+// <- meta.for.js keyword.control.loop.js
+ // <- meta.for.js keyword.control.loop.js
+//^ ^^^^^^ ^^^^^^ ^^ ^^     meta.for.js
+//^                         keyword.control.loop.js
+//  ^                 ^     meta.brace.round.js
+//   ^^^^^                  storage.type.js
+//         ^         ^      variable.other.readwrite.js
+//          ^               punctuation.type.flowtype
+//           ^              support.type.primitive.flowtype
+//            ^ ^           punctuation.flowtype
+//             ^            support.type.class.flowtype
+//                ^^        keyword.operator.in.js
+//                      ^^  meta.brace.curly.js
+// Issue #397
+let result = "hello"
+// <- storage.type.js
+ // <- storage.type.js
+//^                   storage.type.js
+//  ^^^^^^            variable.other.readwrite.js
+//         ^          keyword.operator.assignment.js
+//           ^^^^^^^  string.quoted.double.js
+//           ^        punctuation.definition.string.begin.js
+//                 ^  punctuation.definition.string.end.js
+  |> someptr?.#doubleSay
+//^^                      keyword.operator.pipeline.js
+//   ^^^^^^^              variable.other.object.js
+//          ^             keyword.operator.existential.js
+//           ^            keyword.operator.accessor.js
+//            ^           keyword.operator.private.js
+//             ^^^^^^^^^  meta.method-call.without-arguments.js
+//             ^^^^^^^^^  entity.name.function.js
+  |> capitalize
+//^^             keyword.operator.pipeline.js
+//   ^^^^^^^^^^  meta.function-call.without-arguments.js
+//   ^^^^^^^^^^  entity.name.function.js
+  |> exclaim;
+//^^           keyword.operator.pipeline.js
+//   ^^^^^^^   meta.function-call.without-arguments.js
+//   ^^^^^^^   entity.name.function.js
+//          ^  punctuation.terminator.statement.js
+
+let newScore = person.score
+// <- storage.type.js
+ // <- storage.type.js
+//^                          storage.type.js
+//  ^^^^^^^^                 variable.other.readwrite.js
+//           ^               keyword.operator.assignment.js
+//             ^^^^^^        variable.other.object.js
+//                   ^       keyword.operator.accessor.js
+//                    ^^^^^  meta.property.object.js
+//                    ^^^^^  variable.other.property.js
+  |> double
+//^^         keyword.operator.pipeline.js
+//   ^^^^^^  meta.function-call.without-arguments.js
+//   ^^^^^^  entity.name.function.js
+  |> _ => add(7, _)
+//^^                 keyword.operator.pipeline.js
+//   ^               meta.function-call.without-arguments.js
+//   ^    ^^^        entity.name.function.js
+//     ^^            storage.type.function.arrow.js
+//        ^^^^^^ ^^  meta.function-call.with-arguments.js
+//           ^    ^  meta.brace.round.js
+//            ^      constant.numeric.js
+//             ^     meta.delimiter.comma.js
+//               ^   variable.other.readwrite.js
+  |> _ => boundScore(0, 100, _);
+//^^                              keyword.operator.pipeline.js
+//   ^                            meta.function-call.without-arguments.js
+//   ^    ^^^^^^^^^^              entity.name.function.js
+//     ^^                         storage.type.function.arrow.js
+//        ^^^^^^^^^^^^^ ^^^^ ^^   meta.function-call.with-arguments.js
+//                  ^         ^   meta.brace.round.js
+//                   ^  ^^^       constant.numeric.js
+//                    ^    ^      meta.delimiter.comma.js
+//                           ^    variable.other.readwrite.js
+//                             ^  punctuation.terminator.statement.js
+
+let newScore = person.score
+// <- storage.type.js
+ // <- storage.type.js
+//^                          storage.type.js
+//  ^^^^^^^^                 variable.other.readwrite.js
+//           ^               keyword.operator.assignment.js
+//             ^^^^^^        variable.other.object.js
+//                   ^       keyword.operator.accessor.js
+//                    ^^^^^  meta.property.object.js
+//                    ^^^^^  variable.other.property.js
+  |> double
+//^^         keyword.operator.pipeline.js
+//   ^^^^^^  meta.function-call.without-arguments.js
+//   ^^^^^^  entity.name.function.js
+  |> add.papp(7)
+//^^              keyword.operator.pipeline.js
+//   ^^^          variable.other.object.js
+//      ^         keyword.operator.accessor.js
+//       ^^^^^^^  meta.method-call.with-arguments.js
+//       ^^^^     entity.name.function.js
+//           ^ ^  meta.brace.round.js
+//            ^   constant.numeric.js
+  |> boundScore.papp(0, 100);
+//^^                           keyword.operator.pipeline.js
+//   ^^^^^^^^^^                variable.other.object.js
+//             ^               keyword.operator.accessor.js
+//              ^^^^^^^ ^^^^   meta.method-call.with-arguments.js
+//              ^^^^           entity.name.function.js
+//                  ^      ^   meta.brace.round.js
+//                   ^  ^^^    constant.numeric.js
+//                    ^        meta.delimiter.comma.js
+//                          ^  punctuation.terminator.statement.js
+
+getAllPlayers()
+// <- meta.function-call.without-arguments.js entity.name.function.js
+ // <- meta.function-call.without-arguments.js entity.name.function.js
+//^^^^^^^^^^^^^  meta.function-call.without-arguments.js
+//^^^^^^^^^^^    entity.name.function.js
+//           ^^  meta.brace.round.js
+  .filter( p => p.score > 100 )
+//^              ^               keyword.operator.accessor.js
+// ^^^^^^^ ^ ^^ ^^^^^^^ ^ ^^^ ^  meta.method-call.with-arguments.js
+// ^^^^^^                        entity.name.function.js
+//       ^                    ^  meta.brace.round.js
+//         ^ ^^                  meta.function.arrow.js
+//         ^                     meta.function.parameters.js
+//         ^                     variable.other.readwrite.js
+//           ^^                  storage.type.function.arrow.js
+//              ^                variable.other.object.js
+//                ^^^^^          meta.property.object.js
+//                ^^^^^          variable.other.property.js
+//                      ^        keyword.operator.relational.js
+//                        ^^^    constant.numeric.js
+  .sort()
+//^        keyword.operator.accessor.js
+// ^^^^    support.function.mutator.js
+//     ^^  meta.brace.round.js
+  |> _ => Lazy(_)
+//^^               keyword.operator.pipeline.js
+//   ^             meta.function-call.without-arguments.js
+//   ^    ^^^^     entity.name.function.js
+//     ^^          storage.type.function.arrow.js
+//        ^^^^^^^  meta.function-call.with-arguments.js
+//            ^ ^  meta.brace.round.js
+//             ^   variable.other.readwrite.js
+  .map( p => p.name )
+//^           ^        keyword.operator.accessor.js
+// ^^^^ ^ ^^ ^^^^^^ ^  meta.method-call.with-arguments.js
+// ^^^                 entity.name.function.js
+//    ^             ^  meta.brace.round.js
+//      ^ ^^           meta.function.arrow.js
+//      ^              meta.function.parameters.js
+//      ^              variable.other.readwrite.js
+//        ^^           storage.type.function.arrow.js
+//           ^         variable.other.object.js
+//             ^^^^    meta.property.object.js
+//             ^^^^    variable.other.property.js
+  .take(5)
+//^         keyword.operator.accessor.js
+// ^^^^^^^  meta.method-call.with-arguments.js
+// ^^^^     entity.name.function.js
+//     ^ ^  meta.brace.round.js
+//      ^   constant.numeric.js
+  |> _ => renderLeaderboard('#my-div', _);
+//^^                                        keyword.operator.pipeline.js
+//   ^                                      meta.function-call.without-arguments.js
+//   ^    ^^^^^^^^^^^^^^^^^                 entity.name.function.js
+//     ^^                                   storage.type.function.arrow.js
+//        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^ ^^   meta.function-call.with-arguments.js
+//                         ^            ^   meta.brace.round.js
+//                          ^^^^^^^^^       string.quoted.single.js
+//                          ^               punctuation.definition.string.begin.js
+//                                  ^       punctuation.definition.string.end.js
+//                                   ^      meta.delimiter.comma.js
+//                                     ^    variable.other.readwrite.js
+//                                       ^  punctuation.terminator.statement.js
+
+// Issue 392
+type a={}
+// <- keyword.other.typedef.flowtype
+ // <- keyword.other.typedef.flowtype
+//^^       keyword.other.typedef.flowtype
+//   ^     support.type.primitive.flowtype
+//    ^    keyword.operator.assignment.js
+//     ^^  meta.object.flowtype
+//     ^^  meta.brace.curly.js
+f()
+// <- meta.function-call.without-arguments.js entity.name.function.js
+ // <- meta.function-call.without-arguments.js meta.brace.round.js
+//^  meta.function-call.without-arguments.js
+//^  meta.brace.round.js
+export type a={}
+// <- keyword.control.module.js
+ // <- keyword.control.module.js
+//^^^^            keyword.control.module.js
+//     ^^^^       keyword.other.typedef.flowtype
+//          ^     support.type.primitive.flowtype
+//           ^    keyword.operator.assignment.js
+//            ^^  meta.object.flowtype
+//            ^^  meta.brace.curly.js
+f()
+// <- meta.function-call.without-arguments.js entity.name.function.js
+ // <- meta.function-call.without-arguments.js meta.brace.round.js
+//^  meta.function-call.without-arguments.js
+//^  meta.brace.round.js
+
+// Issue 390
+
+let a = await a()
+// <- storage.type.js
+ // <- storage.type.js
+//^                storage.type.js
+//  ^              variable.other.readwrite.js
+//    ^            keyword.operator.assignment.js
+//      ^^^^^      keyword.control.flow.js
+//            ^^^  meta.function-call.without-arguments.js
+//            ^    entity.name.function.js
+//             ^^  meta.brace.round.js
+this::a()
+// <- variable.language.this.js
+ // <- variable.language.this.js
+//^^       variable.language.this.js
+//  ^^     keyword.operator.accessor.js
+//    ^^^  meta.function-call.without-arguments.js
+//    ^    entity.name.function.js
+//     ^^  meta.brace.round.js
+
+// Issue 389
+function a(){
+  this::hid().p = false
+//^^^^^^^^^^^^^ ^ ^^^^^  meta.function.js
+//^^^^                   variable.language.this.js
+//    ^^     ^           keyword.operator.accessor.js
+//      ^^^^^            meta.function-call.without-arguments.js
+//      ^^^              entity.name.function.js
+//         ^^            meta.brace.round.js
+//            ^          meta.property.object.js
+//            ^          variable.other.property.js
+//              ^        keyword.operator.assignment.js
+//                ^^^^^  constant.language.boolean.false.js
+  this::hid().f = false
+//^^^^^^^^^^^^^ ^ ^^^^^  meta.function.js
+//^^^^                   variable.language.this.js
+//    ^^     ^           keyword.operator.accessor.js
+//      ^^^^^            meta.function-call.without-arguments.js
+//      ^^^              entity.name.function.js
+//         ^^            meta.brace.round.js
+//            ^          meta.property.object.js
+//            ^          variable.other.property.js
+//              ^        keyword.operator.assignment.js
+//                ^^^^^  constant.language.boolean.false.js
+  this::hid().c = options.config || {}
+//^^^^^^^^^^^^^ ^ ^^^^^^^^^^^^^^ ^^ ^^  meta.function.js
+//^^^^                                  variable.language.this.js
+//    ^^     ^           ^              keyword.operator.accessor.js
+//      ^^^^^                           meta.function-call.without-arguments.js
+//      ^^^                             entity.name.function.js
+//         ^^                           meta.brace.round.js
+//            ^           ^^^^^^        meta.property.object.js
+//            ^           ^^^^^^        variable.other.property.js
+//              ^                       keyword.operator.assignment.js
+//                ^^^^^^^               variable.other.object.js
+//                               ^^     keyword.operator.logical.js
+//                                  ^^  meta.brace.curly.js
+  await this::dis('')
+//^^^^^ ^^^^^^^^^^^^^  meta.function.js
+//^^^^^                keyword.control.flow.js
+//      ^^^^           variable.language.this.js
+//          ^^         keyword.operator.accessor.js
+//            ^^^^^^^  meta.function-call.with-arguments.js
+//            ^^^      entity.name.function.js
+//               ^  ^  meta.brace.round.js
+//                ^^   string.quoted.single.js
+//                ^    punctuation.definition.string.begin.js
+//                 ^   punctuation.definition.string.end.js
+  await this::dis('')
+//^^^^^ ^^^^^^^^^^^^^  meta.function.js
+//^^^^^                keyword.control.flow.js
+//      ^^^^           variable.language.this.js
+//          ^^         keyword.operator.accessor.js
+//            ^^^^^^^  meta.function-call.with-arguments.js
+//            ^^^      entity.name.function.js
+//               ^  ^  meta.brace.round.js
+//                ^^   string.quoted.single.js
+//                ^    punctuation.definition.string.begin.js
+//                 ^   punctuation.definition.string.end.js
+}
+
+// Issue 388
+let a = <T>(
+// <- storage.type.js
+ // <- storage.type.js
+//^           storage.type.js
+//  ^         variable.other.readwrite.js
+//    ^       keyword.operator.assignment.js
+//      ^^^^  meta.function.arrow.js
+//      ^ ^   punctuation.flowtype
+//       ^    support.type.class.flowtype
+//         ^  punctuation.definition.parameters.begin.js
+//         ^  meta.brace.round.js
+  somevar: T
+//^^^^^^^^ ^  meta.function.arrow.js
+//^^^^^^^^ ^  meta.function.parameters.js
+//^^^^^^^     variable.other.readwrite.js
+//       ^    punctuation.type.flowtype
+//         ^  support.type.class.flowtype
+) => {}
+// <- meta.function.arrow.js punctuation.definition.parameters.end.js meta.brace.round.js
+//^^ ^^  meta.function.arrow.js
+//^^     storage.type.function.arrow.js
+//   ^^  meta.brace.curly.js
+
 // Issue 376
 f(arg, arg1 => a >= b)
 // <- meta.function-call.with-arguments.js entity.name.function.js
@@ -154,20 +926,20 @@ if (foo instanceof (Date)) return;
  // <- keyword.control.conditional.js
 // ^               ^    ^^          meta.brace.round.js
 //  ^^^                             variable.other.readwrite.js
-//      ^^^^^^^^^^                  keyword.operator.js
+//      ^^^^^^^^^^                  keyword.operator.instanceof.js
 //                  ^^^^            support.class.builtin.js
 //                         ^^^^^^   keyword.control.flow.js
 //                               ^  punctuation.terminator.statement.js
 delete(x)
-// <- keyword.operator.js
- // <- keyword.operator.js
-//^^^^     keyword.operator.js
+// <- keyword.operator.delete.js
+ // <- keyword.operator.delete.js
+//^^^^     keyword.operator.delete.js
 //    ^ ^  meta.brace.round.js
 //     ^   variable.other.readwrite.js
 void (0)
-// <- keyword.operator.js
- // <- keyword.operator.js
-//^^      keyword.operator.js
+// <- keyword.operator.void.js
+ // <- keyword.operator.void.js
+//^^      keyword.operator.void.js
 //   ^ ^  meta.brace.round.js
 //    ^   constant.numeric.js
 function test() {
@@ -185,18 +957,18 @@ function test() {
 //^^                                  keyword.control.conditional.js
 //   ^               ^    ^^          meta.brace.round.js
 //    ^^^                             variable.other.readwrite.js
-//        ^^^^^^^^^^                  keyword.operator.js
+//        ^^^^^^^^^^                  keyword.operator.instanceof.js
 //                    ^^^^            support.class.builtin.js
 //                           ^^^^^^   keyword.control.flow.js
 //                                 ^  punctuation.terminator.statement.js
   delete(x)
 //^^^^^^^^^  meta.function.js
-//^^^^^^     keyword.operator.js
+//^^^^^^     keyword.operator.delete.js
 //      ^ ^  meta.brace.round.js
 //       ^   variable.other.readwrite.js
   void (0)
 //^^^^ ^^^  meta.function.js
-//^^^^      keyword.operator.js
+//^^^^      keyword.operator.void.js
 //     ^ ^  meta.brace.round.js
 //      ^   constant.numeric.js
 }
@@ -600,9 +1372,9 @@ class A {
 //^^ ^^ ^^^ ^^^ ^^ ^^^ ^^^^^^ ^^ ^^  meta.class.body.js
 //^^ ^^ ^^  ^^^ ^^ ^^  ^^^^^^ ^^ ^^  meta.function.method.js
 //^^        ^^^        ^^^^^^        entity.name.function.method.js
-//   ^          ^             ^      punctuation.definition.parameters.begin.js
+//   ^                               punctuation.definition.parameters.begin.js
 //   ^^         ^^            ^^     meta.brace.round.js
-//    ^          ^             ^     punctuation.definition.parameters.end.js
+//    ^                              punctuation.definition.parameters.end.js
 //      ^^         ^^            ^^  meta.brace.curly.js
 //        ^          ^               punctuation.terminator.statement.js
 }
@@ -660,7 +1432,7 @@ function a(state ) {
 //             ^                     ^  meta.brace.round.js
 //               ^^^                    storage.type.js
 //                   ^^^^    ^^^^^^^    variable.other.readwrite.js
-//                        ^^            keyword.operator.js
+//                        ^^            keyword.operator.in.js
                 state.items = setItem( state.items, resolveRelations({ ...item }) )
 //              ^^^^^^^^^^^ ^ ^^^^^^^^ ^^^^^^^^^^^^ ^^^^^^^^^^^^^^^^^^ ^^^^^^^ ^^ ^  meta.function.js
 //              ^^^^^^^^^^^ ^ ^^^^^^^^ ^^^^^^^^^^^^ ^^^^^^^^^^^^^^^^^^ ^^^^^^^ ^^ ^  meta.switch.js
@@ -1059,7 +1831,7 @@ export default {
   get a() { return this._a },
 //^^^ ^^^ ^ ^^^^^^ ^^^^^^^ ^   meta.accessor.js
 //^^^                          storage.type.accessor.js
-//    ^                        entity.name.accessor.js
+//    ^                        entity.name.function.accessor.js
 //     ^                       punctuation.definition.parameters.begin.js
 //     ^^                      meta.brace.round.js
 //      ^                      punctuation.definition.parameters.end.js
@@ -1073,7 +1845,7 @@ export default {
   set a(v) { this._a = v },
 //^^^ ^^^^ ^ ^^^^^^^ ^ ^ ^   meta.accessor.js
 //^^^                        storage.type.accessor.js
-//    ^                      entity.name.accessor.js
+//    ^                      entity.name.function.accessor.js
 //     ^                     punctuation.definition.parameters.begin.js
 //     ^ ^                   meta.brace.round.js
 //      ^                    meta.function.parameters.js

@@ -13,10 +13,10 @@
 #     'prefix': 'log'
 #     'body': 'console.log $1'
 #
-# '.source.js':
-#   'Console log':
-#     'prefix': 'log'
-#     'body': 'console.log()'
+'.source.js':
+  'Console log':
+    'prefix': 'log'
+    'body': 'console.log(\'---------${1:i}--------\', ${1:i});'
 #
 # Each scope (e.g. '.source.coffee' above) can only be declared once.
 #

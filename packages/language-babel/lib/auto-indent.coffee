@@ -43,16 +43,16 @@ class AutoIndent
     @DidInsertText = new DidInsertText(@editor)
     @autoJsx = atom.config.get('language-babel').autoIndentJSX
     # regex to search for tag open/close tag and close tag
-    @JSXREGEXP = /(<)([$_A-Za-z](?:[$_.:\-A-Za-z0-9])*)|(\/>)|(<\/)([$_A-Za-z](?:[$._:\-A-Za-z0-9])*)(>)|(>)|({)|(})|(\?)|(:)|(if)|(else)|(case)|(default)|(return)|(\()|(\))|(`)/g
+    @JSXREGEXP = /(<)([$_A-Za-z](?:[$_.:\-A-Za-z0-9])*)|(\/>)|(<\/)([$_A-Za-z](?:[$._:\-A-Za-z0-9])*)(>)|(>)|({)|(})|(\?)|(:)|(if)|(else)|(case)|(default)|(return)|(\()|(\))|(`)|(?:(<)\s*(>))|(<\/)(>)/g
     @mouseUp = true
     @multipleCursorTrigger = 1
     @disposables = new CompositeDisposable()
     @eslintIndentOptions = @getIndentOptions()
     @templateDepth = 0 # track depth of any embedded back-tick templates
 
-    # Observe autoIndentJSX for existing editors 
-    @disposables.add atom.config.observe 'language-babel.autoIndentJSX', 
-      (value) => @autoJsx = value 
+    # Observe autoIndentJSX for existing editors
+    @disposables.add atom.config.observe 'language-babel.autoIndentJSX',
+      (value) => @autoJsx = value
 
     @disposables.add atom.commands.add 'atom-text-editor',
       'language-babel:auto-indent-jsx-on': (event) =>
@@ -123,7 +123,7 @@ class AutoIndent
     # if this is a tag start's end > or </ then don't auto indent
     # this ia fix to allow for the auto complete tag time to pop up
     if selectedRange.start.row is selectedRange.end.row and
-      selectedRange.start.column is selectedRange.end.column 
+      selectedRange.start.column is selectedRange.end.column
         return if 'JSXStartTagEnd' in @editor.scopeDescriptorForBufferPosition([selectedRange.start.row, selectedRange.start.column]).getScopesArray()
         return if 'JSXEndTagStart' in @editor.scopeDescriptorForBufferPosition([selectedRange.start.row, selectedRange.start.column]).getScopesArray()
 
@@ -186,6 +186,7 @@ class AutoIndent
         matchPointEnd = new Point(row, matchColumn + match[0].length - 1)
         matchRange = new Range(matchPointStart, matchPointEnd)
 
+        if row is range.start.row and matchColumn < range.start.column then continue
         if not token =  @getToken(row, match) then continue
 
         firstCharIndentation = (@editor.indentationForBufferRow row)
@@ -613,12 +614,12 @@ class AutoIndent
   getToken: (bufferRow, match) ->
     scope = @editor.scopeDescriptorForBufferPosition([bufferRow, match.index]).getScopesArray().pop()
     if 'punctuation.definition.tag.jsx' is scope
-      if      match[1]? then return JSXTAG_OPEN
+      if      match[1]? or match[20]? then return JSXTAG_OPEN
       else if match[3]? then return JSXTAG_SELFCLOSE_END
     else if 'JSXEndTagStart' is scope
-      if match[4]? then return JSXTAG_CLOSE
+      if match[4]? or match[22]? then return JSXTAG_CLOSE
     else if 'JSXStartTagEnd' is scope
-      if match[7]? then return JSXTAG_CLOSE_ATTRS
+      if match[7]? or match[21]? then return JSXTAG_CLOSE_ATTRS
     else if match[8]?
       if 'punctuation.section.embedded.begin.jsx' is scope
         return JSXBRACE_OPEN

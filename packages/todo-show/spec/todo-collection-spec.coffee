@@ -1,16 +1,16 @@
 path = require 'path'
 
 TodoCollection = require '../lib/todo-collection'
-ShowTodo = require '../lib/show-todo'
 TodoModel = require '../lib/todo-model'
 TodoRegex = require '../lib/todo-regex'
+{getConfigSchema} = require './helpers'
 
 sample1Path = path.join(__dirname, 'fixtures/sample1')
 sample2Path = path.join(__dirname, 'fixtures/sample2')
 fixturesPath = path.join(__dirname, 'fixtures')
 
 describe 'Todo Collection', ->
-  [collection, todoRegex, defaultShowInTable] = []
+  [collection, todoRegex, defaultShowInTable, defaultConfig] = []
 
   addTestTodos = ->
     collection.addTodo(
@@ -42,14 +42,16 @@ describe 'Todo Collection', ->
     )
 
   beforeEach ->
-    todoRegex = new TodoRegex(
-      ShowTodo.config.findUsingRegex.default
-      ['FIXME', 'TODO']
-    )
-    defaultShowInTable = ['Text', 'Type', 'File']
+    getConfigSchema (configSchema) ->
+      todoRegex = new TodoRegex(
+        configSchema.findUsingRegex.default
+        ['FIXME', 'TODO']
+      )
+      defaultShowInTable = ['Text', 'Type', 'File']
 
-    collection = new TodoCollection
-    atom.project.setPaths [sample1Path]
+      collection = new TodoCollection
+      atom.project.setPaths [sample1Path]
+    waitsFor -> todoRegex isnt undefined
 
   describe 'fetchRegexItem(todoRegex)', ->
     it 'scans project for regex', ->
@@ -561,6 +563,15 @@ describe 'Todo Collection', ->
       expect(collection.getMarkdown()).toEqual """
         - todo 1 __TODO__ [file1.txt](file1.txt)
         - fixme 2 __FIXME__ [file2.txt](file2.txt)
+        - fixme 1 __FIXME__ [file1.txt](file1.txt)\n
+      """
+
+    it 'creates markdown with applied filter', ->
+      addTestTodos()
+      collection.filter = 'file1'
+      collection.sortTodos(sortBy: 'Text', sortAsc: false)
+      expect(collection.getMarkdown()).toEqual """
+        - todo 1 __TODO__ [file1.txt](file1.txt)
         - fixme 1 __FIXME__ [file1.txt](file1.txt)\n
       """
 

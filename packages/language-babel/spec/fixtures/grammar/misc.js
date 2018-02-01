@@ -1,5 +1,192 @@
 // SYNTAX TEST "source.js.jsx"
 
+// exitential forms
+
+Sound?.play = function(arg1, arg2) { }
+// <- meta.function.static.js entity.name.class.js
+ // <- meta.function.static.js entity.name.class.js
+//^^^^^^^^^ ^ ^^^^^^^^^^^^^^ ^^^^^ ^ ^  meta.function.static.js
+//^^^                                   entity.name.class.js
+//   ^^                                 keyword.operator.existential.js
+//     ^^^^                             entity.name.function.js
+//          ^                           keyword.operator.assignment.js
+//            ^^^^^^^^                  storage.type.function.js
+//                    ^                 punctuation.definition.parameters.begin.js
+//                    ^          ^      meta.brace.round.js
+//                     ^^^^^ ^^^^       meta.function.parameters.js
+//                     ^^^^  ^^^^       variable.other.readwrite.js
+//                         ^            meta.delimiter.comma.js
+//                               ^      punctuation.definition.parameters.end.js
+//                                 ^ ^  meta.brace.curly.js
+styled?.div``
+// <- entity.name.tag.styledcss.js
+ // <- entity.name.tag.styledcss.js
+//^^^^  ^^^    entity.name.tag.styledcss.js
+//    ^^       keyword.operator.existential.js
+//         ^   string.quoted.template.styled.start.js
+//         ^   punctuation.definition.quasi.begin.js
+//          ^  string.quoted.template.styled.end.js
+//          ^  punctuation.definition.quasi.end.js
+Button?.extend``
+// <- variable.other.class.js
+ // <- variable.other.class.js
+//^^^^            variable.other.class.js
+//    ^^          keyword.operator.existential.js
+//      ^^^^^^    entity.name.tag.styledcss.js
+//            ^   string.quoted.template.styled.start.js
+//            ^   punctuation.definition.quasi.begin.js
+//             ^  string.quoted.template.styled.end.js
+//             ^  punctuation.definition.quasi.end.js
+Button?.withComponent()``
+// <- variable.other.class.js
+ // <- variable.other.class.js
+//^^^^                     variable.other.class.js
+//    ^^                   keyword.operator.existential.js
+//      ^^^^^^^^^^^^^      entity.name.function.js
+//                   ^^    meta.brace.round.js
+//                     ^   string.quoted.template.styled.start.js
+//                     ^   punctuation.definition.quasi.begin.js
+//                      ^  string.quoted.template.styled.end.js
+//                      ^  punctuation.definition.quasi.end.js
+styled()?.attrs()``
+// <- entity.name.function.js
+ // <- entity.name.function.js
+//^^^^    ^^^^^      entity.name.function.js
+//    ^^       ^^    meta.brace.round.js
+//      ^^           keyword.operator.existential.js
+//               ^   string.quoted.template.styled.start.js
+//               ^   punctuation.definition.quasi.begin.js
+//                ^  string.quoted.template.styled.end.js
+//                ^  punctuation.definition.quasi.end.js
+styled?.aaa?.attrs()``
+// <- entity.name.tag.styledcss.js
+ // <- entity.name.tag.styledcss.js
+//^^^^  ^^^             entity.name.tag.styledcss.js
+//    ^^   ^^           keyword.operator.existential.js
+//           ^^^^^      entity.name.function.js
+//                ^^    meta.brace.round.js
+//                  ^   string.quoted.template.styled.start.js
+//                  ^   punctuation.definition.quasi.begin.js
+//                   ^  string.quoted.template.styled.end.js
+//                   ^  punctuation.definition.quasi.end.js
+CONST?.method()
+// <- meta.method-call.without-arguments.js variable.other.constant.js
+ // <- meta.method-call.without-arguments.js variable.other.constant.js
+//^^^^^^^^^^^^^  meta.method-call.without-arguments.js
+//^^^            variable.other.constant.js
+//   ^^          keyword.operator.existential.js
+//     ^^^^^^    entity.name.function.js
+//           ^^  meta.brace.round.js
+CONST?.method('')
+// <- meta.method-call.with-arguments.js variable.other.constant.js
+ // <- meta.method-call.with-arguments.js variable.other.constant.js
+//^^^^^^^^^^^^^^^  meta.method-call.with-arguments.js
+//^^^              variable.other.constant.js
+//   ^^            keyword.operator.existential.js
+//     ^^^^^^      entity.name.function.js
+//           ^  ^  meta.brace.round.js
+//            ^^   string.quoted.single.js
+//            ^    punctuation.definition.string.begin.js
+//             ^   punctuation.definition.string.end.js
+Abc?.aaa()
+// <- meta.method-call.without-arguments.js variable.other.class.js
+ // <- meta.method-call.without-arguments.js variable.other.class.js
+//^^^^^^^^  meta.method-call.without-arguments.js
+//^         variable.other.class.js
+// ^^       keyword.operator.existential.js
+//   ^^^    entity.name.function.js
+//      ^^  meta.brace.round.js
+Abc?.aaa('')
+// <- meta.method-call.with-arguments.js variable.other.class.js
+ // <- meta.method-call.with-arguments.js variable.other.class.js
+//^^^^^^^^^^  meta.method-call.with-arguments.js
+//^           variable.other.class.js
+// ^^         keyword.operator.existential.js
+//   ^^^      entity.name.function.js
+//      ^  ^  meta.brace.round.js
+//       ^^   string.quoted.single.js
+//       ^    punctuation.definition.string.begin.js
+//        ^   punctuation.definition.string.end.js
+Class?.prop = 1
+// <- meta.property.class.js variable.other.class.js
+ // <- meta.property.class.js variable.other.class.js
+//^^^^^^^^^      meta.property.class.js
+//^^^            variable.other.class.js
+//   ^^          keyword.operator.existential.js
+//     ^^^^      variable.other.property.static.js
+//          ^    keyword.operator.assignment.js
+//            ^  constant.numeric.js
+a?.aaa
+// <- variable.other.readwrite.js
+ // <- keyword.operator.existential.js
+//^     keyword.operator.existential.js
+// ^^^  meta.property.object.js
+// ^^^  variable.other.property.js
+Sound?.prototype?.play = (args) => {}
+// <- meta.prototype.function.arrow.js entity.name.class.js
+ // <- meta.prototype.function.arrow.js entity.name.class.js
+//^^^^^^^^^^^^^^^^^^^^ ^ ^^^^^^ ^^ ^^  meta.prototype.function.arrow.js
+//^^^                                  entity.name.class.js
+//   ^^         ^^                     keyword.operator.existential.js
+//     ^^^^^^^^^                       variable.language.prototype.js
+//                ^^^^                 entity.name.function.js
+//                     ^               keyword.operator.assignment.js
+//                       ^             punctuation.definition.parameters.begin.js
+//                       ^    ^        meta.brace.round.js
+//                        ^^^^         meta.function.parameters.js
+//                        ^^^^         variable.other.readwrite.js
+//                            ^        punctuation.definition.parameters.end.js
+//                              ^^     storage.type.function.arrow.js
+//                                 ^^  meta.brace.curly.js
+Sound?.prototype?.play = args => {}
+// <- meta.prototype.function.arrow.js entity.name.class.js
+ // <- meta.prototype.function.arrow.js entity.name.class.js
+//^^^^^^^^^^^^^^^^^^^^ ^ ^^^^ ^^     meta.prototype.function.arrow.js
+//^^^                                entity.name.class.js
+//   ^^         ^^                   keyword.operator.existential.js
+//     ^^^^^^^^^                     variable.language.prototype.js
+//                ^^^^               entity.name.function.js
+//                     ^             keyword.operator.assignment.js
+//                       ^^^^        variable.other.readwrite.js
+//                            ^^     storage.type.function.arrow.js
+//                               ^^  meta.brace.curly.js
+Sound?.play = (args) => {}
+// <- meta.function.static.arrow.js entity.name.class.js
+ // <- meta.function.static.arrow.js entity.name.class.js
+//^^^^^^^^^ ^ ^^^^^^ ^^ ^^  meta.function.static.arrow.js
+//^^^                       entity.name.class.js
+//   ^^                     keyword.operator.existential.js
+//     ^^^^                 entity.name.function.js
+//          ^               keyword.operator.assignment.js
+//            ^             punctuation.definition.parameters.begin.js
+//            ^    ^        meta.brace.round.js
+//             ^^^^         meta.function.parameters.js
+//             ^^^^         variable.other.readwrite.js
+//                 ^        punctuation.definition.parameters.end.js
+//                   ^^     storage.type.function.arrow.js
+//                      ^^  meta.brace.curly.js
+Sound?.play = args => {}
+// <- meta.function.static.arrow.js entity.name.class.js
+ // <- meta.function.static.arrow.js entity.name.class.js
+//^^^^^^^^^ ^ ^^^^ ^^     meta.function.static.arrow.js
+//^^^                     entity.name.class.js
+//   ^^                   keyword.operator.existential.js
+//     ^^^^               entity.name.function.js
+//          ^             keyword.operator.assignment.js
+//            ^^^^        variable.other.readwrite.js
+//                 ^^     storage.type.function.arrow.js
+//                    ^^  meta.brace.curly.js
+func?.(...args)
+// <- meta.function-call.with-arguments.js entity.name.function.js
+ // <- meta.function-call.with-arguments.js entity.name.function.js
+//^^^^^^^^^^^^^  meta.function-call.with-arguments.js
+//^^             entity.name.function.js
+//  ^^           keyword.operator.existential.js
+//    ^       ^  meta.brace.round.js
+//     ^^^       keyword.operator.spread.js
+//        ^^^^   meta.property.object.js
+//        ^^^^   variable.other.property.js
+
 // Class and method decorator productions
 @Decorator
 // <- keyword.operator.decorator.js
@@ -95,6 +282,7 @@ function foo2(bar /*:: ?: string*/) {}
 //           ^                    ^     meta.brace.round.js
 //            ^^^ ^^^^ ^^ ^^^^^^^^      meta.function.parameters.js
 //            ^^^                       variable.other.readwrite.js
+//                ^^^^ ^^ ^^^^^^^^      meta.comments.flowtype
 //                ^^            ^^      punctuation.definition.comment.js
 //                  ^^  ^               punctuation.type.flowtype
 //                     ^                keyword.operator.optional.parameter.flowtype
@@ -111,6 +299,7 @@ function foo(x /*: number*/) /*: string*/ {}
 //          ^              ^                  meta.brace.round.js
 //           ^ ^^^ ^^^^^^^^                   meta.function.parameters.js
 //           ^                                variable.other.readwrite.js
+//             ^^^ ^^^^^^^^  ^^^ ^^^^^^^^     meta.comments.flowtype
 //             ^^        ^^  ^^        ^^     punctuation.definition.comment.js
 //               ^             ^              punctuation.type.flowtype
 //                 ^^^^^^        ^^^^^^       support.type.builtin.primitive.flowtype
@@ -171,41 +360,6 @@ function foo(x /*: number*/) /*: string*/ {}
  // <- comment.line.double-slash.js punctuation.definition.comment.js
 // ^^^^^ ^^^^^^^^^^^^^^^^^ ^ ^^^^^^^^^^^^^ ^^^^ ^ ^^^^^^ ^^^^^^^^^ ^^^^^^^^  comment.line.double-slash.js
 
-a.component('randomComponent', {
-// <- variable.other.object.js
- // <- keyword.operator.accessor.js
-//^^^^^^^^^^^^^^^^^^^^^^^^^^^^ ^  meta.method-call.with-arguments.js
-//^^^^^^^^^                       entity.name.function.js
-//         ^                      meta.brace.round.js
-//          ^^^^^^^^^^^^^^^^^     string.quoted.single.js
-//          ^                     punctuation.definition.string.begin.js
-//                          ^     punctuation.definition.string.end.js
-//                           ^    meta.delimiter.comma.js
-//                             ^  meta.brace.curly.litobj.js
-  template: `<div class="test">test</div>`,
-//^^^^^^^^^ ^^^^^ ^^^^^^^^^^^^^^^^^^^^^^^^^  meta.method-call.with-arguments.js
-//^^^^^^^^                                   constant.other.object.key.js
-//^^^^^^^^                                   string.unquoted.js
-//        ^                                  punctuation.separator.key-value.js
-//          ^                                punctuation.definition.quasi.begin.js
-//           ^^^^ ^^^^^^^^^^^^^    ^^^^^^    meta.tag.block.any.html
-//           ^                     ^^        punctuation.definition.tag.begin.html
-//            ^^^                    ^^^     entity.name.tag.block.any.html
-//                ^^^^^                      entity.other.attribute-name.html
-//                      ^^^^^^               string.quoted.double.html
-//                      ^                    punctuation.definition.string.begin.html
-//                           ^               punctuation.definition.string.end.html
-//                            ^         ^    punctuation.definition.tag.end.html
-//                                       ^   punctuation.definition.quasi.end.js
-//                                        ^  meta.delimiter.comma.js
-})
-// <- meta.method-call.with-arguments.js meta.brace.curly.litobj.js
- // <- meta.method-call.with-arguments.js meta.brace.round.js
-
-// class fields, statics and methods
-// <- comment.line.double-slash.js punctuation.definition.comment.js
- // <- comment.line.double-slash.js punctuation.definition.comment.js
-// ^^^^^ ^^^^^^^ ^^^^^^^ ^^^ ^^^^^^^  comment.line.double-slash.js
 class SomeClass {
 // <- meta.class.js storage.type.class.js
  // <- meta.class.js storage.type.class.js
@@ -440,4 +594,4 @@ type $JSXIntrinsics = {
 //                                        ^  punctuation.terminator.statement.js
 
 
-  // >> only:(source.js.jsx)
+// >> only:(source.js.jsx)

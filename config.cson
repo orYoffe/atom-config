@@ -7,6 +7,7 @@
       "clipboard-history"
       "seti-icons"
       "hyperclick"
+      "prettier-atom"
     ]
     ignoredNames: [
       ".git"
@@ -24,7 +25,8 @@
       "monokai"
     ]
   editor:
-    fontSize: 13
+    autoIndent: false
+    fontSize: 12
     preferredLineLength: 140
     softWrap: true
     zoomFontWhenCtrlScrolling: true
@@ -35,12 +37,21 @@
     panelHeight: 81
   "postcss-sorting":
     checkForConfigFile: true
-    shouldUpdateOnSave: true
+  "prettier-atom":
+    formatOnSaveOptions:
+      enabled: true
+      isDisabledIfNoConfigFile: true
+      isDisabledIfNotInPackageJson: true
+      respectEslintignore: false
+      showInStatusBar: true
+    prettierOptions: {}
+    useEslint: true
   react:
     enabledForAllJavascriptFiles: true
   "seti-ui":
     compactView: true
     fileIcons: false
+  "tree-view": {}
   welcome:
     showOnStartup: false
 ".coffee.jsx.source":

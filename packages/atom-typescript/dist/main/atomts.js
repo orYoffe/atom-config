@@ -26,7 +26,9 @@ let linter;
 let statusBar;
 const codefixProvider = new codefixProvider_1.CodefixProvider(exports.clientResolver);
 function activate(state) {
-    require("atom-package-deps").install("atom-typescript", true).then(() => {
+    require("atom-package-deps")
+        .install("atom-typescript", true)
+        .then(() => {
         let statusPriority = 100;
         for (const panel of statusBar.getRightTiles()) {
             if (panel.getItem().tagName === "GRAMMAR-SELECTOR-STATUS") {
@@ -67,7 +69,7 @@ function activate(state) {
             getClient(filePath) {
                 return tslib_1.__awaiter(this, void 0, void 0, function* () {
                     const pane = panes.find(pane => pane.filePath === filePath);
-                    if (pane) {
+                    if (pane && pane.client) {
                         return pane.client;
                     }
                     return exports.clientResolver.get(filePath);
@@ -173,7 +175,7 @@ function getProjectConfigPath(sourcePath) {
 exports.getProjectConfigPath = getProjectConfigPath;
 function loadProjectConfig(sourcePath, configFile) {
     return tslib_1.__awaiter(this, void 0, void 0, function* () {
-        return tsconfig.load(configFile || (yield getProjectConfigPath(sourcePath)));
+        return tsconfig.readFile(configFile || (yield getProjectConfigPath(sourcePath)));
     });
 }
 exports.loadProjectConfig = loadProjectConfig;

@@ -27,7 +27,6 @@ class TypescriptBuffer {
             this.changedAt = Date.now();
         };
         this.onDidChangePath = (newPath) => tslib_1.__awaiter(this, void 0, void 0, function* () {
-            console.log("did change path", newPath);
             if (this.clientPromise && this.filePath) {
                 const client = yield this.clientPromise;
                 client.executeClose({ file: this.filePath });
@@ -38,7 +37,7 @@ class TypescriptBuffer {
         this.onDidSave = () => tslib_1.__awaiter(this, void 0, void 0, function* () {
             // Check if there isn't a onDidStopChanging event pending.
             const { changedAt, changedAtBatch } = this;
-            if (changedAt && changedAt > changedAtBatch) {
+            if (changedAt && changedAtBatch && changedAt > changedAtBatch) {
                 yield new Promise(resolve => this.events.once("changed", resolve));
             }
             this.events.emit("saved");
@@ -88,19 +87,15 @@ class TypescriptBuffer {
     flush() {
         return tslib_1.__awaiter(this, void 0, void 0, function* () {
             if (this.changedAt > this.changedAtBatch) {
-                const prevDelay = this.buffer.stoppedChangingDelay;
-                try {
-                    this.buffer.stoppedChangingDelay = 0;
-                    this.buffer.scheduleDidStopChangingEvent();
-                    yield new Promise(resolve => {
-                        const { dispose } = this.buffer.onDidStopChanging(() => {
-                            dispose();
-                            resolve();
-                        });
+                let sub;
+                yield new Promise(resolve => {
+                    sub = this.buffer.onDidStopChanging(() => {
+                        resolve();
                     });
-                }
-                finally {
-                    this.buffer.stoppedChangingDelay = prevDelay;
+                    this.buffer.emitDidStopChangingEvent();
+                });
+                if (sub) {
+                    sub.dispose();
                 }
             }
         });
