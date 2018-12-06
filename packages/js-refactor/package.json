@@ -2,40 +2,40 @@
   "_args": [
     [
       {
-        "raw": "/private/var/folders/vr/hv5l80qs7ms61mdx6w_n4fv5g23cpd/T/d-117311-4010-8t4crh/package.tgz",
+        "raw": "/private/var/folders/7x/v6ks476d5ngbf5dqytq4kgfw0000gn/T/d-11827-12668-10ggwmc.16v5uvunmi/package.tgz",
         "scope": null,
         "escapedName": null,
         "name": null,
-        "rawSpec": "/private/var/folders/vr/hv5l80qs7ms61mdx6w_n4fv5g23cpd/T/d-117311-4010-8t4crh/package.tgz",
-        "spec": "/private/var/folders/vr/hv5l80qs7ms61mdx6w_n4fv5g23cpd/T/d-117311-4010-8t4crh/package.tgz",
+        "rawSpec": "/private/var/folders/7x/v6ks476d5ngbf5dqytq4kgfw0000gn/T/d-11827-12668-10ggwmc.16v5uvunmi/package.tgz",
+        "spec": "/private/var/folders/7x/v6ks476d5ngbf5dqytq4kgfw0000gn/T/d-11827-12668-10ggwmc.16v5uvunmi/package.tgz",
         "type": "local"
       },
-      "/private/var/folders/vr/hv5l80qs7ms61mdx6w_n4fv5g23cpd/T/apm-install-dir-117311-4010-xqnyo"
+      "/private/var/folders/7x/v6ks476d5ngbf5dqytq4kgfw0000gn/T/apm-install-dir-11827-12668-wikd7p.uo8qwipb9"
     ]
   ],
-  "_from": "../d-117311-4010-8t4crh/package.tgz",
-  "_id": "js-refactor@0.7.5",
+  "_from": "../d-11827-12668-10ggwmc.16v5uvunmi/package.tgz",
+  "_id": "js-refactor@0.8.1",
   "_inCache": true,
-  "_installable": true,
   "_location": "/js-refactor",
   "_phantomChildren": {},
   "_requested": {
-    "raw": "/private/var/folders/vr/hv5l80qs7ms61mdx6w_n4fv5g23cpd/T/d-117311-4010-8t4crh/package.tgz",
+    "raw": "/private/var/folders/7x/v6ks476d5ngbf5dqytq4kgfw0000gn/T/d-11827-12668-10ggwmc.16v5uvunmi/package.tgz",
     "scope": null,
     "escapedName": null,
     "name": null,
-    "rawSpec": "/private/var/folders/vr/hv5l80qs7ms61mdx6w_n4fv5g23cpd/T/d-117311-4010-8t4crh/package.tgz",
-    "spec": "/private/var/folders/vr/hv5l80qs7ms61mdx6w_n4fv5g23cpd/T/d-117311-4010-8t4crh/package.tgz",
+    "rawSpec": "/private/var/folders/7x/v6ks476d5ngbf5dqytq4kgfw0000gn/T/d-11827-12668-10ggwmc.16v5uvunmi/package.tgz",
+    "spec": "/private/var/folders/7x/v6ks476d5ngbf5dqytq4kgfw0000gn/T/d-11827-12668-10ggwmc.16v5uvunmi/package.tgz",
     "type": "local"
   },
   "_requiredBy": [
     "#USER"
   ],
-  "_resolved": "file:../d-117311-4010-8t4crh/package.tgz",
-  "_shasum": "325f4eccf98eeb86e0fb675add761c36da033d4f",
+  "_resolved": "file:../d-11827-12668-10ggwmc.16v5uvunmi/package.tgz",
+  "_shasum": "38bd03d0df564fb5a7f831af90fef923ec1023bb",
   "_shrinkwrap": null,
-  "_spec": "/private/var/folders/vr/hv5l80qs7ms61mdx6w_n4fv5g23cpd/T/d-117311-4010-8t4crh/package.tgz",
-  "_where": "/private/var/folders/vr/hv5l80qs7ms61mdx6w_n4fv5g23cpd/T/apm-install-dir-117311-4010-xqnyo",
+  "_spec": "/private/var/folders/7x/v6ks476d5ngbf5dqytq4kgfw0000gn/T/d-11827-12668-10ggwmc.16v5uvunmi/package.tgz",
+  "_where": "/private/var/folders/7x/v6ks476d5ngbf5dqytq4kgfw0000gn/T/apm-install-dir-11827-12668-wikd7p.uo8qwipb9",
+  "atomTestRunner": "atom-jasmine3-test-runner",
   "auther": {
     "name": "Daisuke Mino",
     "url": "http://dsk.mn"
@@ -51,12 +51,13 @@
     }
   ],
   "dependencies": {
-    "babel-traverse": "^6.21.0",
-    "babylon": "^6.14.1",
-    "debug": "^2.0.0"
+    "babel-traverse": "^7.0.0-beta.3",
+    "babylon": "^7.0.0-beta.40",
+    "debug": "^3.1.0"
   },
   "description": "Refactoring support for JavaScript",
   "devDependencies": {
+    "atom-jasmine3-test-runner": "^3.1.0",
     "grunt": "^0.4",
     "grunt-este-watch": "^0.1",
     "grunt-notify": "^0.4"
@@ -70,7 +71,7 @@
   "main": "./lib/js_refactor",
   "name": "js-refactor",
   "optionalDependencies": {},
-  "readme": "[![Build Status](https://travis-ci.org/hax/js-refactor.svg?branch=master)](https://travis-ci.org/hax/js-refactor)\n[![Downloads](https://img.shields.io/apm/dm/js-refactor.svg)](https://atom.io/packages/js-refactor)\n[![apm](https://img.shields.io/apm/v/js-refactor.svg)](https://atom.io/packages/js-refactor)\n\n# JS Refactor Package\n\nJavaScript refactoring language plugin for [Atom](https://atom.io/).\n**This package requires [refactor](https://atom.io/packages/refactor) package.**\nYou can install from the preference pane.\n\n\n## ES6+ Support\n\nStart from v0.6.0, we already have experimental support of ES6+,\ntrack [#6](https://github.com/hax/js-refactor/issues/6) for more details.\n\n\n## Related Packages\n\n* [refactor](https://atom.io/packages/refactor): Main package.\n* [coffee-refactor](https://atom.io/packages/coffee-refactor): Language plugin for CoffeeScript.\n\n\n## Changelog\n\n### v0.7.2 on 2016-06-30\n*\tUse original debug package to solve install failures, fix #8, #15\n* Support different styles for references/mutations/declaration\n* Fix #14\n\n### v0.7.0 on 2016-06-24\n*\tUpgrade to babylon 6, enable all ES next syntax (include stage 0 features like\n\tbind operator) and JSX, Flow... all features babel support.\n\tBabylon 6 is not compatible with estools, so we change to babel-traverse,\n\tand rewrite and simplify the implementations, it should also fix all issues\n\tfrom underlying. (Of coz it may introduce new issues :)\n* Implement correct renaming of object shorthand and import alias.\n\n### v0.6.0 on 2015-09-08\n\n* Require Atom >=1.0.0, refactor ^0.6.0\n* Experimental support of ES6+ (Babel, stage >= 1)\n* Start migrating from coffeescript to babel\n* Improve esrefactor based on a most recent and active fork\n* Use babylon (the parser of babel) instead of esprima\n* Update estools (estraverse, escope) to latest version\n* Add debug util\n* Update travis config as latest atom/ci\n\n### [Changelog of old versions](CHANGELOG.md)\n",
+  "readme": "[![Build Status](https://travis-ci.org/hax/js-refactor.svg?branch=master)](https://travis-ci.org/hax/js-refactor)\n[![Downloads](https://img.shields.io/apm/dm/js-refactor.svg)](https://atom.io/packages/js-refactor)\n[![apm](https://img.shields.io/apm/v/js-refactor.svg)](https://atom.io/packages/js-refactor)\n\n# JS Refactor Package\n\nJavaScript refactoring language plugin for [Atom](https://atom.io/).\n**This package requires [refactor](https://atom.io/packages/refactor) package.**\nYou can install from the preference pane.\n\n\n## ES6+ Support\n\nStart from v0.6.0, we already have experimental support of ES6+,\ntrack [#6](https://github.com/hax/js-refactor/issues/6) for more details.\n\n\n## Related Packages\n\n* [refactor](https://atom.io/packages/refactor): Main package.\n* [coffee-refactor](https://atom.io/packages/coffee-refactor): Language plugin for CoffeeScript.\n\n\n## Changelog\n\n### v0.8.0 on 2018-03-06\n* Upgrade to babylon 7 beta, which support more new syntax\n* Add `.mjs` file extension\n* Enable tests\n\n### v0.7.5 on 2016-12-28\n* Fix #20, #25\n\n### v0.7.2 on 2016-06-30\n* Use original debug package to solve install failures, fix #8, #15\n* Support different styles for references/mutations/declaration\n* Fix #14\n\n### v0.7.0 on 2016-06-24\n*\tUpgrade to babylon 6, enable all ES next syntax (include stage 0 features like\n\tbind operator) and JSX, Flow... all features babel support.\n\tBabylon 6 is not compatible with estools, so we change to babel-traverse,\n\tand rewrite and simplify the implementations, it should also fix all issues\n\tfrom underlying. (Of coz it may introduce new issues :)\n* Implement correct renaming of object shorthand and import alias.\n\n### v0.6.0 on 2015-09-08\n\n* Require Atom >=1.0.0, refactor ^0.6.0\n* Experimental support of ES6+ (Babel, stage >= 1)\n* Start migrating from coffeescript to babel\n* Improve esrefactor based on a most recent and active fork\n* Use babylon (the parser of babel) instead of esprima\n* Update estools (estraverse, escope) to latest version\n* Add debug util\n* Update travis config as latest atom/ci\n\n### [Changelog of old versions](CHANGELOG.md)\n",
   "readmeFilename": "README.md",
   "repository": {
     "type": "git",
@@ -79,5 +80,5 @@
   "scripts": {
     "test": "apm test"
   },
-  "version": "0.7.5"
+  "version": "0.8.1"
 }

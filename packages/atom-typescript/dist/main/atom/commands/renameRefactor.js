@@ -1,22 +1,22 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-const tslib_1 = require("tslib");
-const registry_1 = require("./registry");
 const utils_1 = require("../utils");
-const utils_2 = require("../utils");
-registry_1.commands.set("typescript:rename-refactor", deps => {
-    return (e) => tslib_1.__awaiter(this, void 0, void 0, function* () {
-        if (!utils_1.commandForTypeScript(e)) {
+const renameView_1 = require("../views/renameView");
+const registry_1 = require("./registry");
+registry_1.addCommand("atom-text-editor", "typescript:rename-refactor", deps => ({
+    description: "Rename symbol under text cursor everywhere it is used",
+    async didDispatch(editor) {
+        const location = utils_1.getFilePathPosition(editor);
+        if (!location)
             return;
-        }
-        const location = utils_1.getFilePathPosition();
-        const client = yield deps.getClient(location.file);
-        const response = yield client.executeRename(location);
+        const client = await deps.getClient(location.file);
+        const response = await client.execute("rename", location);
         const { info, locs } = response.body;
         if (!info.canRename) {
-            return atom.notifications.addInfo("AtomTS: Rename not available at cursor location");
+            atom.notifications.addInfo("AtomTS: Rename not available at cursor location");
+            return;
         }
-        const newName = yield deps.renameView.showRenameDialog({
+        const newName = await renameView_1.showRenameDialog({
             autoSelect: true,
             title: "Rename Variable",
             text: info.displayName,
@@ -30,20 +30,12 @@ registry_1.commands.set("typescript:rename-refactor", deps => {
                 return "";
             },
         });
-        locs.map((loc) => tslib_1.__awaiter(this, void 0, void 0, function* () {
-            const { buffer, isOpen } = yield deps.getTypescriptBuffer(loc.file);
-            buffer.buffer.transact(() => {
-                for (const span of loc.locs) {
-                    buffer.buffer.setTextInRange(utils_2.spanToRange(span), newName);
-                }
-            });
-            if (!isOpen) {
-                buffer.buffer.save();
-                buffer.on("saved", () => {
-                    buffer.buffer.destroy();
-                });
-            }
-        }));
-    });
-});
+        if (newName !== undefined) {
+            await deps.applyEdits(locs.map(span => ({
+                fileName: span.file,
+                textChanges: span.locs.map(loc => (Object.assign({}, loc, { newText: newName }))),
+            })));
+        }
+    },
+}));
 //# sourceMappingURL=renameRefactor.js.map

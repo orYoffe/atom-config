@@ -23,7 +23,7 @@ const buildPointArrayFromPrettierErrorAndRange = (error: Prettier$SyntaxError, b
     errorLine(error) === 0 ? errorColumn(error) + bufferRange.start.column - 1 : errorColumn(error) - 1,
   );
 
-const buildExcerpt = (error: Prettier$SyntaxError) => /(.*)\s\(\d+:\d+\).*/.exec(error.message)[1];
+const buildExcerpt = (error: Prettier$SyntaxError) => _.get('[1]', /(.*)\s\(\d+:\d+\).*/.exec(error.message));
 
 const setErrorMessageInLinter = ({ editor, bufferRange, error }: HandleErrorArgs): void =>
   linter.setMessages(editor, [
@@ -42,9 +42,21 @@ const setErrorMessageInLinter = ({ editor, bufferRange, error }: HandleErrorArgs
   ]);
 
 const isSyntaxError: HandleErrorArgs => boolean = _.overSome([
-  _.flow(_.get('error.loc.start.line'), _.isInteger),
-  _.flow(_.get('error.loc.line'), _.isInteger),
+  _.flow(
+    _.get('error.loc.start.line'),
+    _.isInteger,
+  ),
+  _.flow(
+    _.get('error.loc.line'),
+    _.isInteger,
+  ),
 ]);
+
+const isUndefinedError: HandleErrorArgs => boolean = _.flow(
+  _.get('error.message'),
+  // $FlowIssue
+  _.matches('undefined'),
+);
 
 const isFilePathPresent: HandleErrorArgs => boolean = _.flow(
   _.get('editor'),
@@ -62,6 +74,7 @@ const displayErrorInPopup = (args: HandleErrorArgs) =>
 const handleError: HandleErrorArgs => void = _.flow(
   _.cond([
     [_.overEvery([isSyntaxError, isFilePathPresent]), setErrorMessageInLinter],
+    [isUndefinedError, args => console.error('Prettier encountered an error:', args.error)], // eslint-disable-line no-console
     [_.stubTrue, displayErrorInPopup],
   ]),
 );

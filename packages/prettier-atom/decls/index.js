@@ -7,6 +7,7 @@ declare type Point = {
   column: number,
 };
 declare type Range = {
+  isEqual: (range: Range) => boolean,
   start: Point,
   end: Point,
 };
@@ -23,22 +24,40 @@ declare type Atom$Iterator = ({
 // eslint-disable-next-line no-undef
 declare type TextEditor = {
   getGrammar: () => { scopeName: string },
-  getBuffer: () => { getRange: () => Range },
+  getBuffer: () => TextBuffer,
   getCursorScreenPosition: () => Point,
+  getCursorBufferPosition: () => Point,
   getLastCursor: () => { getScopeDescriptor: () => Atom$ScopeDescriptor },
   getSelectedText: () => string,
   getSelectedBufferRanges: () => Ranges,
   getTextInBufferRange: (bufferRange: Range) => string,
   setCursorScreenPosition: (point: Point) => Point,
+  setCursorBufferPosition: (point: Point) => Point,
   setTextInBufferRange: (bufferRange: Range, text: string) => Range,
-  buffer: { file: ?{ path: ?FilePath } },
+  buffer: {
+    file: ?{
+      path: ?FilePath,
+      getPath: () => string,
+    },
+  },
   backwardsScanInBufferRange: (regex: RegExp, Range: Range, iterator: Atom$Iterator) => void,
+};
+declare type TextBuffer = {
+  characterIndexForPosition: (cursorPosition: Point) => number,
+  positionForCharacterIndex: (cursorOffset: number) => Point,
+  getRange: () => Range,
+  setTextViaDiff: (text: string) => Range,
 };
 declare type Atom$Disposable = any;
 declare type Atom$View = any;
 declare type Atom$Workspace = any;
 declare type Atom$Command = { name: string, displayName: string };
-declare type Atom$Notifications$Options = { detail?: ?string, dismissable?: ?boolean };
+declare type Atom$Notifications$Options = {|
+  detail?: ?string,
+  dismissable?: ?boolean,
+  description?: ?string,
+  stack?: ?string,
+|};
 declare type Atom$Tooltips$Options = { title?: string };
 declare type Atom$ScopeDescriptor = Object;
 declare var atom: {
@@ -64,6 +83,9 @@ declare var atom: {
   },
   packages: {
     isPackageActive: (name: string) => boolean,
+  },
+  project: {
+    relativizePath: (path: string) => [string | null, string],
   },
   tooltips: {
     add: (target: HTMLElement, options?: Atom$Tooltips$Options) => Atom$Disposable,
@@ -93,6 +115,11 @@ declare type Prettier$SyntaxError = {
   message: string,
   stack: string,
 };
+declare type Prettier$CursorResult = {
+  formatted: any,
+  cursorOffset: number,
+};
+declare type Prettier$FileInfo = { exists: boolean, ignored: boolean, inferredParser: string };
 declare type Linter$Message = {
   // NOTE: These are given by providers
   location: {

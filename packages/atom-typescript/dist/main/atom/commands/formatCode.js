@@ -1,15 +1,13 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-const tslib_1 = require("tslib");
-const registry_1 = require("./registry");
 const utils_1 = require("../utils");
-registry_1.commands.set("typescript:format-code", deps => {
-    return (e) => tslib_1.__awaiter(this, void 0, void 0, function* () {
-        if (!utils_1.commandForTypeScript(e)) {
-            return;
-        }
-        const editor = atom.workspace.getActiveTextEditor();
+const registry_1 = require("./registry");
+registry_1.addCommand("atom-text-editor", "typescript:format-code", deps => ({
+    description: "Format code in currently active text editor",
+    async didDispatch(editor) {
         const filePath = editor.getPath();
+        if (filePath === undefined)
+            return;
         const ranges = [];
         for (const selection of editor.getSelectedBufferRanges()) {
             if (!selection.isEmpty()) {
@@ -18,7 +16,7 @@ registry_1.commands.set("typescript:format-code", deps => {
         }
         // Format the whole document if there are no ranges added
         if (ranges.length === 0) {
-            const end = editor.buffer.getEndPosition();
+            const end = editor.getBuffer().getEndPosition();
             ranges.push({
                 line: 1,
                 offset: 1,
@@ -26,20 +24,26 @@ registry_1.commands.set("typescript:format-code", deps => {
                 endOffset: end.column + 1,
             });
         }
-        const client = yield deps.getClient(filePath);
+        const client = await deps.getClient(filePath);
         const edits = [];
         // Collect all edits together so we can update everything in a single transaction
         for (const range of ranges) {
-            const result = yield client.executeFormat(Object.assign({}, range, { file: filePath }));
+            const result = await client.execute("format", Object.assign({}, range, { file: filePath }));
             if (result.body) {
                 edits.push(...result.body);
             }
         }
         if (edits.length > 0) {
             editor.transact(() => {
-                utils_1.formatCode(editor, edits);
+                formatCode(editor, edits);
             });
         }
-    });
-});
+    },
+}));
+function formatCode(editor, edits) {
+    // The code edits need to be applied in reverse order
+    for (let i = edits.length - 1; i >= 0; i--) {
+        editor.setTextInBufferRange(utils_1.spanToRange(edits[i]), edits[i].newText);
+    }
+}
 //# sourceMappingURL=formatCode.js.map

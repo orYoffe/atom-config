@@ -1,6 +1,6 @@
-const config = require('./config-schema.json');
 // eslint-disable-next-line import/no-extraneous-dependencies, import/no-unresolved
 const { CompositeDisposable } = require('atom');
+const config = require('./config-schema.json');
 const { createStatusTile, updateStatusTile, updateStatusTileScope, disposeTooltip } = require('./statusTile');
 const linterInterface = require('./linterInterface');
 
@@ -24,9 +24,9 @@ const lazyFormat = () => {
 };
 
 // HACK: lazy load most of the code we need for performance
-const lazyFormatOnSave = editor => {
+const lazyFormatOnSave = async editor => {
   if (!formatOnSave) formatOnSave = require('./formatOnSave'); // eslint-disable-line global-require
-  if (editor) formatOnSave(editor);
+  if (editor) await formatOnSave(editor);
 };
 
 // HACK: lazy load most of the code we need for performance
@@ -118,9 +118,8 @@ const activate = () => {
     atom.config.observe('prettier-atom.useEslint', () => lazyWarnAboutLinterEslintFixOnSave()),
   );
   subscriptions.add(
-    atom.config.observe(
-      'prettier-atom.formatOnSaveOptions.showInStatusBar',
-      show => (show ? attachStatusTile() : detachStatusTile()),
+    atom.config.observe('prettier-atom.formatOnSaveOptions.showInStatusBar', show =>
+      show ? attachStatusTile() : detachStatusTile(),
     ),
   );
 
@@ -146,8 +145,8 @@ const consumeStatusBar = statusBar => {
 
 const consumeIndie = registerIndie => {
   const linter = registerIndie({ name: 'Prettier' });
-  subscriptions.add(linter);
   linterInterface.set(linter);
+  subscriptions.add(linter);
 
   // Setting and clearing messages per filePath
   subscriptions.add(
@@ -160,7 +159,6 @@ const consumeIndie = registerIndie => {
       const subscription = textEditor.onDidDestroy(() => {
         subscriptions.remove(subscription);
         linter.setMessages(editorPath, []);
-        linterInterface.set(null);
       });
       subscriptions.add(subscription);
     }),

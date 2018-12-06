@@ -14,11 +14,14 @@ export default class Context {
 		let binding
 		traverse(this._ast, {
 			enter(path) {
-				const {start, end, name} = path.node
+				const {start, end} = path.node
 				if (end < loc)	return void path.skip()
 				if (start > loc)	return void path.stop()
 				if (test(path)) {
-					binding = path.scope.getBinding(name)
+					const {name, typeAnnotation} = path.node
+					if (!typeAnnotation || loc < typeAnnotation.start) { // ignore typeAnnotation
+						binding = path.scope.getBinding(name)
+					}
 					return void path.stop()
 				}
 			},

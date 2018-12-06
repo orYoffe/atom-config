@@ -1,57 +1,44 @@
-import {commands} from "./registry"
-import {commandForTypeScript, getFilePathPosition} from "../utils"
+import {addCommand} from "./registry"
 
-commands.set("typescript:build", deps => {
-  return async e => {
-    if (!commandForTypeScript(e)) {
-      return
-    }
-
-    const {file} = getFilePathPosition()
+addCommand("atom-text-editor", "typescript:build", deps => ({
+  description: "Compile all files in project related to current active text editor",
+  async didDispatch(editor) {
+    const file = editor.getPath()
+    if (file === undefined) return
     const client = await deps.getClient(file)
 
-    const projectInfo = await client.executeProjectInfo({
+    deps.reportBuildStatus(undefined)
+
+    const projectInfo = await client.execute("projectInfo", {
       file,
       needFileNameList: true,
     })
 
     const files = new Set(projectInfo.body!.fileNames)
     files.delete(projectInfo.body!.configFileName)
-    const max = files.size
-    const promises = [...files.values()].map(file =>
-      _finally(client.executeCompileOnSaveEmitFile({file, forced: true}), () => {
-        files.delete(file)
-        updateStatus()
+    let filesSoFar = 0
+    const promises = [...files.values()].map(f =>
+      _finally(client.execute("compileOnSaveEmitFile", {file: f, forced: true}), () => {
+        filesSoFar += 1
+        deps.reportProgress({max: files.size, value: filesSoFar})
       }),
     )
 
-    Promise.all(promises)
-      .then(results => {
-        if (results.some(result => result.body === false)) {
-          throw new Error("Emit failed")
-        }
-
-        deps.statusPanel.setBuildStatus({success: true})
-      })
-      .catch(e => {
-        console.error(e)
-        deps.statusPanel.setBuildStatus({success: false})
-      })
-
-    deps.statusPanel.setBuildStatus(undefined)
-    deps.statusPanel.setProgress({max, value: 0})
-
-    function updateStatus() {
-      if (files.size === 0) {
-        deps.statusPanel.setProgress(undefined)
-      } else {
-        deps.statusPanel.setProgress({max, value: max - files.size})
+    try {
+      const results = await Promise.all(promises)
+      if (results.some(result => result.body === false)) {
+        throw new Error("Emit failed")
       }
+      deps.reportBuildStatus({success: true})
+    } catch (error) {
+      const err = error as Error
+      console.error(err)
+      deps.reportBuildStatus({success: false, message: err.message})
     }
-  }
-})
+  },
+}))
 
-function _finally<T>(promise: Promise<T>, callback: (result: T) => any): Promise<T> {
+function _finally<T>(promise: Promise<T>, callback: (result: T) => void): Promise<T> {
   promise.then(callback, callback)
   return promise
 }

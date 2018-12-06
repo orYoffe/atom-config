@@ -1,7 +1,7 @@
 const {
   runLinter,
   shouldUseEslint,
-  getPrettierOptions,
+  shouldUseStylelint,
   getPrettierEslintOptions,
   isLinterEslintAutofixEnabled,
   toggleFormatOnSave,
@@ -62,6 +62,28 @@ describe('shouldUseEslint()', () => {
   });
 });
 
+describe('shouldUseStylelint()', () => {
+  it('is true if the config option is enabled', () => {
+    const mockGet = jest.fn(() => true);
+    atom = { config: { get: mockGet } };
+
+    const actual = shouldUseStylelint();
+
+    expect(mockGet).toHaveBeenCalledWith('prettier-atom.useStylelint');
+    expect(actual).toBe(true);
+  });
+
+  it('is false if the config option is not enabled', () => {
+    const mockGet = jest.fn(() => false);
+    atom = { config: { get: mockGet } };
+
+    const actual = shouldUseStylelint();
+
+    expect(mockGet).toHaveBeenCalledWith('prettier-atom.useStylelint');
+    expect(actual).toBe(false);
+  });
+});
+
 describe('getPrettierEslintOptions()', () => {
   it('retrieves the given prettier-eslint options from the prettier-atom config', () => {
     const mockGet = jest.fn(() => true);
@@ -69,7 +91,7 @@ describe('getPrettierEslintOptions()', () => {
 
     const actual = getPrettierEslintOptions();
 
-    expect(mockGet).lastCalledWith('prettier-atom.prettierEslintOptions');
+    expect(mockGet).toHaveBeenLastCalledWith('prettier-atom.prettierEslintOptions');
     expect(actual).toBe(true);
   });
 });
@@ -97,29 +119,6 @@ describe('isLinterEslintAutofixEnabled()', () => {
     const actual = isLinterEslintAutofixEnabled();
 
     expect(actual).toBe(false);
-  });
-});
-
-describe('getPrettierOptions()', () => {
-  it('returns all prettier options', () => {
-    const mockGet = option =>
-      ({
-        'prettier-atom.prettierOptions.printWidth': 80,
-        'prettier-atom.prettierOptions.tabWidth': 2,
-        'prettier-atom.prettierOptions.parser': 'flow',
-        'prettier-atom.prettierOptions.singleQuote': true,
-        'prettier-atom.prettierOptions.trailingComma': true,
-        'prettier-atom.prettierOptions.bracketSpacing': true,
-        'prettier-atom.prettierOptions.semi': true,
-        'prettier-atom.prettierOptions.useTabs': true,
-        'prettier-atom.prettierOptions.jsxBracketSameLine': true,
-      }[option]);
-    atom = { config: { get: mockGet } };
-    const editor = textEditor();
-
-    const actual = getPrettierOptions(editor);
-
-    expect(actual).toMatchSnapshot();
   });
 });
 

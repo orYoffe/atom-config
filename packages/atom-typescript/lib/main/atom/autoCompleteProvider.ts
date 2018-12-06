@@ -1,40 +1,32 @@
 // more: https://github.com/atom-community/autocomplete-plus/wiki/Provider-API
-import {ClientResolver} from "../../client/clientResolver"
-import {kindToType, FileLocationQuery} from "./utils"
-import {Provider, RequestOptions, Suggestion} from "../../typings/autocomplete"
-import {TypescriptBuffer} from "../typescriptBuffer"
-import {TypescriptServiceClient} from "../../client/client"
 import * as Atom from "atom"
+import * as ACP from "atom/autocomplete-plus"
 import * as fuzzaldrin from "fuzzaldrin"
+import {GetClientFunction, TSClient} from "../../client"
+import {FlushTypescriptBuffer} from "../pluginManager"
+import {FileLocationQuery, spanToRange, typeScriptScopes} from "./utils"
 
 const importPathScopes = ["meta.import", "meta.import-equals", "triple-slash-directive"]
 
-type SuggestionWithDetails = Suggestion & {
+type SuggestionWithDetails = ACP.TextSuggestion & {
   details?: protocol.CompletionEntryDetails
+  replacementRange?: Atom.Range
 }
 
-type Options = {
-  getTypescriptBuffer: (
-    filePath: string,
-  ) => Promise<{
-    buffer: TypescriptBuffer
-    isOpen: boolean
-  }>
-}
+export class AutocompleteProvider implements ACP.AutocompleteProvider {
+  public selector = typeScriptScopes()
+    .map(x => (x.includes(".") ? `.${x}` : x))
+    .join(", ")
 
-export class AutocompleteProvider implements Provider {
-  selector = ".source.ts, .source.tsx"
+  public disableForSelector = ".comment"
 
-  disableForSelector = ".comment"
+  public inclusionPriority = 3
+  public suggestionPriority = atom.config.get("atom-typescript").autocompletionSuggestionPriority
+  public excludeLowerPriority = false
 
-  inclusionPriority = 3
-  suggestionPriority = 3
-  excludeLowerPriority = false
-
-  private clientResolver: ClientResolver
-  private lastSuggestions: {
+  private lastSuggestions?: {
     // Client used to get the suggestions
-    client: TypescriptServiceClient
+    client: TSClient
 
     // File and position for the suggestions
     location: FileLocationQuery
@@ -46,61 +38,22 @@ export class AutocompleteProvider implements Provider {
     suggestions: SuggestionWithDetails[]
   }
 
-  private opts: Options
+  constructor(
+    private getClient: GetClientFunction,
+    private flushTypescriptBuffer: FlushTypescriptBuffer,
+  ) {}
 
-  constructor(clientResolver: ClientResolver, opts: Options) {
-    this.clientResolver = clientResolver
-    this.opts = opts
-  }
-
-  // Try to reuse the last completions we got from tsserver if they're for the same position.
-  async getSuggestionsWithCache(
-    prefix: string,
-    location: FileLocationQuery,
-    activatedManually: boolean,
-  ): Promise<SuggestionWithDetails[]> {
-    if (this.lastSuggestions && !activatedManually) {
-      const lastLoc = this.lastSuggestions.location
-      const lastCol = getNormalizedCol(this.lastSuggestions.prefix, lastLoc.offset)
-      const thisCol = getNormalizedCol(prefix, location.offset)
-
-      if (lastLoc.file === location.file && lastLoc.line == location.line && lastCol === thisCol) {
-        if (this.lastSuggestions.suggestions.length !== 0) {
-          return this.lastSuggestions.suggestions
-        }
-      }
-    }
-
-    const client = await this.clientResolver.get(location.file)
-    const completions = await client.executeCompletions({prefix, ...location})
-
-    const suggestions = completions.body!.map(entry => ({
-      text: entry.name,
-      leftLabel: entry.kind,
-      type: kindToType(entry.kind),
-    }))
-
-    this.lastSuggestions = {
-      client,
-      location,
-      prefix,
-      suggestions,
-    }
-
-    return suggestions
-  }
-
-  async getSuggestions(opts: RequestOptions): Promise<Suggestion[]> {
+  public async getSuggestions(opts: ACP.SuggestionsRequestedEvent): Promise<ACP.TextSuggestion[]> {
     const location = getLocationQuery(opts)
     const {prefix} = opts
 
-    if (!location.file) {
+    if (!location) {
       return []
     }
 
     // Don't show autocomplete if the previous character was a non word character except "."
-    const lastChar = getLastNonWhitespaceChar(opts.editor.buffer, opts.bufferPosition)
-    if (lastChar && !opts.activatedManually) {
+    const lastChar = getLastNonWhitespaceChar(opts.editor.getBuffer(), opts.bufferPosition)
+    if (lastChar !== undefined && !opts.activatedManually) {
       if (/\W/i.test(lastChar) && lastChar !== ".") {
         return []
       }
@@ -108,49 +61,57 @@ export class AutocompleteProvider implements Provider {
 
     // Don't show autocomplete if we're in a string.template and not in a template expression
     if (
-      containsScope(opts.scopeDescriptor.scopes, "string.template.") &&
-      !containsScope(opts.scopeDescriptor.scopes, "template.expression.")
+      containsScope(opts.scopeDescriptor.getScopesArray(), "string.template.") &&
+      !containsScope(opts.scopeDescriptor.getScopesArray(), "template.expression.")
     ) {
       return []
     }
 
     // Don't show autocomplete if we're in a string and it's not an import path
-    if (containsScope(opts.scopeDescriptor.scopes, "string.quoted.")) {
-      if (!importPathScopes.some(scope => containsScope(opts.scopeDescriptor.scopes, scope))) {
+    if (containsScope(opts.scopeDescriptor.getScopesArray(), "string.quoted.")) {
+      if (
+        !importPathScopes.some(scope => containsScope(opts.scopeDescriptor.getScopesArray(), scope))
+      ) {
         return []
       }
     }
 
     // Flush any pending changes for this buffer to get up to date completions
-    const {buffer} = await this.opts.getTypescriptBuffer(location.file)
-    await buffer.flush()
+    await this.flushTypescriptBuffer(location.file)
 
     try {
-      var suggestions = await this.getSuggestionsWithCache(prefix, location, opts.activatedManually)
+      let suggestions = await this.getSuggestionsWithCache(prefix, location, opts.activatedManually)
+
+      const alphaPrefix = prefix.replace(/\W/g, "")
+      if (alphaPrefix !== "") {
+        suggestions = fuzzaldrin.filter(suggestions, alphaPrefix, {
+          key: "text",
+        })
+      }
+
+      // Get additional details for the first few suggestions
+      await this.getAdditionalDetails(suggestions.slice(0, 10), location)
+
+      const trimmed = prefix.trim()
+
+      return suggestions.map(suggestion => ({
+        replacementPrefix: suggestion.replacementRange
+          ? opts.editor.getTextInBufferRange(suggestion.replacementRange)
+          : getReplacementPrefix(prefix, trimmed, suggestion.text!),
+        ...suggestion,
+      }))
     } catch (error) {
       return []
     }
-
-    const alphaPrefix = prefix.replace(/\W/g, "")
-    if (alphaPrefix !== "") {
-      suggestions = fuzzaldrin.filter(suggestions, alphaPrefix, {key: "text"})
-    }
-
-    // Get additional details for the first few suggestions
-    await this.getAdditionalDetails(suggestions.slice(0, 10), location)
-
-    const trimmed = prefix.trim()
-
-    return suggestions.map(suggestion => ({
-      replacementPrefix: getReplacementPrefix(prefix, trimmed, suggestion.text!),
-      ...suggestion,
-    }))
   }
 
-  async getAdditionalDetails(suggestions: SuggestionWithDetails[], location: FileLocationQuery) {
-    if (suggestions.some(s => !s.details)) {
-      const details = await this.lastSuggestions.client.executeCompletionDetails({
-        entryNames: suggestions.map(s => s.text!),
+  private async getAdditionalDetails(
+    suggestions: SuggestionWithDetails[],
+    location: FileLocationQuery,
+  ) {
+    if (suggestions.some(s => !s.details) && this.lastSuggestions) {
+      const details = await this.lastSuggestions.client.execute("completionEntryDetails", {
+        entryNames: suggestions.map(s => s.displayText!),
         ...location,
       })
 
@@ -160,22 +121,57 @@ export class AutocompleteProvider implements Provider {
         suggestion.details = detail
         let parts = detail.displayParts
         if (
-          parts[1] &&
-          parts[1].text === suggestion.leftLabel &&
-          parts[0] &&
+          parts.length >= 3 &&
           parts[0].text === "(" &&
-          parts[2] &&
+          parts[1].text === suggestion.leftLabel &&
           parts[2].text === ")"
         ) {
           parts = parts.slice(3)
         }
         suggestion.rightLabel = parts.map(d => d.text).join("")
 
-        if (detail.documentation) {
-          suggestion.description = detail.documentation.map(d => d.text).join(" ")
-        }
+        suggestion.description =
+          detail.documentation && detail.documentation.map(d => d.text).join(" ")
       })
     }
+  }
+
+  // Try to reuse the last completions we got from tsserver if they're for the same position.
+  private async getSuggestionsWithCache(
+    prefix: string,
+    location: FileLocationQuery,
+    activatedManually: boolean,
+  ): Promise<SuggestionWithDetails[]> {
+    if (this.lastSuggestions && !activatedManually) {
+      const lastLoc = this.lastSuggestions.location
+      const lastCol = getNormalizedCol(this.lastSuggestions.prefix, lastLoc.offset)
+      const thisCol = getNormalizedCol(prefix, location.offset)
+
+      if (lastLoc.file === location.file && lastLoc.line === location.line && lastCol === thisCol) {
+        if (this.lastSuggestions.suggestions.length !== 0) {
+          return this.lastSuggestions.suggestions
+        }
+      }
+    }
+
+    const client = await this.getClient(location.file)
+    const completions = await client.execute("completions", {
+      prefix,
+      includeExternalModuleExports: false,
+      includeInsertTextCompletions: true,
+      ...location,
+    })
+
+    const suggestions = completions.body!.map(completionEntryToSuggestion)
+
+    this.lastSuggestions = {
+      client,
+      location,
+      prefix,
+      suggestions,
+    }
+
+    return suggestions
   }
 }
 
@@ -197,19 +193,20 @@ function getNormalizedCol(prefix: string, col: number): number {
   return col - length
 }
 
-function getLocationQuery(opts: RequestOptions): FileLocationQuery {
+function getLocationQuery(opts: ACP.SuggestionsRequestedEvent): FileLocationQuery | undefined {
+  const path = opts.editor.getPath()
+  if (path === undefined) {
+    return undefined
+  }
   return {
-    file: opts.editor.getPath(),
+    file: path,
     line: opts.bufferPosition.row + 1,
     offset: opts.bufferPosition.column + 1,
   }
 }
 
-function getLastNonWhitespaceChar(
-  buffer: TextBuffer.ITextBuffer,
-  pos: TextBuffer.IPoint,
-): string | undefined {
-  let lastChar: string | undefined = undefined
+function getLastNonWhitespaceChar(buffer: Atom.TextBuffer, pos: Atom.Point): string | undefined {
+  let lastChar: string | undefined
   const range = new Atom.Range([0, 0], pos)
   buffer.backwardsScanInRange(
     /\S/,
@@ -222,7 +219,7 @@ function getLastNonWhitespaceChar(
   return lastChar
 }
 
-function containsScope(scopes: string[], matchScope: string): boolean {
+function containsScope(scopes: ReadonlyArray<string>, matchScope: string): boolean {
   for (const scope of scopes) {
     if (scope.includes(matchScope)) {
       return true
@@ -230,4 +227,69 @@ function containsScope(scopes: string[], matchScope: string): boolean {
   }
 
   return false
+}
+
+function completionEntryToSuggestion(entry: protocol.CompletionEntry): SuggestionWithDetails {
+  return {
+    displayText: entry.name,
+    text: entry.insertText !== undefined ? entry.insertText : entry.name,
+    leftLabel: entry.kind,
+    replacementRange: entry.replacementSpan ? spanToRange(entry.replacementSpan) : undefined,
+    type: kindMap[entry.kind],
+  }
+}
+
+/** From :
+ * https://github.com/atom-community/autocomplete-plus/pull/334#issuecomment-85697409
+ */
+type ACPCompletionType =
+  | "variable"
+  | "constant"
+  | "property"
+  | "value"
+  | "method"
+  | "function"
+  | "class"
+  | "type"
+  | "keyword"
+  | "tag"
+  | "import"
+  | "require"
+  | "snippet"
+
+const kindMap: {[key in protocol.ScriptElementKind]: ACPCompletionType | undefined} = {
+  directory: "require",
+  module: "import",
+  "external module name": "import",
+  class: "class",
+  "local class": "class",
+  method: "method",
+  property: "property",
+  getter: "property",
+  setter: "property",
+  "JSX attribute": "property",
+  constructor: "method",
+  enum: "type",
+  interface: "type",
+  type: "type",
+  "type parameter": "type",
+  "primitive type": "type",
+  function: "function",
+  "local function": "function",
+  label: "variable",
+  alias: "import",
+  var: "variable",
+  let: "variable",
+  "local var": "variable",
+  parameter: "variable",
+  "enum member": "constant",
+  const: "constant",
+  string: "value",
+  keyword: "keyword",
+  "": undefined,
+  warning: undefined,
+  script: undefined,
+  call: undefined,
+  index: undefined,
+  construct: undefined,
 }

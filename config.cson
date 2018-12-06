@@ -1,13 +1,30 @@
 "*":
+  "atom-package-deps":
+    ignored: []
   core:
+    customFileTypes:
+      "source.ini": [
+        ".buckconfig"
+        ".flowconfig"
+        ".hgrc"
+      ]
+      "source.json": [
+        "BUCK.autodeps"
+      ]
+      "source.python": [
+        "BUCK"
+      ]
     disabledPackages: [
       "language-babel"
       "auto-update-packages"
-      "linter-htmlhint"
-      "clipboard-history"
-      "seti-icons"
       "hyperclick"
-      "prettier-atom"
+      "pigments"
+      "nuclide"
+      "js-hyperclick"
+      "auto-detect-indentation"
+      "busy-signal"
+      "intentions"
+      "refactor"
     ]
     ignoredNames: [
       ".git"
@@ -26,20 +43,28 @@
     ]
   editor:
     autoIndent: false
-    fontSize: 12
     preferredLineLength: 140
     softWrap: true
     zoomFontWhenCtrlScrolling: true
   "exception-reporting":
     userId: "b43cee21-9f0c-8d81-ffc4-adce37402810"
   "file-icons": {}
+  "highlight-selected":
+    showResultsOnScrollBar: true
+  "linter-eslint":
+    disableWhenNoEslintConfig: false
+    lintHtmlFiles: true
   "linter-ui-default":
     panelHeight: 81
+  "markdown-preview":
+    useGitHubStyle: true
+  nuclide:
+    "nuclide-flow":
+      warnOnNotInstalled: false
   "postcss-sorting":
     checkForConfigFile: true
   "prettier-atom":
     formatOnSaveOptions:
-      enabled: true
       isDisabledIfNoConfigFile: true
       isDisabledIfNotInPackageJson: true
       respectEslintignore: false
@@ -64,6 +89,9 @@
 ".js.jsx.source":
   editor:
     preferredLineLength: 140
+".reason.source":
+  editor:
+    preferredLineLength: 110
 ".sass.source":
   editor:
     autoIndentOnPaste: true

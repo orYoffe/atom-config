@@ -17,6 +17,12 @@
   'Console log':
     'prefix': 'log'
     'body': 'console.log(\'---------${1:i}--------\', ${1:i});'
+  'Log res':
+    'prefix': 'thenres'
+    'body': '.then(res => {
+      console.log(\'---------res--------\', res);
+      return res;
+    })'
 #
 # Each scope (e.g. '.source.coffee' above) can only be declared once.
 #

@@ -1,0 +1,80 @@
+{
+  "_args": [
+    [
+      {
+        "raw": "/private/var/folders/7x/v6ks476d5ngbf5dqytq4kgfw0000gn/T/d-118417-1075-e4gbew.arjlonipb9/package.tgz",
+        "scope": null,
+        "escapedName": null,
+        "name": null,
+        "rawSpec": "/private/var/folders/7x/v6ks476d5ngbf5dqytq4kgfw0000gn/T/d-118417-1075-e4gbew.arjlonipb9/package.tgz",
+        "spec": "/private/var/folders/7x/v6ks476d5ngbf5dqytq4kgfw0000gn/T/d-118417-1075-e4gbew.arjlonipb9/package.tgz",
+        "type": "local"
+      },
+      "/private/var/folders/7x/v6ks476d5ngbf5dqytq4kgfw0000gn/T/apm-install-dir-118417-1075-13vq7e6.g89wg919k9"
+    ]
+  ],
+  "_from": "../d-118417-1075-e4gbew.arjlonipb9/package.tgz",
+  "_id": "atom-react-native-style@0.2.0",
+  "_inCache": true,
+  "_location": "/atom-react-native-style",
+  "_phantomChildren": {},
+  "_requested": {
+    "raw": "/private/var/folders/7x/v6ks476d5ngbf5dqytq4kgfw0000gn/T/d-118417-1075-e4gbew.arjlonipb9/package.tgz",
+    "scope": null,
+    "escapedName": null,
+    "name": null,
+    "rawSpec": "/private/var/folders/7x/v6ks476d5ngbf5dqytq4kgfw0000gn/T/d-118417-1075-e4gbew.arjlonipb9/package.tgz",
+    "spec": "/private/var/folders/7x/v6ks476d5ngbf5dqytq4kgfw0000gn/T/d-118417-1075-e4gbew.arjlonipb9/package.tgz",
+    "type": "local"
+  },
+  "_requiredBy": [
+    "#USER"
+  ],
+  "_resolved": "file:../d-118417-1075-e4gbew.arjlonipb9/package.tgz",
+  "_shasum": "9f4a0aa9e2e528dab12857b12f551243cd5376b8",
+  "_shrinkwrap": null,
+  "_spec": "/private/var/folders/7x/v6ks476d5ngbf5dqytq4kgfw0000gn/T/d-118417-1075-e4gbew.arjlonipb9/package.tgz",
+  "_where": "/private/var/folders/7x/v6ks476d5ngbf5dqytq4kgfw0000gn/T/apm-install-dir-118417-1075-13vq7e6.g89wg919k9",
+  "bugs": {
+    "url": "https://github.com/yomybaby/atom-react-native-style/issues"
+  },
+  "dependencies": {
+    "lodash": "^4.17.4"
+  },
+  "description": "This Atom package is for helping to write react-native StyleSheet",
+  "devDependencies": {
+    "react-docgen": "^2.16.0",
+    "react-native": "^0.46.2"
+  },
+  "engines": {
+    "atom": ">=1.0.0 <2.0.0"
+  },
+  "homepage": "https://github.com/yomybaby/atom-react-native-style#readme",
+  "keywords": [
+    "react-native",
+    "StyleSheet",
+    "autocomplete",
+    "code-template"
+  ],
+  "license": "MIT",
+  "main": "./lib/main",
+  "name": "atom-react-native-style",
+  "optionalDependencies": {},
+  "providedServices": {
+    "autocomplete.provider": {
+      "versions": {
+        "2.0.0": "getProvider"
+      }
+    }
+  },
+  "readme": "# atom-react-native-style\n\nThis Atom package is for helping to write react-native StyleSheet\n\n```\napm install atom-react-native-style\n```\n\n## Features\n- completion for key/value of style\n\n![auto](https://user-images.githubusercontent.com/621215/28626708-63d91168-7252-11e7-9e4b-e289232b79f6.gif)\n\n## Settings\n- StyleSheet create function name\n  - If you use diffrent stylesheet create function, change this option\n  - `StyleSheet.create` is default.\n  \n## TODO\n- hyperclick provider for move to style definition\n  - If not exists, generate one.\n",
+  "readmeFilename": "README.md",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/yomybaby/atom-react-native-style.git"
+  },
+  "scripts": {
+    "completion": "node scripts/completiongen.js"
+  },
+  "version": "0.2.0"
+}

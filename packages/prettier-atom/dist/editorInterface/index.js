@@ -1,66 +1,34 @@
 'use strict';
 
-var _ = require('lodash/fp');
-var path = require('path');
+const path = require('path');
 
-var _require = require('../atomInterface'),
-    getCssScopes = _require.getCssScopes,
-    getTypescriptScopes = _require.getTypescriptScopes,
-    getJsonScopes = _require.getJsonScopes,
-    getGraphQlScopes = _require.getGraphQlScopes,
-    getMarkdownScopes = _require.getMarkdownScopes;
-
-var EMBEDDED_SCOPES = ['text.html.vue', 'text.html.basic'];
-
-var getBufferRange = function getBufferRange(editor) {
-  return editor.getBuffer().getRange();
+let flow;
+const lazyFlow = () => {
+  if (!flow) {
+    flow = require('lodash/fp/flow'); // eslint-disable-line global-require
+  }
+  return flow;
 };
 
-var getCurrentScope = function getCurrentScope(editor) {
-  return editor.getGrammar().scopeName;
-};
+const STYLELINT_SCOPES = ['source.css', 'source.less', 'source.css.less', 'source.scss', 'source.css.scss', 'source.css.postcss'];
 
-var isCurrentScopeEmbeddedScope = function isCurrentScopeEmbeddedScope(editor) {
-  return EMBEDDED_SCOPES.includes(getCurrentScope(editor));
-};
+const getBufferRange = editor => editor.getBuffer().getRange();
 
-var isCurrentScopeCssScope = function isCurrentScopeCssScope(editor) {
-  return getCssScopes().includes(getCurrentScope(editor));
-};
+const getCurrentScope = editor => editor.getGrammar().scopeName;
 
-var isCurrentScopeTypescriptScope = function isCurrentScopeTypescriptScope(editor) {
-  return getTypescriptScopes().includes(getCurrentScope(editor));
-};
+const isCurrentScopeStyleLintScope = editor => STYLELINT_SCOPES.includes(getCurrentScope(editor));
 
-var isCurrentScopeJsonScope = function isCurrentScopeJsonScope(editor) {
-  return getJsonScopes().includes(getCurrentScope(editor));
-};
+const getCurrentFilePath = editor => editor.buffer.file ? editor.buffer.file.getPath() : undefined;
 
-var isCurrentScopeGraphQlScope = function isCurrentScopeGraphQlScope(editor) {
-  return getGraphQlScopes().includes(getCurrentScope(editor));
-};
+const isCurrentFilePathDefined = editor => editor && !!getCurrentFilePath(editor);
 
-var isCurrentScopeMarkdownScope = function isCurrentScopeMarkdownScope(editor) {
-  return getMarkdownScopes().includes(getCurrentScope(editor));
-};
-
-var getCurrentFilePath = function getCurrentFilePath(editor) {
-  return editor.buffer.file ? editor.buffer.file.path : undefined;
-};
-
-var getCurrentDir = _.flow(getCurrentFilePath, function (maybeFilePath) {
-  return typeof maybeFilePath === 'string' ? path.dirname(maybeFilePath) : undefined;
-});
+const getCurrentDir = editor => lazyFlow()(getCurrentFilePath, maybeFilePath => typeof maybeFilePath === 'string' ? path.dirname(maybeFilePath) : undefined)(editor);
 
 module.exports = {
-  getBufferRange: getBufferRange,
-  isCurrentScopeEmbeddedScope: isCurrentScopeEmbeddedScope,
-  isCurrentScopeCssScope: isCurrentScopeCssScope,
-  isCurrentScopeTypescriptScope: isCurrentScopeTypescriptScope,
-  isCurrentScopeJsonScope: isCurrentScopeJsonScope,
-  isCurrentScopeGraphQlScope: isCurrentScopeGraphQlScope,
-  isCurrentScopeMarkdownScope: isCurrentScopeMarkdownScope,
-  getCurrentScope: getCurrentScope,
-  getCurrentFilePath: getCurrentFilePath,
-  getCurrentDir: getCurrentDir
+  getBufferRange,
+  isCurrentFilePathDefined,
+  isCurrentScopeStyleLintScope,
+  getCurrentScope,
+  getCurrentFilePath,
+  getCurrentDir
 };

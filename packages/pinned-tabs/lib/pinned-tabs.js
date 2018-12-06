@@ -1,7 +1,9 @@
-const { CompositeDisposable } = require('atom');
+'use babel';
 
-const PinnedTabsState = require('./state.js');
-const { findPaneItem, findTabById, findTabByItem, isAncestor } = require('./util.js');
+import { CompositeDisposable } from 'atom';
+
+import PinnedTabsState from './state.js';
+import { findPaneItem, findTabById, findTabByItem, isAncestor } from './util.js';
 
 
 class PinnedTabs {
@@ -51,10 +53,10 @@ class PinnedTabs {
 
     // Remove settings classes
     let body = document.querySelector('body');
-    body.classList.remove('pinned-tabs-animated');
-    body.classList.remove('pinned-tabs-modified-always');
-    body.classList.remove('pinned-tabs-modified-hover');
-    body.classList.remove('pinned-tabs-visualstudio');
+    body.classList.remove('pinned-tabs-animated',
+                          'pinned-tabs-modified-always',
+                          'pinned-tabs-modified-hover',
+                          'pinned-tabs-visualstudio');
   }
 
   /**
@@ -72,18 +74,17 @@ class PinnedTabs {
    * Initialize the configuration of pinned-tabs.
    */
   observeConfig() {
+    let body = document.querySelector('body');
+
     atom.config.observe('pinned-tabs.animated', enable => {
-      let body = document.querySelector('body');
       body.classList.toggle('pinned-tabs-animated', enable);
     });
 
     atom.config.observe('pinned-tabs.closeUnpinned', enable => {
-      let body = document.querySelector('body');
       body.classList.toggle('close-unpinned', enable);
     });
 
     atom.config.observe('pinned-tabs.modified', value => {
-      let body = document.querySelector('body');
       switch (value) {
         case 'dont':
           body.classList.remove('pinned-tabs-modified-always');
@@ -100,7 +101,6 @@ class PinnedTabs {
     });
 
     atom.config.observe('pinned-tabs.visualstudio.enable', enable => {
-      let body = document.querySelector('body');
       body.classList.toggle('pinned-tabs-visualstudio', enable);
     });
 
@@ -281,10 +281,14 @@ class PinnedTabs {
       tab.classList.add('pinned-tab');
       tab.style.minWidth = `${minimumWidth}px`;
       this.state.addPaneItem(pane.id, item);
+
+      if (pane.getPendingItem() === item) {
+        pane.saveItem(item); // Makes sure the item is not pending anymore
+      }
     } else {
       pane.moveItem(item, pinnedTabsCount - 1);
 
-      tab.style.minWidth = null; // Remove the min-width rule
+      tab.style.minWidth = null; // Removes the min-width rule
       tab.classList.remove('pinned-tab');
       this.state.removePaneItem(pane.id, item);
     }
@@ -294,6 +298,7 @@ class PinnedTabs {
 
   /**
    * Find out if a given tab is currently pinned.
+   *
    * @param  {Node} tab  The tab of the item of interest.
    * @return {Boolean}   An indication of whether the tab is pinned.
    */
@@ -320,12 +325,14 @@ class PinnedTabs {
       }
 
       this.state.movePaneItem(pane.id, item, newIndex);
-    } else if (!this.isPinned(tab) && newIndex < pinnedTabsCount) {
-      pane.moveItem(item, pinnedTabsCount);
+    } else {
+      if (newIndex < pinnedTabsCount) {
+        pane.moveItem(item, pinnedTabsCount);
+      }
     }
   }
 
 }
 
 
-module.exports = new PinnedTabs();
+export default new PinnedTabs();

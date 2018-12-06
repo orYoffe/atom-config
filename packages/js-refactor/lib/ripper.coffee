@@ -12,16 +12,43 @@ class Ripper
 
   @scopeNames: [
     'source.js'
+    'source.mjs'
     'source.js.jsx'
     'source.babel'
   ]
 
   parseOptions:
-    sourceType: 'module'
+    sourceType: 'unambiguous'
     allowImportExportEverywhere: true
     allowReturnOutsideFunction: true
     allowSuperOutsideMethod: true
-    plugins: ['*']
+    plugins: [
+      '*' # see https://github.com/babel/babel/issues/7508
+      'jsx'
+      # 'typescript'
+      'flow'
+      'flowComments'
+      'doExpressions'
+      'objectRestSpread'
+      'decorators2'
+      'classProperties'
+      'classPrivateProperties'
+      'classPrivateMethods'
+      'exportDefaultFrom'
+      'exportNamespaceFrom'
+      'asyncGenerators'
+      'functionBind'
+      'functionSent'
+      'dynamicImport'
+      'numericSeparator'
+      'optionalChaining'
+      'importMeta'
+      'bigInt'
+      'optionalCatchBinding'
+      'throwExpressions'
+      'pipelineOperator'
+      'nullishCoalescingOperator'
+    ]
 
   constructor: ->
     @context = new Context
@@ -66,6 +93,10 @@ class Ripper
         range.key = Ripper.locToRange imported.loc if not range.shorthand
         range.delimiter = ' as '
         range
+      else if binding.identifier.typeAnnotation
+        Ripper.locToRange
+          start: binding.identifier.loc.start
+          end:   binding.identifier.typeAnnotation.loc.start
       else
         Ripper.locToRange binding.identifier.loc
     declRange.type = 'decl'

@@ -1,4 +1,5 @@
 // @flow
+const _ = require('lodash/fp');
 
 // constants
 const LINTER_LINT_COMMAND = 'linter:lint';
@@ -19,7 +20,7 @@ const isLinterEslintAutofixEnabled = () =>
 
 const shouldUseEslint = () => getConfigOption('useEslint');
 
-const shouldUseEditorConfig = () => getConfigOption('useEditorConfig');
+const shouldUseStylelint = () => getConfigOption('useStylelint');
 
 const isFormatOnSaveEnabled = () => getConfigOption('formatOnSaveOptions.enabled');
 
@@ -30,43 +31,17 @@ const isDisabledIfNoConfigFile = () => getConfigOption('formatOnSaveOptions.isDi
 
 const shouldRespectEslintignore = () => getConfigOption('formatOnSaveOptions.respectEslintignore');
 
-const getJavascriptScopes = () => getConfigOption('formatOnSaveOptions.javascriptScopes');
-
-const getTypescriptScopes = () => getConfigOption('formatOnSaveOptions.typescriptScopes');
-
-const getCssScopes = () => getConfigOption('formatOnSaveOptions.cssScopes');
-
-const getJsonScopes = () => getConfigOption('formatOnSaveOptions.jsonScopes');
-
-const getGraphQlScopes = () => getConfigOption('formatOnSaveOptions.graphQlScopes');
-
-const getMarkdownScopes = () => getConfigOption('formatOnSaveOptions.markdownScopes');
-
-const getAllScopes = () => [
-  ...getJavascriptScopes(),
-  ...getTypescriptScopes(),
-  ...getCssScopes(),
-  ...getJsonScopes(),
-  ...getGraphQlScopes(),
-  ...getMarkdownScopes(),
-];
-
-const getWhitelistedGlobs = () => getConfigOption('formatOnSaveOptions.whitelistedGlobs');
-
-const getExcludedGlobs = () => getConfigOption('formatOnSaveOptions.excludedGlobs');
-
 const toggleFormatOnSave = () => setConfigOption('formatOnSaveOptions.enabled', !isFormatOnSaveEnabled());
-
-const getAtomTabLength = (editor: TextEditor) =>
-  atom.config.get('editor.tabLength', { scope: editor.getLastCursor().getScopeDescriptor() });
-
-const getPrettierOptions = () => getConfigOption('prettierOptions');
 
 const getPrettierEslintOptions = () => getConfigOption('prettierEslintOptions');
 
 const getAtomVersion = () => atom.getVersion();
 
 const getPrettierAtomConfig = () => atom.config.get('prettier-atom');
+
+const getWhitelistedGlobs = () => getConfigOption('formatOnSaveOptions.whitelistedGlobs');
+
+const getExcludedGlobs = () => getConfigOption('formatOnSaveOptions.excludedGlobs');
 
 const addTooltip = (element: HTMLElement, options: Atom$Tooltips$Options) =>
   atom.tooltips.add(element, options);
@@ -80,9 +55,9 @@ const addWarningNotification = (message: string, options?: Atom$Notifications$Op
 const addErrorNotification = (message: string, options?: Atom$Notifications$Options) =>
   atom.notifications.addError(message, options);
 
-const attemptWithErrorNotification = (func: Function, ...args: Array<any>) => {
+const attemptWithErrorNotification = async (func: Function, ...args: Array<any>) => {
   try {
-    func(...args);
+    await func(...args);
   } catch (e) {
     console.error(e); // eslint-disable-line no-console
     addErrorNotification(e.message, { dismissable: true, stack: e.stack });
@@ -93,33 +68,28 @@ const runLinter = (editor: TextEditor) =>
   isLinterLintCommandDefined(editor) &&
   atom.commands.dispatch(atom.views.getView(editor), LINTER_LINT_COMMAND);
 
+const relativizePathFromAtomProject = (path: ?string) =>
+  path ? _.get('[1]', atom.project.relativizePath(path)) : null;
+
 module.exports = {
   addErrorNotification,
   addInfoNotification,
   addTooltip,
   addWarningNotification,
-  getAtomTabLength,
   getAtomVersion,
-  getExcludedGlobs,
   getPrettierAtomConfig,
   getPrettierEslintOptions,
-  getPrettierOptions,
-  getJavascriptScopes,
-  getTypescriptScopes,
-  getCssScopes,
-  getJsonScopes,
-  getGraphQlScopes,
-  getMarkdownScopes,
-  getAllScopes,
   getWhitelistedGlobs,
+  getExcludedGlobs,
   isDisabledIfNotInPackageJson,
   isDisabledIfNoConfigFile,
   isFormatOnSaveEnabled,
   isLinterEslintAutofixEnabled,
+  relativizePathFromAtomProject,
   runLinter,
   shouldRespectEslintignore,
-  shouldUseEditorConfig,
   shouldUseEslint,
+  shouldUseStylelint,
   toggleFormatOnSave,
   attemptWithErrorNotification,
 };

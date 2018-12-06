@@ -1,109 +1,203 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-const tslib_1 = require("tslib");
 // A class to keep all changes to the buffer in sync with tsserver. This is mainly used with
 // the editor panes, but is also useful for editor-less buffer changes (renameRefactor).
-const atom_1 = require("atom");
-const events_1 = require("events");
-const utils_1 = require("./atom/utils");
+const Atom = require("atom");
+const lodash_1 = require("lodash");
+const utils_1 = require("../utils");
+const utils_2 = require("./atom/utils");
 class TypescriptBuffer {
-    constructor(buffer, getClient) {
+    constructor(buffer, deps) {
         this.buffer = buffer;
-        this.getClient = getClient;
-        // Timestamps for buffer events
-        this.changedAt = 0;
-        this.changedAtBatch = 0;
-        this.events = new events_1.EventEmitter();
-        this.subscriptions = new atom_1.CompositeDisposable();
-        this.dispose = () => tslib_1.__awaiter(this, void 0, void 0, function* () {
+        this.deps = deps;
+        this.events = new Atom.Emitter();
+        this.lastChangedAt = Date.now();
+        this.lastUpdatedAt = Date.now();
+        this.compileOnSave = false;
+        this.subscriptions = new Atom.CompositeDisposable();
+        // tslint:disable-next-line:member-ordering
+        this.on = this.events.on.bind(this.events);
+        this.dispose = () => {
             this.subscriptions.dispose();
-            if (this.isOpen && this.clientPromise) {
-                const client = yield this.clientPromise;
-                client.executeClose({ file: this.buffer.getPath() });
-                this.events.emit("closed", this.filePath);
-            }
-        });
-        this.onDidChange = () => {
-            this.changedAt = Date.now();
+            utils_1.handlePromise(this.close());
         };
-        this.onDidChangePath = (newPath) => tslib_1.__awaiter(this, void 0, void 0, function* () {
-            if (this.clientPromise && this.filePath) {
-                const client = yield this.clientPromise;
-                client.executeClose({ file: this.filePath });
-                this.events.emit("closed", this.filePath);
-            }
-            this.open();
-        });
-        this.onDidSave = () => tslib_1.__awaiter(this, void 0, void 0, function* () {
-            // Check if there isn't a onDidStopChanging event pending.
-            const { changedAt, changedAtBatch } = this;
-            if (changedAt && changedAtBatch && changedAt > changedAtBatch) {
-                yield new Promise(resolve => this.events.once("changed", resolve));
-            }
-            this.events.emit("saved");
-        });
-        this.onDidStopChanging = ({ changes }) => tslib_1.__awaiter(this, void 0, void 0, function* () {
-            // Don't update changedAt or emit any events if there are no actual changes or file isn't open
-            if (changes.length === 0 || !this.isOpen || !this.clientPromise) {
+        this.init = async () => {
+            if (!this.state)
                 return;
+            await this.state.client.execute("open", {
+                file: this.state.filePath,
+                fileContent: this.buffer.getText(),
+            });
+            await this.getErr({ allFiles: false });
+        };
+        this.close = async () => {
+            await this.openPromise;
+            if (this.state) {
+                const client = this.state.client;
+                const file = this.state.filePath;
+                await client.execute("close", { file });
+                this.deps.clearFileErrors(file);
+                this.state.subscriptions.dispose();
+                this.state = undefined;
             }
-            this.changedAtBatch = Date.now();
-            const client = yield this.clientPromise;
-            const filePath = this.buffer.getPath();
-            for (const change of changes) {
-                const { start, oldExtent, newText } = change;
-                const end = {
-                    endLine: start.row + oldExtent.row + 1,
-                    endOffset: (oldExtent.row === 0 ? start.column + oldExtent.column : oldExtent.column) + 1,
-                };
-                yield client.executeChange(Object.assign({}, end, { file: filePath, line: start.row + 1, offset: start.column + 1, insertString: newText }));
-            }
-            this.events.emit("changed");
-        });
-        this.subscriptions.add(buffer.onDidChange(this.onDidChange));
-        this.subscriptions.add(buffer.onDidChangePath(this.onDidChangePath));
-        this.subscriptions.add(buffer.onDidDestroy(this.dispose));
-        this.subscriptions.add(buffer.onDidSave(this.onDidSave));
-        this.subscriptions.add(buffer.onDidStopChanging(this.onDidStopChanging));
-        this.open();
+        };
+        this.onDidChange = () => {
+            this.lastChangedAt = Date.now();
+        };
+        this.onDidChangePath = (newPath) => {
+            utils_1.handlePromise(this.close().then(() => {
+                this.openPromise = this.open(newPath);
+            }));
+        };
+        this.onDidSave = async () => {
+            await this.flush();
+            await this.getErr({ allFiles: true });
+            await this.doCompileOnSave();
+        };
+        this.onDidStopChanging = async ({ changes }) => {
+            // If there are no actual changes, or the file isn't open, we have nothing to do
+            if (changes.length === 0 || !this.state)
+                return;
+            this.deps.reportBuildStatus(undefined);
+            const { client, filePath } = this.state;
+            // NOTE: this might look somewhat weird until we realize that
+            // awaiting on each "change" command may lead to arbitrary
+            // interleaving, while pushing them all at once guarantees
+            // that all subsequent "change" commands will be sequenced after
+            // the ones we pushed
+            await Promise.all(changes.reduceRight((acc, { oldRange, newText }) => {
+                acc.push(client.execute("change", {
+                    file: filePath,
+                    line: oldRange.start.row + 1,
+                    offset: oldRange.start.column + 1,
+                    endLine: oldRange.end.row + 1,
+                    endOffset: oldRange.end.column + 1,
+                    insertString: newText,
+                }));
+                return acc;
+            }, []));
+            this.lastUpdatedAt = Date.now();
+            this.events.emit("updated");
+            return this.getErr({ allFiles: false });
+        };
+        this.subscriptions.add(buffer.onDidChange(this.onDidChange), buffer.onDidChangePath(this.onDidChangePath), buffer.onDidDestroy(this.dispose), buffer.onDidSave(() => {
+            utils_1.handlePromise(this.onDidSave());
+        }), buffer.onDidStopChanging(arg => {
+            utils_1.handlePromise(this.onDidStopChanging(arg));
+        }));
+        this.openPromise = this.open(this.buffer.getPath());
     }
-    open() {
-        return tslib_1.__awaiter(this, void 0, void 0, function* () {
-            this.filePath = this.buffer.getPath();
-            if (utils_1.isTypescriptFile(this.filePath)) {
-                // Set isOpen before we actually open the file to enqueue any changed events
-                this.isOpen = true;
-                this.clientPromise = this.getClient(this.filePath);
-                const client = yield this.clientPromise;
-                yield client.executeOpen({
-                    file: this.filePath,
-                    fileContent: this.buffer.getText(),
-                });
-                this.events.emit("opened");
-            }
-        });
+    static create(buffer, deps) {
+        const b = TypescriptBuffer.bufferMap.get(buffer);
+        if (b)
+            return b;
+        else {
+            const nb = new TypescriptBuffer(buffer, deps);
+            TypescriptBuffer.bufferMap.set(buffer, nb);
+            return nb;
+        }
+    }
+    getPath() {
+        return this.state && this.state.filePath;
     }
     // If there are any pending changes, flush them out to the Typescript server
-    flush() {
-        return tslib_1.__awaiter(this, void 0, void 0, function* () {
-            if (this.changedAt > this.changedAtBatch) {
-                let sub;
-                yield new Promise(resolve => {
-                    sub = this.buffer.onDidStopChanging(() => {
-                        resolve();
-                    });
-                    this.buffer.emitDidStopChangingEvent();
+    async flush() {
+        if (this.lastChangedAt > this.lastUpdatedAt) {
+            await new Promise(resolve => {
+                const disp = this.events.once("updated", () => {
+                    disp.dispose();
+                    resolve();
                 });
-                if (sub) {
-                    sub.dispose();
-                }
-            }
+                this.buffer.emitDidStopChangingEvent();
+            });
+        }
+    }
+    getInfo() {
+        if (!this.state)
+            return;
+        return {
+            clientVersion: this.state.client.version,
+            tsConfigPath: this.state.configFile && this.state.configFile.getPath(),
+        };
+    }
+    async getErr({ allFiles }) {
+        if (!this.state)
+            return;
+        const files = allFiles ? Array.from(utils_2.getOpenEditorsPaths()) : [this.state.filePath];
+        await this.state.client.execute("geterr", {
+            files,
+            delay: 100,
         });
     }
-    on(name, callback) {
-        this.events.on(name, callback);
-        return this;
+    /** Throws! */
+    async compile() {
+        if (!this.state)
+            return;
+        const { client, filePath } = this.state;
+        const result = await client.execute("compileOnSaveAffectedFileList", {
+            file: filePath,
+        });
+        const fileNames = lodash_1.flatten(result.body.map(project => project.fileNames));
+        if (fileNames.length === 0)
+            return;
+        const promises = fileNames.map(file => client.execute("compileOnSaveEmitFile", { file }));
+        const saved = await Promise.all(promises);
+        if (!saved.every(res => !!res.body)) {
+            throw new Error("Some files failed to emit");
+        }
+    }
+    async doCompileOnSave() {
+        if (!this.compileOnSave)
+            return;
+        this.deps.reportBuildStatus(undefined);
+        try {
+            await this.compile();
+            this.deps.reportBuildStatus({ success: true });
+        }
+        catch (error) {
+            const e = error;
+            console.error("Save failed with error", e);
+            this.deps.reportBuildStatus({ success: false, message: e.message });
+        }
+    }
+    async open(filePath) {
+        if (filePath !== undefined && utils_2.isTypescriptFile(filePath)) {
+            const client = await this.deps.getClient(filePath);
+            this.state = {
+                client,
+                filePath,
+                configFile: undefined,
+                subscriptions: new Atom.CompositeDisposable(),
+            };
+            this.state.subscriptions.add(client.on("restarted", () => utils_1.handlePromise(this.init())));
+            await this.init();
+            const result = await client.execute("projectInfo", {
+                needFileNameList: false,
+                file: filePath,
+            });
+            // TODO: wrong type here, complain on TS repo
+            if (result.body.configFileName !== undefined) {
+                this.state.configFile = new Atom.File(result.body.configFileName);
+                await this.readConfigFile();
+                this.state.subscriptions.add(this.state.configFile.onDidChange(() => utils_1.handlePromise(this.readConfigFile())));
+            }
+            this.events.emit("opened");
+        }
+        else {
+            return this.close();
+        }
+    }
+    async readConfigFile() {
+        if (!this.state || !this.state.configFile)
+            return;
+        const options = await utils_2.getProjectConfig(this.state.configFile.getPath());
+        this.compileOnSave = options.compileOnSave;
+        await this.state.client.execute("configure", {
+            file: this.state.filePath,
+            formatOptions: options.formatCodeOptions,
+        });
     }
 }
+TypescriptBuffer.bufferMap = new WeakMap();
 exports.TypescriptBuffer = TypescriptBuffer;
 //# sourceMappingURL=typescriptBuffer.js.map

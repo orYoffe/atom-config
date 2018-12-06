@@ -1,23 +1,23 @@
-import {commands} from "./registry"
-import {commandForTypeScript, getFilePathPosition} from "../utils"
-import {spanToRange} from "../utils"
+import {getFilePathPosition} from "../utils"
+import {showRenameDialog} from "../views/renameView"
+import {addCommand} from "./registry"
 
-commands.set("typescript:rename-refactor", deps => {
-  return async e => {
-    if (!commandForTypeScript(e)) {
-      return
-    }
+addCommand("atom-text-editor", "typescript:rename-refactor", deps => ({
+  description: "Rename symbol under text cursor everywhere it is used",
+  async didDispatch(editor) {
+    const location = getFilePathPosition(editor)
+    if (!location) return
 
-    const location = getFilePathPosition()
     const client = await deps.getClient(location.file)
-    const response = await client.executeRename(location)
+    const response = await client.execute("rename", location)
     const {info, locs} = response.body!
 
     if (!info.canRename) {
-      return atom.notifications.addInfo("AtomTS: Rename not available at cursor location")
+      atom.notifications.addInfo("AtomTS: Rename not available at cursor location")
+      return
     }
 
-    const newName = await deps.renameView.showRenameDialog({
+    const newName = await showRenameDialog({
       autoSelect: true,
       title: "Rename Variable",
       text: info.displayName,
@@ -32,21 +32,13 @@ commands.set("typescript:rename-refactor", deps => {
       },
     })
 
-    locs.map(async loc => {
-      const {buffer, isOpen} = await deps.getTypescriptBuffer(loc.file)
-
-      buffer.buffer.transact(() => {
-        for (const span of loc.locs) {
-          buffer.buffer.setTextInRange(spanToRange(span), newName)
-        }
-      })
-
-      if (!isOpen) {
-        buffer.buffer.save()
-        buffer.on("saved", () => {
-          buffer.buffer.destroy()
-        })
-      }
-    })
-  }
-})
+    if (newName !== undefined) {
+      await deps.applyEdits(
+        locs.map(span => ({
+          fileName: span.file,
+          textChanges: span.locs.map(loc => ({...loc, newText: newName})),
+        })),
+      )
+    }
+  },
+}))

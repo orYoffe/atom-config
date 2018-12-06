@@ -1,6 +1,8 @@
-const { CompositeDisposable } = require('atom');
+'use babel';
 
-const { getPaneItemId } = require('./util.js');
+import { CompositeDisposable } from 'atom';
+
+import { getPaneItemId } from './util.js';
 
 
 class PinnedTabsState {
@@ -71,6 +73,8 @@ class PinnedTabsState {
    * @param {Object} item    The PaneItem to add.
    */
   addPaneItem(paneId, item) {
+    this.addPane(paneId);
+
     let itemId = getPaneItemId(item);
     let index = this[paneId].findIndex(item => item.id === itemId);
     if (index === -1) {
@@ -147,6 +151,8 @@ class PinnedTabsState {
    * @param {Object} item    The PaneItem to remove.
    */
   removePaneItem(paneId, item) {
+    if (!this[paneId]) return;
+
     let itemId = getPaneItemId(item);
     let index = this[paneId].findIndex(item => item.id === itemId);
     if (index >= 0) {
@@ -159,4 +165,4 @@ class PinnedTabsState {
 
 
 atom.deserializers.add(PinnedTabsState);
-module.exports = PinnedTabsState;
+export default PinnedTabsState;

@@ -1,9 +1,5 @@
 'use strict';
 
-var executePrettierOnBufferRange = require('./executePrettierOnBufferRange');
-var executePrettierOnEmbeddedScripts = require('./executePrettierOnEmbeddedScripts.js');
+const executePrettierOnBufferRange = require('./executePrettierOnBufferRange');
 
-module.exports = {
-  executePrettierOnBufferRange: executePrettierOnBufferRange,
-  executePrettierOnEmbeddedScripts: executePrettierOnEmbeddedScripts
-};
+module.exports = { executePrettierOnBufferRange };

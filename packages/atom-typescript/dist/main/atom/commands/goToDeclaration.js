@@ -1,63 +1,42 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-const tslib_1 = require("tslib");
-const registry_1 = require("./registry");
+const etch = require("etch");
 const utils_1 = require("../utils");
+const highlightComponent_1 = require("../views/highlightComponent");
 const simpleSelectionView_1 = require("../views/simpleSelectionView");
-const prevCursorPositions = [];
-function open(item) {
-    atom.workspace.open(item.file, {
-        initialLine: item.start.line - 1,
-        initialColumn: item.start.offset - 1,
-    });
-}
-registry_1.commands.set("typescript:go-to-declaration", deps => {
-    return (e) => tslib_1.__awaiter(this, void 0, void 0, function* () {
-        if (!utils_1.commandForTypeScript(e)) {
+const registry_1 = require("./registry");
+registry_1.addCommand("atom-text-editor", "typescript:go-to-declaration", deps => ({
+    description: "Go to declaration of symbol under text cursor",
+    async didDispatch(editor) {
+        const location = utils_1.getFilePathPosition(editor);
+        if (!location)
             return;
-        }
-        const location = utils_1.getFilePathPosition();
-        const client = yield deps.getClient(location.file);
-        const result = yield client.executeDefinition(location);
-        handleDefinitionResult(result, location);
-    });
-});
-registry_1.commands.set("typescript:return-from-declaration", deps => {
-    return (e) => tslib_1.__awaiter(this, void 0, void 0, function* () {
-        const position = prevCursorPositions.pop();
-        if (!position) {
-            atom.notifications.addInfo("AtomTS: Previous position not found.");
-            return;
-        }
-        open({
-            file: position.file,
-            start: { line: position.line, offset: position.offset },
-        });
-    });
-});
-function handleDefinitionResult(result, location) {
+        const client = await deps.getClient(location.file);
+        const result = await client.execute("definition", location);
+        await handleDefinitionResult(result, editor, deps.histGoForward);
+    },
+}));
+async function handleDefinitionResult(result, editor, histGoForward) {
     if (!result.body) {
         return;
     }
     else if (result.body.length > 1) {
-        simpleSelectionView_1.simpleSelectionView({
+        const res = await simpleSelectionView_1.selectListView({
             items: result.body,
-            viewForItem: item => {
-                return `
-            <span>${item.file}</span>
-            <div class="pull-right">line: ${item.start.line}</div>
-        `;
+            itemTemplate: (item, ctx) => {
+                return (etch.dom("li", null,
+                    etch.dom(highlightComponent_1.HighlightComponent, { label: item.file, query: ctx.getFilterQuery() }),
+                    etch.dom("div", { class: "pull-right" },
+                        "line: ",
+                        item.start.line)));
             },
-            filterKey: "filePath",
-            confirmed: item => {
-                prevCursorPositions.push(location);
-                open(item);
-            },
+            itemFilterKey: "file",
         });
+        if (res)
+            await histGoForward(editor, res);
     }
-    else {
-        prevCursorPositions.push(location);
-        open(result.body[0]);
+    else if (result.body.length > 0) {
+        await histGoForward(editor, result.body[0]);
     }
 }
 exports.handleDefinitionResult = handleDefinitionResult;

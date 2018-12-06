@@ -1,146 +1,257 @@
 // A class to keep all changes to the buffer in sync with tsserver. This is mainly used with
 // the editor panes, but is also useful for editor-less buffer changes (renameRefactor).
-import {CompositeDisposable, Disposable} from "atom"
-import {TypescriptServiceClient as Client} from "../client/client"
-import {EventEmitter} from "events"
-import {isTypescriptFile} from "./atom/utils"
+import * as Atom from "atom"
+import {flatten} from "lodash"
+import {GetClientFunction, TSClient} from "../client"
+import {handlePromise} from "../utils"
+import {TBuildStatus} from "./atom/components/statusPanel"
+import {getOpenEditorsPaths, getProjectConfig, isTypescriptFile} from "./atom/utils"
+
+export interface Deps {
+  getClient: GetClientFunction
+  clearFileErrors: (filePath: string) => void
+  reportBuildStatus: (status: TBuildStatus | undefined) => void
+}
 
 export class TypescriptBuffer {
-  // Timestamps for buffer events
-  changedAt: number = 0
-  changedAtBatch: number = 0
+  public static create(buffer: Atom.TextBuffer, deps: Deps) {
+    const b = TypescriptBuffer.bufferMap.get(buffer)
+    if (b) return b
+    else {
+      const nb = new TypescriptBuffer(buffer, deps)
+      TypescriptBuffer.bufferMap.set(buffer, nb)
+      return nb
+    }
+  }
+  private static bufferMap = new WeakMap<Atom.TextBuffer, TypescriptBuffer>()
+
+  private events = new Atom.Emitter<{
+    opened: void
+    updated: void
+  }>()
+
+  private lastChangedAt = Date.now()
+  private lastUpdatedAt = Date.now()
 
   // Promise that resolves to the correct client for this filePath
-  private clientPromise?: Promise<Client>
+  private state?: {
+    client: TSClient
+    filePath: string
+    // Path to the project's tsconfig.json
+    configFile: Atom.File | undefined
+    subscriptions: Atom.CompositeDisposable
+  }
+  private compileOnSave: boolean = false
 
-  // Flag that signifies if tsserver has an open view of this file
-  isOpen: boolean
+  private subscriptions = new Atom.CompositeDisposable()
+  private openPromise: Promise<void>
 
-  private events = new EventEmitter()
-  private subscriptions = new CompositeDisposable()
-  private filePath: string
+  // tslint:disable-next-line:member-ordering
+  public on = this.events.on.bind(this.events)
 
-  constructor(
-    public buffer: TextBuffer.ITextBuffer,
-    public getClient: (filePath: string) => Promise<Client>,
-  ) {
-    this.subscriptions.add(buffer.onDidChange(this.onDidChange))
-    this.subscriptions.add(buffer.onDidChangePath(this.onDidChangePath))
-    this.subscriptions.add(buffer.onDidDestroy(this.dispose))
-    this.subscriptions.add(buffer.onDidSave(this.onDidSave))
-    this.subscriptions.add(buffer.onDidStopChanging(this.onDidStopChanging))
+  private constructor(public buffer: Atom.TextBuffer, private deps: Deps) {
+    this.subscriptions.add(
+      buffer.onDidChange(this.onDidChange),
+      buffer.onDidChangePath(this.onDidChangePath),
+      buffer.onDidDestroy(this.dispose),
+      buffer.onDidSave(() => {
+        handlePromise(this.onDidSave())
+      }),
+      buffer.onDidStopChanging(arg => {
+        handlePromise(this.onDidStopChanging(arg))
+      }),
+    )
 
-    this.open()
+    this.openPromise = this.open(this.buffer.getPath())
   }
 
-  async open() {
-    this.filePath = this.buffer.getPath()
-
-    if (isTypescriptFile(this.filePath)) {
-      // Set isOpen before we actually open the file to enqueue any changed events
-      this.isOpen = true
-
-      this.clientPromise = this.getClient(this.filePath)
-      const client = await this.clientPromise
-
-      await client.executeOpen({
-        file: this.filePath,
-        fileContent: this.buffer.getText(),
-      })
-
-      this.events.emit("opened")
-    }
+  public getPath() {
+    return this.state && this.state.filePath
   }
 
   // If there are any pending changes, flush them out to the Typescript server
-  async flush() {
-    if (this.changedAt > this.changedAtBatch) {
-      let sub: Disposable | undefined
-      await new Promise(resolve => {
-        sub = this.buffer.onDidStopChanging(() => {
+  public async flush() {
+    if (this.lastChangedAt > this.lastUpdatedAt) {
+      await new Promise<void>(resolve => {
+        const disp = this.events.once("updated", () => {
+          disp.dispose()
           resolve()
         })
-
         this.buffer.emitDidStopChangingEvent()
       })
-
-      if (sub) {
-        sub.dispose()
-      }
     }
   }
 
-  dispose = async () => {
-    this.subscriptions.dispose()
-
-    if (this.isOpen && this.clientPromise) {
-      const client = await this.clientPromise
-      client.executeClose({file: this.buffer.getPath()})
-      this.events.emit("closed", this.filePath)
+  public getInfo() {
+    if (!this.state) return
+    return {
+      clientVersion: this.state.client.version,
+      tsConfigPath: this.state.configFile && this.state.configFile.getPath(),
     }
   }
 
-  on(name: "saved", callback: () => void): this // saved after waiting for any pending changes
-  on(name: "opened", callback: () => void): this // the file is opened
-  on(name: "closed", callback: (filePath: string) => void): this // the file is closed
-  on(name: "changed", callback: () => void): this // tsserver view of the file has changed
-  on(name: string, callback: (() => void) | ((filePath: string) => void)): this {
-    this.events.on(name, callback)
-    return this
+  private async getErr({allFiles}: {allFiles: boolean}) {
+    if (!this.state) return
+    const files = allFiles ? Array.from(getOpenEditorsPaths()) : [this.state.filePath]
+    await this.state.client.execute("geterr", {
+      files,
+      delay: 100,
+    })
   }
 
-  onDidChange = () => {
-    this.changedAt = Date.now()
-  }
+  /** Throws! */
+  private async compile() {
+    if (!this.state) return
+    const {client, filePath} = this.state
+    const result = await client.execute("compileOnSaveAffectedFileList", {
+      file: filePath,
+    })
+    const fileNames = flatten(result.body.map(project => project.fileNames))
 
-  onDidChangePath = async (newPath: string) => {
-    if (this.clientPromise && this.filePath) {
-      const client = await this.clientPromise
-      client.executeClose({file: this.filePath})
-      this.events.emit("closed", this.filePath)
+    if (fileNames.length === 0) return
+
+    const promises = fileNames.map(file => client.execute("compileOnSaveEmitFile", {file}))
+    const saved = await Promise.all(promises)
+
+    if (!saved.every(res => !!res.body)) {
+      throw new Error("Some files failed to emit")
     }
-
-    this.open()
   }
 
-  onDidSave = async () => {
-    // Check if there isn't a onDidStopChanging event pending.
-    const {changedAt, changedAtBatch} = this
-    if (changedAt && changedAtBatch && changedAt > changedAtBatch) {
-      await new Promise(resolve => this.events.once("changed", resolve))
+  private async doCompileOnSave() {
+    if (!this.compileOnSave) return
+    this.deps.reportBuildStatus(undefined)
+    try {
+      await this.compile()
+      this.deps.reportBuildStatus({success: true})
+    } catch (error) {
+      const e = error as Error
+      console.error("Save failed with error", e)
+      this.deps.reportBuildStatus({success: false, message: e.message})
     }
-
-    this.events.emit("saved")
   }
 
-  onDidStopChanging = async ({changes}: {changes: any[]}) => {
-    // Don't update changedAt or emit any events if there are no actual changes or file isn't open
-    if (changes.length === 0 || !this.isOpen || !this.clientPromise) {
-      return
-    }
+  private async open(filePath: string | undefined) {
+    if (filePath !== undefined && isTypescriptFile(filePath)) {
+      const client = await this.deps.getClient(filePath)
 
-    this.changedAtBatch = Date.now()
-
-    const client = await this.clientPromise
-    const filePath = this.buffer.getPath()
-
-    for (const change of changes) {
-      const {start, oldExtent, newText} = change
-
-      const end = {
-        endLine: start.row + oldExtent.row + 1,
-        endOffset: (oldExtent.row === 0 ? start.column + oldExtent.column : oldExtent.column) + 1,
+      this.state = {
+        client,
+        filePath,
+        configFile: undefined,
+        subscriptions: new Atom.CompositeDisposable(),
       }
 
-      await client.executeChange({
-        ...end,
+      this.state.subscriptions.add(client.on("restarted", () => handlePromise(this.init())))
+
+      await this.init()
+
+      const result = await client.execute("projectInfo", {
+        needFileNameList: false,
         file: filePath,
-        line: start.row + 1,
-        offset: start.column + 1,
-        insertString: newText,
       })
-    }
 
-    this.events.emit("changed")
+      // TODO: wrong type here, complain on TS repo
+      if ((result.body!.configFileName as string | undefined) !== undefined) {
+        this.state.configFile = new Atom.File(result.body!.configFileName)
+        await this.readConfigFile()
+        this.state.subscriptions.add(
+          this.state.configFile.onDidChange(() => handlePromise(this.readConfigFile())),
+        )
+      }
+
+      this.events.emit("opened")
+    } else {
+      return this.close()
+    }
+  }
+
+  private dispose = () => {
+    this.subscriptions.dispose()
+    handlePromise(this.close())
+  }
+
+  private async readConfigFile() {
+    if (!this.state || !this.state.configFile) return
+    const options = await getProjectConfig(this.state.configFile.getPath())
+    this.compileOnSave = options.compileOnSave
+    await this.state.client.execute("configure", {
+      file: this.state.filePath,
+      formatOptions: options.formatCodeOptions,
+    })
+  }
+
+  private init = async () => {
+    if (!this.state) return
+    await this.state.client.execute("open", {
+      file: this.state.filePath,
+      fileContent: this.buffer.getText(),
+    })
+
+    await this.getErr({allFiles: false})
+  }
+
+  private close = async () => {
+    await this.openPromise
+    if (this.state) {
+      const client = this.state.client
+      const file = this.state.filePath
+      await client.execute("close", {file})
+      this.deps.clearFileErrors(file)
+      this.state.subscriptions.dispose()
+      this.state = undefined
+    }
+  }
+
+  private onDidChange = () => {
+    this.lastChangedAt = Date.now()
+  }
+
+  private onDidChangePath = (newPath: string) => {
+    handlePromise(
+      this.close().then(() => {
+        this.openPromise = this.open(newPath)
+      }),
+    )
+  }
+
+  private onDidSave = async () => {
+    await this.flush()
+    await this.getErr({allFiles: true})
+    await this.doCompileOnSave()
+  }
+
+  private onDidStopChanging = async ({changes}: {changes: ReadonlyArray<Atom.TextChange>}) => {
+    // If there are no actual changes, or the file isn't open, we have nothing to do
+    if (changes.length === 0 || !this.state) return
+
+    this.deps.reportBuildStatus(undefined)
+
+    const {client, filePath} = this.state
+
+    // NOTE: this might look somewhat weird until we realize that
+    // awaiting on each "change" command may lead to arbitrary
+    // interleaving, while pushing them all at once guarantees
+    // that all subsequent "change" commands will be sequenced after
+    // the ones we pushed
+    await Promise.all(
+      changes.reduceRight<Array<Promise<void>>>((acc, {oldRange, newText}) => {
+        acc.push(
+          client.execute("change", {
+            file: filePath,
+            line: oldRange.start.row + 1,
+            offset: oldRange.start.column + 1,
+            endLine: oldRange.end.row + 1,
+            endOffset: oldRange.end.column + 1,
+            insertString: newText,
+          }),
+        )
+        return acc
+      }, []),
+    )
+
+    this.lastUpdatedAt = Date.now()
+    this.events.emit("updated")
+    return this.getErr({allFiles: false})
   }
 }

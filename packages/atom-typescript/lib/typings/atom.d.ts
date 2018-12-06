@@ -1,16 +1,14 @@
 export {}
-
 declare module "atom" {
-  export class CompositeDisposable {
-    add(disposable: AtomCore.Disposable)
-    dispose()
+  interface TextBuffer {
+    emitDidStopChangingEvent(): void
+    getLanguageMode(): {readonly fullyTokenized: boolean}
   }
-
-  export class Disposable {
-    dispose()
+  interface TextEditor {
+    onDidTokenize(callback: () => void): Disposable
+    isDestroyed(): boolean
   }
-
-  var TextBuffer: {
-    new (opts?: {filePath?: string; load?: boolean}): TextBuffer.ITextBuffer
+  interface TextEditorElement {
+    setUpdatedSynchronously(val: boolean): void
   }
 }

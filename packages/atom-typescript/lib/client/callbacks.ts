@@ -1,58 +1,66 @@
-import * as protocol from "typescript/lib/protocol"
+import {ReportBusyWhile} from "../main/pluginManager"
+import {CommandRes, CommandsWithResponse} from "./commandArgsResponseMap"
 
 interface Request {
-  name: string
-  reject(err: Error): void
-  resolve(res: protocol.Response): void
   started: number
+  reject(err: Error): void
+  resolve(res: any): void
 }
 
 // Callbacks keeps track of all the outstanding requests
 export class Callbacks {
   private callbacks: Map<number, Request> = new Map()
 
-  constructor(private onPendingChange: (pending: string[]) => void) {}
+  constructor(private reportBusyWhile: ReportBusyWhile) {}
 
-  add(seq: number, command: string) {
-    return new Promise<protocol.Response>((resolve, reject) => {
-      this.callbacks.set(seq, {
-        name: command,
-        resolve,
-        reject,
-        started: Date.now(),
+  public async add<T extends CommandsWithResponse>(
+    seq: number,
+    command: T,
+  ): Promise<CommandRes<T>> {
+    try {
+      const promise = new Promise<CommandRes<T>>((resolve, reject) => {
+        this.callbacks.set(seq, {
+          resolve,
+          reject,
+          started: Date.now(),
+        })
       })
-
-      this.onPendingChange(this.pending())
-    })
-  }
-
-  // pending returns names of requests waiting for a response
-  pending(): string[] {
-    const pending: string[] = []
-
-    for (const {name} of this.callbacks.values()) {
-      pending.push(name)
+      return await this.reportBusyWhile(command, () => promise)
+    } finally {
+      this.callbacks.delete(seq)
     }
-
-    return pending
   }
 
-  rejectAll(error: any) {
+  public rejectAll(error: Error) {
     for (const {reject} of this.callbacks.values()) {
       reject(error)
     }
 
     this.callbacks.clear()
-    this.onPendingChange(this.pending())
   }
 
-  // Remove and return a Request object, if one exists
-  remove(seq: number): Request | undefined {
+  public resolve<T extends CommandsWithResponse>(seq: number, res: CommandRes<T>): void {
     const req = this.callbacks.get(seq)
-    this.callbacks.delete(seq)
     if (req) {
-      this.onPendingChange(this.pending())
-    }
-    return req
+      if (window.atom_typescript_debug) {
+        console.log(
+          "received response for",
+          res.command,
+          "in",
+          Date.now() - req.started,
+          "ms",
+          "with data",
+          res.body,
+        )
+      }
+      if (res.success) req.resolve(res)
+      else req.reject(new Error(res.message))
+    } else console.warn("unexpected response:", res)
+  }
+
+  public error(seq: number, err: Error): void {
+    const req = this.callbacks.get(seq)
+    if (req) req.reject(err)
+    else console.error(err)
   }
 }

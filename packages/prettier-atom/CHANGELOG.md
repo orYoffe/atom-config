@@ -1,3 +1,304 @@
+<a name="0.56.1"></a>
+## [0.56.1](https://github.com/prettier/prettier-atom/compare/v0.56.0...v0.56.1) (2018-12-03)
+
+
+### Bug Fixes
+
+* properly format HTML and VUE files ([b91ea02](https://github.com/prettier/prettier-atom/commit/b91ea02)), closes [#467](https://github.com/prettier/prettier-atom/issues/467)
+
+
+
+<a name="0.56.0"></a>
+# [0.56.0](https://github.com/prettier/prettier-atom/compare/v0.55.2...v0.56.0) (2018-11-19)
+
+
+### Bug Fixes
+
+* **ignores:** ensure we always pass a relative string to the ignores package ([c6ad510](https://github.com/prettier/prettier-atom/commit/c6ad510))
+
+
+### Features
+
+* **prettier:** bump to version 1.15.2 ([c3ff578](https://github.com/prettier/prettier-atom/commit/c3ff578))
+* **prettier-eslint:** bump to version 8.8.2 ([de77987](https://github.com/prettier/prettier-atom/commit/de77987))
+
+
+
+<a name="0.55.2"></a>
+## [0.55.2](https://github.com/prettier/prettier-atom/compare/v0.55.1...v0.55.2) (2018-08-23)
+
+
+### Bug Fixes
+
+* **prettierignore:** properly ignore files again ([dd4c849](https://github.com/prettier/prettier-atom/commit/dd4c849)), closes [#446](https://github.com/prettier/prettier-atom/issues/446)
+
+
+
+<a name="0.55.1"></a>
+## [0.55.1](https://github.com/prettier/prettier-atom/compare/v0.55.0...v0.55.1) (2018-08-21)
+
+
+### Bug Fixes
+
+* properly use prettier config when formatting ([fef2441](https://github.com/prettier/prettier-atom/commit/fef2441)), closes [#441](https://github.com/prettier/prettier-atom/issues/441)
+
+
+
+<a name="0.55.0"></a>
+# [0.55.0](https://github.com/prettier/prettier-atom/compare/v0.54.0...v0.55.0) (2018-08-20)
+
+
+### Bug Fixes
+
+* **styles:** status color will now match theme ([cf2ef16](https://github.com/prettier/prettier-atom/commit/cf2ef16))
+
+
+### Features
+
+* **errors:** do not display a popup for "undefined" error messages ([d6a25f5](https://github.com/prettier/prettier-atom/commit/d6a25f5))
+* **prettier:** use Prettier to determine whether a file is formattable ([03275d1](https://github.com/prettier/prettier-atom/commit/03275d1))
+* **settings:** simplify settings by relying on users setting their prettierrc files ([27d3012](https://github.com/prettier/prettier-atom/commit/27d3012))
+
+
+### BREAKING CHANGES
+
+* **prettier:** Because prettier-atom now relies on the new `getFileInfo` method recently added to
+Prettier, if you are having prettier-atom use a local version of Prettier instead of the version
+that is packaged with the plugin, you will need to manually update your project's local Prettier
+version.
+
+
+
+<a name="0.54.0"></a>
+# [0.54.0](https://github.com/prettier/prettier-atom/compare/v0.53.0...v0.54.0) (2018-06-05)
+
+
+### Bug Fixes
+
+* **.babelrc:** Fix usage of babel-preset-env. ([78c10e3](https://github.com/prettier/prettier-atom/commit/78c10e3))
+* **dist/:** Rebuild dist to properly target electron[@1](https://github.com/1).4.0 ([831f086](https://github.com/prettier/prettier-atom/commit/831f086))
+
+
+### Features
+
+* **prettier:** bump to 1.13.4 ([1c7c30d](https://github.com/prettier/prettier-atom/commit/1c7c30d))
+* **prettier:** bump to version 1.12.1 ([b6638d2](https://github.com/prettier/prettier-atom/commit/b6638d2))
+
+
+
+<a name="0.53.0"></a>
+# [0.53.0](https://github.com/prettier/prettier-atom/compare/v0.52.0...v0.53.0) (2018-03-24)
+
+
+### Bug Fixes
+
+* **eslintignore:** respect eslintignore setting ([59a1828](https://github.com/prettier/prettier-atom/commit/59a1828)), closes [#347](https://github.com/prettier/prettier-atom/issues/347)
+
+
+### Features
+
+* **prettier:** Fallback to globally installed prettier (via npm or yarn) before falling back to a bundled one ([3ed996c](https://github.com/prettier/prettier-atom/commit/3ed996c))
+
+
+
+<a name="0.52.0"></a>
+# [0.52.0](https://github.com/prettier/prettier-atom/compare/v0.51.0...v0.52.0) (2018-03-14)
+
+
+### Features
+
+* **prettier:** bump prettier to 1.11.1 and prettier-eslint to 8.8.1 ([4e8d85e](https://github.com/prettier/prettier-atom/commit/4e8d85e))
+
+
+
+<a name="0.51.0"></a>
+# [0.51.0](https://github.com/prettier/prettier-atom/compare/v0.50.0...v0.51.0) (2018-02-14)
+
+
+### Bug Fixes
+
+* Fix asynchronous saves ([be1bd05](https://github.com/prettier/prettier-atom/commit/be1bd05))
+* **buildPrettierOptions.js:** Allow EditorConfig with prettier-atom settings ([dedc690](https://github.com/prettier/prettier-atom/commit/dedc690)), closes [#377](https://github.com/prettier/prettier-atom/issues/377)
+
+
+### Code Refactoring
+
+* **buildEditorConfigOptions.js:** Use editorconfig-to-prettier ([e262f50](https://github.com/prettier/prettier-atom/commit/e262f50))
+
+
+### BREAKING CHANGES
+
+* **buildEditorConfigOptions.js:** Derives prettier config options from editorconfig differently
+
+
+
+<a name="0.50.0"></a>
+# [0.50.0](https://github.com/prettier/prettier-atom/compare/v0.49.2...v0.50.0) (2018-02-09)
+
+
+### Code Refactoring
+
+* **buildPrettierOptions.js:** Exclusively use local config or plugin settings ([1141b2c](https://github.com/prettier/prettier-atom/commit/1141b2c)), closes [#370](https://github.com/prettier/prettier-atom/issues/370) [#218](https://github.com/prettier/prettier-atom/issues/218)
+
+
+### BREAKING CHANGES
+
+* **buildPrettierOptions.js:** The formatting configuration is now built according to different rules
+
+
+
+<a name="0.49.2"></a>
+## [0.49.2](https://github.com/prettier/prettier-atom/compare/v0.49.1...v0.49.2) (2018-02-03)
+
+
+### Bug Fixes
+
+* **executePrettier:** adjust for API inconsistencies + add type coverage ([800c0e2](https://github.com/prettier/prettier-atom/commit/800c0e2))
+
+
+
+<a name="0.49.1"></a>
+## [0.49.1](https://github.com/prettier/prettier-atom/compare/v0.49.0...v0.49.1) (2018-02-02)
+
+
+### Bug Fixes
+
+* **executePrettier:** fallback to `format` when `formatWithCursor` fails ([105f9e1](https://github.com/prettier/prettier-atom/commit/105f9e1))
+
+
+
+<a name="0.49.0"></a>
+# [0.49.0](https://github.com/prettier/prettier-atom/compare/v0.48.1...v0.49.0) (2018-01-30)
+
+
+### Features
+
+* **executePrettier:** Maintain cursor position on format ([159b2b2](https://github.com/prettier/prettier-atom/commit/159b2b2))
+
+
+
+<a name="0.48.1"></a>
+## [0.48.1](https://github.com/prettier/prettier-atom/compare/v0.48.0...v0.48.1) (2018-01-25)
+
+
+### Bug Fixes
+
+* **editorInterface:** use File.getpath over reading the path directly ([3b89260](https://github.com/prettier/prettier-atom/commit/3b89260))
+
+
+
+<a name="0.48.0"></a>
+# [0.48.0](https://github.com/prettier/prettier-atom/compare/v0.47.2...v0.48.0) (2018-01-17)
+
+
+### Features
+
+* **prettier-eslint:** bump to 8.7.6 ([332c6f4](https://github.com/prettier/prettier-atom/commit/332c6f4)), closes [#334](https://github.com/prettier/prettier-atom/issues/334)
+
+
+
+<a name="0.47.2"></a>
+## [0.47.2](https://github.com/prettier/prettier-atom/compare/v0.47.1...v0.47.2) (2018-01-17)
+
+
+### Bug Fixes
+
+* **prettier-eslint:** lock version to 8.4.0 ([1a3e885](https://github.com/prettier/prettier-atom/commit/1a3e885))
+
+
+
+<a name="0.47.1"></a>
+## [0.47.1](https://github.com/prettier/prettier-atom/compare/v0.47.0...v0.47.1) (2018-01-17)
+
+
+### Bug Fixes
+
+* **prettier-eslint:** lock to 8.6.2 to avoid regression ([e9d2a85](https://github.com/prettier/prettier-atom/commit/e9d2a85))
+
+
+
+<a name="0.47.0"></a>
+# [0.47.0](https://github.com/prettier/prettier-atom/compare/v0.46.0...v0.47.0) (2018-01-15)
+
+
+### Features
+
+* **scopes:** Support Vue Single File Components ([707e107](https://github.com/prettier/prettier-atom/commit/707e107)), closes [#327](https://github.com/prettier/prettier-atom/issues/327)
+
+
+
+<a name="0.46.0"></a>
+# [0.46.0](https://github.com/prettier/prettier-atom/compare/v0.45.0...v0.46.0) (2018-01-05)
+
+
+### Features
+
+* **options:** add arrow-parens prettier option ([805f183](https://github.com/prettier/prettier-atom/commit/805f183))
+
+
+
+<a name="0.45.0"></a>
+# [0.45.0](https://github.com/prettier/prettier-atom/compare/v0.44.0...v0.45.0) (2017-12-31)
+
+
+### Bug Fixes
+
+* **manual-format:** fix bug from forgetting to rebuild dist ([2121038](https://github.com/prettier/prettier-atom/commit/2121038)), closes [#336](https://github.com/prettier/prettier-atom/issues/336)
+
+
+### Performance Improvements
+
+* **statusTile:** faster array creation and lodash lazy loading ([5f90f45](https://github.com/prettier/prettier-atom/commit/5f90f45))
+
+
+
+<a name="0.44.0"></a>
+# [0.44.0](https://github.com/prettier/prettier-atom/compare/v0.43.1...v0.44.0) (2017-12-31)
+
+
+### Bug Fixes
+
+* **set-text-via-diff:** base use on option instead of flaky buffer range comparison ([378b6bd](https://github.com/prettier/prettier-atom/commit/378b6bd))
+
+
+### Features
+
+* **prettier:** bump to 1.9.2 ([3186833](https://github.com/prettier/prettier-atom/commit/3186833))
+* **prettier-eslint:** bump to 8.7.0 ([c59b768](https://github.com/prettier/prettier-atom/commit/c59b768))
+
+
+
+<a name="0.43.1"></a>
+## [0.43.1](https://github.com/prettier/prettier-atom/compare/v0.43.0...v0.43.1) (2017-12-10)
+
+
+### Bug Fixes
+
+* **async-polyfill:** switch from babel-polyfill to babel-runtime ([61ea645](https://github.com/prettier/prettier-atom/commit/61ea645)), closes [#315](https://github.com/prettier/prettier-atom/issues/315)
+* **linter:** resolve issue with linter not showing error messages properly ([2550a8f](https://github.com/prettier/prettier-atom/commit/2550a8f)), closes [#318](https://github.com/prettier/prettier-atom/issues/318) [#298](https://github.com/prettier/prettier-atom/issues/298)
+
+
+
+<a name="0.43.0"></a>
+# [0.43.0](https://github.com/prettier/prettier-atom/compare/v0.41.0...v0.43.0) (2017-12-05)
+
+
+### Bug Fixes
+
+* **config-schema:** add `text.md` to default markdown scopes ([aa7ecd1](https://github.com/prettier/prettier-atom/commit/aa7ecd1))
+
+
+### Features
+
+* **prettier-stylelint:** Add support for prettier-stylelint ([a34dc24](https://github.com/prettier/prettier-atom/commit/a34dc24)), closes [#288](https://github.com/prettier/prettier-atom/issues/288)
+
+
+### Performance Improvements
+
+* **formatOnSave:** Use setTextViaDiff when updating entire buffer ([c899aaa](https://github.com/prettier/prettier-atom/commit/c899aaa))
+
+
+
 <a name="0.41.0"></a>
 # [0.41.0](https://github.com/prettier/prettier-atom/compare/v0.40.0...v0.41.0) (2017-11-13)
 

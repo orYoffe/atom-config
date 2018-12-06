@@ -1,14 +1,13 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-const tslib_1 = require("tslib");
-const atom_1 = require("atom");
-const atomts_1 = require("../../atomts");
+const Atom = require("atom");
+const tsconfig = require("tsconfig");
 function pointToLocation(point) {
     return { line: point.row + 1, offset: point.column + 1 };
 }
 exports.pointToLocation = pointToLocation;
 function locationToPoint(loc) {
-    return new atom_1.Point(loc.line - 1, loc.offset - 1);
+    return new Atom.Point(loc.line - 1, loc.offset - 1);
 }
 exports.locationToPoint = locationToPoint;
 function spanToRange(span) {
@@ -16,7 +15,7 @@ function spanToRange(span) {
 }
 exports.spanToRange = spanToRange;
 function locationsToRange(start, end) {
-    return new atom_1.Range(locationToPoint(start), locationToPoint(end));
+    return new Atom.Range(locationToPoint(start), locationToPoint(end));
 }
 exports.locationsToRange = locationsToRange;
 function rangeToLocationRange(range) {
@@ -28,37 +27,47 @@ function rangeToLocationRange(range) {
     };
 }
 exports.rangeToLocationRange = rangeToLocationRange;
-// Compare loc2 with loc1. The result is -1 if loc1 is smaller and 1 if it's larger.
-function compareLocation(loc1, loc2) {
-    if (loc1.line < loc2.line) {
-        return -1;
+async function getProjectConfig(configFile) {
+    const config = await loadConfig(configFile);
+    const options = config.formatCodeOptions;
+    return {
+        formatCodeOptions: Object.assign({ indentSize: atom.config.get("editor.tabLength"), tabSize: atom.config.get("editor.tabLength") }, options),
+        compileOnSave: !!config.compileOnSave,
+    };
+}
+exports.getProjectConfig = getProjectConfig;
+async function loadConfig(configFile) {
+    try {
+        const { config } = await tsconfig.load(configFile);
+        return config;
     }
-    else if (loc1.line > loc2.line) {
-        return 1;
-    }
-    else {
-        if (loc1.offset < loc2.offset) {
-            return -1;
-        }
-        else if (loc1.offset > loc2.offset) {
-            return 1;
-        }
-        else {
-            return 0;
-        }
+    catch (e) {
+        atom.notifications.addWarning(`Failed to parse ${atom.project.relativize(configFile)}`, {
+            detail: `The error was: ${e.message}`,
+            dismissable: true,
+        });
+        return {};
     }
 }
-exports.compareLocation = compareLocation;
-function isLocationInRange(loc, range) {
-    return compareLocation(range.start, loc) != 1 && compareLocation(range.end, loc) !== -1;
+function signatureHelpItemToSignature(i) {
+    return {
+        label: partsToStr(i.prefixDisplayParts) +
+            i.parameters.map(x => partsToStr(x.displayParts)).join(partsToStr(i.separatorDisplayParts)) +
+            partsToStr(i.suffixDisplayParts),
+        documentation: partsToStr(i.documentation),
+        parameters: i.parameters.map(signatureHelpParameterToSignatureParameter),
+    };
 }
-exports.isLocationInRange = isLocationInRange;
-function getProjectCodeSettings(filePath, configFile) {
-    return tslib_1.__awaiter(this, void 0, void 0, function* () {
-        const config = yield atomts_1.loadProjectConfig(filePath, configFile);
-        const options = config.formatCodeOptions;
-        return Object.assign({ indentSize: atom.config.get("editor.tabLength"), tabSize: atom.config.get("editor.tabLength") }, options);
-    });
+exports.signatureHelpItemToSignature = signatureHelpItemToSignature;
+function signatureHelpParameterToSignatureParameter(p) {
+    return {
+        label: partsToStr(p.displayParts),
+        documentation: partsToStr(p.documentation),
+    };
 }
-exports.getProjectCodeSettings = getProjectCodeSettings;
+exports.signatureHelpParameterToSignatureParameter = signatureHelpParameterToSignatureParameter;
+function partsToStr(x) {
+    return x.map(i => i.text).join("");
+}
+exports.partsToStr = partsToStr;
 //# sourceMappingURL=ts.js.map

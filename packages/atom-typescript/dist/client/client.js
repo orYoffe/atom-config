@@ -1,217 +1,161 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-const tslib_1 = require("tslib");
+// tslint:disable:max-classes-per-file
 const atom_1 = require("atom");
-const callbacks_1 = require("./callbacks");
-const events_1 = require("events");
-const stream_1 = require("stream");
 const byline = require("byline");
+const stream_1 = require("stream");
+const callbacks_1 = require("./callbacks");
 // Set this to true to start tsserver with node --inspect
 const INSPECT_TSSERVER = false;
-exports.CommandWithResponse = new Set([
-    "compileOnSaveAffectedFileList",
-    "compileOnSaveEmitFile",
-    "completionEntryDetails",
-    "completions",
-    "configure",
-    "definition",
-    "format",
-    "getCodeFixes",
-    "getSupportedCodeFixes",
-    "occurrences",
-    "projectInfo",
-    "quickinfo",
-    "references",
-    "reload",
-    "rename",
-]);
+const commandWithResponseMap = {
+    compileOnSaveAffectedFileList: true,
+    compileOnSaveEmitFile: true,
+    completionEntryDetails: true,
+    completions: true,
+    configure: true,
+    definition: true,
+    format: true,
+    getCodeFixes: true,
+    getSupportedCodeFixes: true,
+    occurrences: true,
+    projectInfo: true,
+    quickinfo: true,
+    references: true,
+    reload: true,
+    rename: true,
+    navtree: true,
+    navto: true,
+    getApplicableRefactors: true,
+    getEditsForRefactor: true,
+    organizeImports: true,
+    signatureHelp: true,
+};
+const commandWithResponse = new Set(Object.keys(commandWithResponseMap));
+function isCommandWithResponse(command) {
+    return commandWithResponse.has(command);
+}
 class TypescriptServiceClient {
-    constructor(tsServerPath, version) {
+    constructor(tsServerPath, version, reportBusyWhile) {
         this.tsServerPath = tsServerPath;
         this.version = version;
-        this.events = new events_1.EventEmitter();
+        this.reportBusyWhile = reportBusyWhile;
+        this.emitter = new atom_1.Emitter();
         this.seq = 0;
-        /** Extra args passed to the tsserver executable */
-        this.tsServerArgs = [];
-        this.emitPendingRequests = (pending) => {
-            this.events.emit("pendingRequestsChange", pending);
+        this.lastStderrOutput = "";
+        // tslint:disable-next-line:member-ordering
+        this.on = this.emitter.on.bind(this.emitter);
+        this.exitHandler = (err, report = true) => {
+            this.callbacks.rejectAll(err);
+            if (report)
+                console.error("tsserver: ", err);
+            this.server = undefined;
+            if (report) {
+                let detail = err.message;
+                if (this.lastStderrOutput) {
+                    detail = `Last output from tsserver:\n${this.lastStderrOutput}\n\n${detail}`;
+                }
+                atom.notifications.addError("TypeScript quit unexpectedly", {
+                    detail,
+                    stack: err.stack,
+                    dismissable: true,
+                });
+            }
+            if (this.lastStartAttempt === undefined || Date.now() - this.lastStartAttempt > 5000) {
+                this.server = this.startServer();
+                this.emitter.emit("restarted", undefined);
+            }
+            else {
+                atom.notifications.addWarning("Not restarting tsserver", {
+                    detail: "Restarting too fast",
+                });
+            }
         };
         this.onMessage = (res) => {
-            if (isResponse(res)) {
-                const req = this.callbacks.remove(res.request_seq);
-                if (req) {
-                    if (window.atom_typescript_debug) {
-                        console.log("received response for", res.command, "in", Date.now() - req.started, "ms", "with data", res.body);
-                    }
-                    if (res.success) {
-                        req.resolve(res);
-                    }
-                    else {
-                        req.reject(new Error(res.message));
-                    }
-                }
-                else {
-                    console.warn("unexpected response:", res);
-                }
-            }
-            else if (isEvent(res)) {
-                if (window.atom_typescript_debug) {
-                    console.log("received event", res);
-                }
-                this.events.emit(res.event, res.body);
-            }
+            if (res.type === "response")
+                this.onResponse(res);
+            else
+                this.onEvent(res);
         };
-        this.callbacks = new callbacks_1.Callbacks(this.emitPendingRequests);
+        this.callbacks = new callbacks_1.Callbacks(this.reportBusyWhile);
+        this.server = this.startServer();
     }
-    executeChange(args) {
-        return this.execute("change", args);
-    }
-    executeClose(args) {
-        return this.execute("close", args);
-    }
-    executeCompileOnSaveAffectedFileList(args) {
-        return this.execute("compileOnSaveAffectedFileList", args);
-    }
-    executeCompileOnSaveEmitFile(args) {
-        return this.execute("compileOnSaveEmitFile", args);
-    }
-    executeCompletions(args) {
-        return this.execute("completions", args);
-    }
-    executeCompletionDetails(args) {
-        return this.execute("completionEntryDetails", args);
-    }
-    executeConfigure(args) {
-        return this.execute("configure", args);
-    }
-    executeDefinition(args) {
-        return this.execute("definition", args);
-    }
-    executeFormat(args) {
-        return this.execute("format", args);
-    }
-    executeGetCodeFixes(args) {
-        return this.execute("getCodeFixes", args);
-    }
-    executeGetSupportedCodeFixes() {
-        return this.execute("getSupportedCodeFixes", undefined);
-    }
-    executeGetErr(args) {
-        return this.execute("geterr", args);
-    }
-    executeGetErrForProject(args) {
-        return this.execute("geterrForProject", args);
-    }
-    executeOccurances(args) {
-        return this.execute("occurrences", args);
-    }
-    executeOpen(args) {
-        return this.execute("open", args);
-    }
-    executeProjectInfo(args) {
-        return this.execute("projectInfo", args);
-    }
-    executeQuickInfo(args) {
-        return this.execute("quickinfo", args);
-    }
-    executeReferences(args) {
-        return this.execute("references", args);
-    }
-    executeReload(args) {
-        return this.execute("reload", args);
-    }
-    executeRename(args) {
-        return this.execute("rename", args);
-    }
-    executeSaveTo(args) {
-        return this.execute("saveto", args);
-    }
-    execute(command, args) {
-        return tslib_1.__awaiter(this, void 0, void 0, function* () {
-            if (!this.serverPromise) {
-                throw new Error("Server is not running");
-            }
-            return this.sendRequest(yield this.serverPromise, command, args, exports.CommandWithResponse.has(command));
-        });
-    }
-    on(name, listener) {
-        this.events.on(name, listener);
-        return () => {
-            this.events.removeListener(name, listener);
-        };
-    }
-    sendRequest(cp, command, args, expectResponse) {
+    async execute(command, ...args) {
+        if (!this.server) {
+            throw new Error("Server is not running");
+        }
         const req = {
             seq: this.seq++,
             command,
-            arguments: args,
+            arguments: args[0],
         };
         if (window.atom_typescript_debug) {
             console.log("sending request", command, "with args", args);
         }
-        setImmediate(() => {
-            try {
-                cp.stdin.write(JSON.stringify(req) + "\n");
-            }
-            catch (error) {
-                const callback = this.callbacks.remove(req.seq);
-                if (callback) {
-                    callback.reject(error);
-                }
-                else {
-                    console.error(error);
-                }
-            }
-        });
-        if (expectResponse) {
-            return this.callbacks.add(req.seq, command);
+        const result = isCommandWithResponse(command)
+            ? this.callbacks.add(req.seq, command)
+            : undefined;
+        try {
+            this.server.stdin.write(JSON.stringify(req) + "\n");
+        }
+        catch (error) {
+            this.callbacks.error(req.seq, error);
+        }
+        return result;
+    }
+    async restartServer() {
+        if (this.server) {
+            this.lastStartAttempt = undefined; // reset auto-restart loop guard
+            const server = this.server;
+            const graceTimer = setTimeout(() => server.kill(), 10000);
+            await this.execute("exit");
+            clearTimeout(graceTimer);
+        }
+        else {
+            this.server = this.startServer();
+            this.emitter.emit("restarted", undefined);
         }
     }
     startServer() {
-        if (!this.serverPromise) {
-            let lastStderrOutput;
-            let reject;
-            const exitHandler = (result) => {
-                const err = typeof result === "number" ? new Error("exited with code: " + result) : result;
-                console.error("tsserver: ", err);
-                this.callbacks.rejectAll(err);
-                reject(err);
-                this.serverPromise = undefined;
-                setImmediate(() => {
-                    let detail = (err && err.stack) || "";
-                    if (lastStderrOutput) {
-                        detail = "Last output from tsserver:\n" + lastStderrOutput + "\n \n" + detail;
-                    }
-                    atom.notifications.addError("Typescript quit unexpectedly", {
-                        detail,
-                        dismissable: true,
-                    });
-                });
-            };
-            return (this.serverPromise = new Promise((resolve, _reject) => {
-                reject = _reject;
-                if (window.atom_typescript_debug) {
-                    console.log("starting", this.tsServerPath);
-                }
-                const cp = startServer(this.tsServerPath, this.tsServerArgs);
-                cp.once("error", exitHandler);
-                cp.once("exit", exitHandler);
-                // Pipe both stdout and stderr appropriately
-                messageStream(cp.stdout).on("data", this.onMessage);
-                cp.stderr.on("data", data => {
-                    console.warn("tsserver stderr:", (lastStderrOutput = data.toString()));
-                });
-                // We send an unknown command to verify that the server is working.
-                this.sendRequest(cp, "ping", null, true).then(res => resolve(cp), err => resolve(cp));
-            }));
+        if (window.atom_typescript_debug) {
+            console.log("starting", this.tsServerPath);
         }
-        else {
-            throw new Error(`Server already started: ${this.tsServerPath}`);
+        this.lastStartAttempt = Date.now();
+        const cp = startServer(this.tsServerPath);
+        if (!cp)
+            throw new Error("ChildProcess failed to start");
+        const h = this.exitHandler;
+        cp.once("error", h);
+        cp.once("exit", (code, signal) => {
+            if (code === 0)
+                h(new Error("Server stopped normally"), false);
+            else if (code !== null)
+                h(new Error(`exited with code: ${code}`));
+            else if (signal !== null)
+                h(new Error(`terminated on signal: ${signal}`));
+        });
+        // Pipe both stdout and stderr appropriately
+        messageStream(cp.stdout).on("data", this.onMessage);
+        cp.stderr.on("data", data => {
+            console.warn("tsserver stderr:", (this.lastStderrOutput = data.toString()));
+        });
+        return cp;
+    }
+    onResponse(res) {
+        this.callbacks.resolve(res.request_seq, res);
+    }
+    onEvent(res) {
+        if (window.atom_typescript_debug) {
+            console.log("received event", res);
         }
+        // tslint:disable-next-line:no-unsafe-any
+        if (res.body)
+            this.emitter.emit(res.event, res.body);
     }
 }
 exports.TypescriptServiceClient = TypescriptServiceClient;
-function startServer(tsServerPath, tsServerArgs) {
+function startServer(tsServerPath) {
+    const locale = atom.config.get("atom-typescript").locale;
+    const tsServerArgs = locale ? ["--locale", locale] : [];
     if (INSPECT_TSSERVER) {
         return new atom_1.BufferedProcess({
             command: "node",
@@ -225,12 +169,6 @@ function startServer(tsServerPath, tsServerArgs) {
         }).process;
     }
 }
-function isEvent(res) {
-    return res.type === "event";
-}
-function isResponse(res) {
-    return res.type === "response";
-}
 function messageStream(input) {
     return input.pipe(byline()).pipe(new MessageStream());
 }
@@ -239,7 +177,7 @@ class MessageStream extends stream_1.Transform {
     constructor() {
         super({ objectMode: true });
     }
-    _transform(buf, encoding, callback) {
+    _transform(buf, _encoding, callback) {
         const line = buf.toString();
         try {
             if (line.startsWith("{")) {

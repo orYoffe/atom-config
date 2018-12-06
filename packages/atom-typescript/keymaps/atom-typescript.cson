@@ -1,22 +1,20 @@
-'atom-workspace atom-text-editor:not([mini])[data-grammar^="source ts"]':
-  'alt-cmd-l': 'typescript:format-code'
-  'alt-ctrl-l': 'typescript:format-code'
-  'ctrl-;': 'typescript:context-actions'
-  'cmd-;': 'typescript:context-actions'
+'atom-text-editor:not([mini]).typescript-editor':
   'f2': 'typescript:rename-refactor'
   'shift-f12': 'typescript:find-references'
-  'ctrl-M': 'typescript:output-toggle'
-  'cmd-M': 'typescript:output-toggle'
-
-# Stronger bindings
-'atom-workspace':
   'f6': 'typescript:build'
-  'f10': 'typescript:return-from-declaration'
   'f12': 'typescript:go-to-declaration'
-  'ctrl-\'': 'typescript:sync'
-  'cmd-\'': 'typescript:sync'
+  'escape': 'typescript:hide-signature-help'
 
-# Quick navigations
-'.platform-win32, .platform-linux, .platform-darwin':
-  'f8': 'typescript:go-to-next'
-  'shift-f8': 'typescript:go-to-previous'
+'atom-workspace':
+  'f10': 'typescript:return-from-declaration'
+  'shift-f10': 'typescript:show-editor-position-history'
+
+'.platform-darwin atom-text-editor:not([mini]).typescript-editor':
+  'alt-cmd-l': 'typescript:format-code'
+  'cmd-r': 'typescript:toggle-file-symbols'
+  'cmd-shift-r': 'typescript:toggle-project-symbols'
+
+'.platform-win32 atom-text-editor:not([mini]).typescript-editor, .platform-linux atom-text-editor:not([mini]).typescript-editor':
+  'alt-ctrl-l': 'typescript:format-code'
+  'ctrl-r': 'typescript:toggle-file-symbols'
+  'ctrl-shift-r': 'typescript:toggle-project-symbols'
