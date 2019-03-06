@@ -1,25 +1,28 @@
 {
-  "_from": "https://www.atom.io/api/packages/prettier-atom/versions/0.56.1/tarball",
-  "_id": "prettier-atom@0.56.1",
+  "_from": "https://www.atom.io/api/packages/prettier-atom/versions/0.56.4/tarball",
+  "_id": "prettier-atom@0.56.4",
   "_inBundle": false,
-  "_integrity": "sha512-k3tuwXGbFyMf4mmkT/eAiXoi0F1/6495j8xpgtEUG8Tv2HruBfO4S0+Ms08b+XBw9tFctXEAV9yLypaG+zkNjA==",
+  "_integrity": "sha512-oKeSLoRibiwoBp5o1ZKmSxn4o/JXpHKA0vsX4z/ElPAXYtC0YAO1JCPS6KZGIRTCsW+aUtRvHEncJW73XAQKvg==",
   "_location": "/prettier-atom",
   "_phantomChildren": {},
   "_requested": {
     "type": "remote",
-    "raw": "https://www.atom.io/api/packages/prettier-atom/versions/0.56.1/tarball",
-    "rawSpec": "https://www.atom.io/api/packages/prettier-atom/versions/0.56.1/tarball",
-    "saveSpec": "https://www.atom.io/api/packages/prettier-atom/versions/0.56.1/tarball",
-    "fetchSpec": "https://www.atom.io/api/packages/prettier-atom/versions/0.56.1/tarball"
+    "raw": "https://www.atom.io/api/packages/prettier-atom/versions/0.56.4/tarball",
+    "rawSpec": "https://www.atom.io/api/packages/prettier-atom/versions/0.56.4/tarball",
+    "saveSpec": "https://www.atom.io/api/packages/prettier-atom/versions/0.56.4/tarball",
+    "fetchSpec": "https://www.atom.io/api/packages/prettier-atom/versions/0.56.4/tarball"
   },
   "_requiredBy": [
     "#USER",
     "/"
   ],
-  "_resolved": "https://www.atom.io/api/packages/prettier-atom/versions/0.56.1/tarball",
-  "_shasum": "6cd9fdca63312911e3cca4c93bdaabc0bf51731b",
-  "_spec": "https://www.atom.io/api/packages/prettier-atom/versions/0.56.1/tarball",
-  "_where": "/private/var/folders/7x/v6ks476d5ngbf5dqytq4kgfw0000gn/T/apm-install-dir-118116-1577-o5u4s8.kc6r",
+  "_resolved": "https://www.atom.io/api/packages/prettier-atom/versions/0.56.4/tarball",
+  "_shasum": "7df4d6ad8e9883d17053199baee70fc1b3e03d23",
+  "_spec": "https://www.atom.io/api/packages/prettier-atom/versions/0.56.4/tarball",
+  "_where": "/private/var/folders/7x/v6ks476d5ngbf5dqytq4kgfw0000gn/T/apm-install-dir-11924-1079-l0be26.xt28",
+  "activationHooks": [
+    "core:loaded-shell-environment"
+  ],
   "bugs": {
     "url": "https://github.com/prettier/prettier-atom/issues"
   },
@@ -69,6 +72,7 @@
     "babel-preset-env": "^1.7.0",
     "codecov": "^3.0.2",
     "commitizen": "^3.0.4",
+    "conventional-changelog-cli": "^2.0.12",
     "cz-conventional-changelog": "^2.1.0",
     "eslint": "^5.9.0",
     "eslint-config-airbnb-base": "^13.1.0",
@@ -125,5 +129,5 @@
     "start": "nps",
     "test": "nps test"
   },
-  "version": "0.56.1"
+  "version": "0.56.4"
 }

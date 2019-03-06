@@ -43,6 +43,7 @@
     ]
   editor:
     autoIndent: false
+    fontSize: 16
     preferredLineLength: 140
     softWrap: true
     zoomFontWhenCtrlScrolling: true
@@ -52,7 +53,8 @@
   "highlight-selected":
     showResultsOnScrollBar: true
   "linter-eslint":
-    disableWhenNoEslintConfig: false
+    disabling:
+      disableWhenNoEslintConfig: false
     lintHtmlFiles: true
   "linter-ui-default":
     panelHeight: 81

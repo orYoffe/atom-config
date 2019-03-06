@@ -1,43 +1,29 @@
 {
-  "_args": [
-    [
-      {
-        "raw": "/private/var/folders/7x/v6ks476d5ngbf5dqytq4kgfw0000gn/T/d-118417-1684-n0v7k8.o3x5gq4cxr/package.tgz",
-        "scope": null,
-        "escapedName": null,
-        "name": null,
-        "rawSpec": "/private/var/folders/7x/v6ks476d5ngbf5dqytq4kgfw0000gn/T/d-118417-1684-n0v7k8.o3x5gq4cxr/package.tgz",
-        "spec": "/private/var/folders/7x/v6ks476d5ngbf5dqytq4kgfw0000gn/T/d-118417-1684-n0v7k8.o3x5gq4cxr/package.tgz",
-        "type": "local"
-      },
-      "/private/var/folders/7x/v6ks476d5ngbf5dqytq4kgfw0000gn/T/apm-install-dir-118417-1684-xlke9a.r8jy3qh0k9"
-    ]
-  ],
-  "_from": "../d-118417-1684-n0v7k8.o3x5gq4cxr/package.tgz",
-  "_id": "linter-csslint@2.0.1",
-  "_inCache": true,
+  "_from": "https://www.atom.io/api/packages/linter-csslint/versions/2.0.5/tarball",
+  "_id": "linter-csslint@2.0.5",
+  "_inBundle": false,
+  "_integrity": "sha512-KuzrPP1dygWbLB2zJ/ddFHEKMqvgIziwRgJTH649iCGU+5dMgtPhwZxZZIXPggTaE5+X5NLVBz3Xw4RyOkaYeQ==",
   "_location": "/linter-csslint",
   "_phantomChildren": {},
   "_requested": {
-    "raw": "/private/var/folders/7x/v6ks476d5ngbf5dqytq4kgfw0000gn/T/d-118417-1684-n0v7k8.o3x5gq4cxr/package.tgz",
-    "scope": null,
-    "escapedName": null,
-    "name": null,
-    "rawSpec": "/private/var/folders/7x/v6ks476d5ngbf5dqytq4kgfw0000gn/T/d-118417-1684-n0v7k8.o3x5gq4cxr/package.tgz",
-    "spec": "/private/var/folders/7x/v6ks476d5ngbf5dqytq4kgfw0000gn/T/d-118417-1684-n0v7k8.o3x5gq4cxr/package.tgz",
-    "type": "local"
+    "type": "remote",
+    "raw": "https://www.atom.io/api/packages/linter-csslint/versions/2.0.5/tarball",
+    "rawSpec": "https://www.atom.io/api/packages/linter-csslint/versions/2.0.5/tarball",
+    "saveSpec": "https://www.atom.io/api/packages/linter-csslint/versions/2.0.5/tarball",
+    "fetchSpec": "https://www.atom.io/api/packages/linter-csslint/versions/2.0.5/tarball"
   },
   "_requiredBy": [
-    "#USER"
+    "#USER",
+    "/"
   ],
-  "_resolved": "file:../d-118417-1684-n0v7k8.o3x5gq4cxr/package.tgz",
-  "_shasum": "745952cc124bf1d9ed7506e0f691b0b1bd413725",
-  "_shrinkwrap": null,
-  "_spec": "/private/var/folders/7x/v6ks476d5ngbf5dqytq4kgfw0000gn/T/d-118417-1684-n0v7k8.o3x5gq4cxr/package.tgz",
-  "_where": "/private/var/folders/7x/v6ks476d5ngbf5dqytq4kgfw0000gn/T/apm-install-dir-118417-1684-xlke9a.r8jy3qh0k9",
+  "_resolved": "https://www.atom.io/api/packages/linter-csslint/versions/2.0.5/tarball",
+  "_shasum": "6e38945b859ae007785b8cbf2b90e24dda19a7bf",
+  "_spec": "https://www.atom.io/api/packages/linter-csslint/versions/2.0.5/tarball",
+  "_where": "/private/var/folders/7x/v6ks476d5ngbf5dqytq4kgfw0000gn/T/apm-install-dir-119114-985-4m98xx.vmwn6",
   "bugs": {
     "url": "https://github.com/AtomLinter/linter-csslint/issues"
   },
+  "bundleDependencies": false,
   "commitlint": {
     "extends": [
       "@commitlint/config-conventional"
@@ -51,23 +37,24 @@
     }
   },
   "dependencies": {
-    "atom-linter": "^10.0.0",
-    "atom-package-deps": "^4.6.0",
-    "csslint": "^1.0.5",
-    "fs-plus": "^3.0.1"
+    "atom-linter": "10.0.0",
+    "atom-package-deps": "5.0.0",
+    "csslint": "1.0.5",
+    "fs-plus": "3.1.1"
   },
+  "deprecated": false,
   "description": "Lint CSS on the fly, using csslint",
   "devDependencies": {
-    "@commitlint/cli": "^6.1.3",
-    "@commitlint/config-conventional": "^6.1.3",
-    "@commitlint/travis-cli": "^6.1.3",
-    "@semantic-release/apm-config": "^2.0.1",
-    "eslint": "^4.6.0",
-    "eslint-config-airbnb-base": "^12.0.0",
-    "eslint-plugin-import": "^2.7.0",
-    "husky": "^0.14.3",
-    "jasmine-fix": "^1.3.0",
-    "semantic-release": "^15.1.7"
+    "@commitlint/cli": "7.5.2",
+    "@commitlint/config-conventional": "7.5.0",
+    "@commitlint/travis-cli": "7.5.2",
+    "@semantic-release/apm-config": "6.0.1",
+    "eslint": "5.13.0",
+    "eslint-config-airbnb-base": "13.1.0",
+    "eslint-plugin-import": "2.16.0",
+    "husky": "1.3.1",
+    "jasmine-fix": "1.3.1",
+    "semantic-release": "15.13.3"
   },
   "engines": {
     "atom": ">=1.4.0 <2.0.0"
@@ -94,6 +81,11 @@
     }
   },
   "homepage": "https://github.com/AtomLinter/linter-csslint#readme",
+  "husky": {
+    "hooks": {
+      "commit-msg": "commitlint -E HUSKY_GIT_PARAMS"
+    }
+  },
   "keywords": [
     "csslint",
     "css",
@@ -103,7 +95,6 @@
   "license": "MIT",
   "main": "./lib/main",
   "name": "linter-csslint",
-  "optionalDependencies": {},
   "package-deps": [
     "linter:2.0.0"
   ],
@@ -115,19 +106,31 @@
       }
     }
   },
-  "readme": "# linter-csslint [![Build Status](https://travis-ci.org/AtomLinter/linter-csslint.svg)](https://travis-ci.org/AtomLinter/linter-csslint)\n\nThis linter plugin for [Linter](https://github.com/AtomLinter/Linter) provides\nan interface to [csslint](https://github.com/CSSLint/csslint). It will be used\nwith files that have the \"CSS\" or \"HTML\" syntax.\n\n## Installation\n\nIf the `linter` is not already installed, it will be installed for you to\nprovide a UI for the service this package provides.\n\n### Plugin installation\n\n```ShellSession\napm install linter-csslint\n```\n",
-  "readmeFilename": "README.md",
   "release": {
     "extends": "@semantic-release/apm-config"
+  },
+  "renovate": {
+    "extends": [
+      "config:base"
+    ],
+    "semanticCommits": true,
+    "rangeStrategy": "pin",
+    "packageRules": [
+      {
+        "packagePatterns": [
+          "^eslint"
+        ],
+        "groupName": "ESLint packages"
+      }
+    ]
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/AtomLinter/linter-csslint.git"
   },
   "scripts": {
-    "commitmsg": "commitlint -e $GIT_PARAMS",
     "lint": "eslint .",
     "test": "apm test"
   },
-  "version": "2.0.1"
+  "version": "2.0.5"
 }

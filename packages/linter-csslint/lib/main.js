@@ -23,14 +23,13 @@ const loadDeps = () => {
   }
 };
 
-const getCheckNotificationDetails = checkDetail =>
-  (notification) => {
-    const { detail } = notification.getOptions();
-    if (detail === checkDetail) {
-      return true;
-    }
-    return false;
-  };
+const getCheckNotificationDetails = checkDetail => (notification) => {
+  const { detail } = notification.getOptions();
+  if (detail === checkDetail) {
+    return true;
+  }
+  return false;
+};
 
 export default {
   activate() {
@@ -71,7 +70,7 @@ export default {
   provideLinter() {
     return {
       name: 'CSSLint',
-      grammarScopes: ['source.css', 'source.html'],
+      grammarScopes: ['source.css'],
       scope: 'file',
       lintsOnChange: false,
       lint: async (textEditor) => {
@@ -132,6 +131,11 @@ export default {
           return null;
         }
 
+        if (output === null) {
+          // Another run has superseded this run
+          return null;
+        }
+
         if (textEditor.getText() !== text) {
           // The editor contents have changed, tell Linter not to update
           return null;
@@ -148,8 +152,8 @@ export default {
         try {
           lintResult = JSON.parse(output);
         } catch (e) {
-          const excerpt = 'Invalid response received from CSSLint, check ' +
-            'your console for more details.';
+          const excerpt = 'Invalid response received from CSSLint, check '
+            + 'your console for more details.';
           return [{
             severity: 'error',
             excerpt,

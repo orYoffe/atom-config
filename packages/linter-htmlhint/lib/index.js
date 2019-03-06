@@ -12,8 +12,14 @@ let generateRange;
 let tinyPromisify;
 let stripJSONComments;
 
-const phpEmbeddedScope = 'text.html.php';
+// Configuration
+let disableWhenNoHtmlhintConfig;
 
+// Internal variables
+const phpEmbeddedScope = 'text.html.php';
+const validSeverities = ['info', 'warning', 'error'];
+
+// Internal functions
 const getConfig = async (filePath) => {
   const readFile = tinyPromisify(fsReadFile);
   const configPath = await findAsync(dirname(filePath), '.htmlhintrc');
@@ -27,9 +33,13 @@ const getConfig = async (filePath) => {
   return null;
 };
 
-const phpScopedEditor = editor => editor.getCursors().some(cursor =>
-  cursor.getScopeDescriptor().getScopesArray().some(scope =>
-    scope === phpEmbeddedScope));
+const phpScopedEditor = editor => (
+  editor.getCursors().some(cursor => (
+    cursor.getScopeDescriptor().getScopesArray().some(scope => (
+      scope === phpEmbeddedScope
+    ))
+  ))
+);
 
 const removePHP = str => str.replace(/<\?(?:php|=)?(?:[\s\S])+?\?>/gi, (match) => {
   const newlines = match.match(/\r?\n|\r/g);
@@ -86,6 +96,9 @@ export default {
       // Add the current scopes
       Array.prototype.push.apply(this.grammarScopes, scopes);
     }));
+    this.subscriptions.add(atom.config.observe('linter-htmlhint.disableWhenNoHtmlhintConfig', (value) => {
+      disableWhenNoHtmlhintConfig = value;
+    }));
   },
 
   deactivate() {
@@ -99,7 +112,7 @@ export default {
       name: 'htmlhint',
       grammarScopes: this.grammarScopes,
       scope: 'file',
-      lintOnFly: true,
+      lintsOnChange: true,
       lint: async (editor) => {
         if (!atom.workspace.isTextEditor(editor)) {
           return null;
@@ -123,6 +136,9 @@ export default {
         loadDeps();
 
         const ruleset = await getConfig(filePath);
+        if (!ruleset && disableWhenNoHtmlhintConfig) {
+          return null;
+        }
 
         const messages = HTMLHint.verify(text, ruleset || undefined);
 
@@ -131,12 +147,20 @@ export default {
           return null;
         }
 
-        return messages.map(message => ({
-          range: generateRange(editor, message.line - 1, message.col - 1),
-          type: message.type,
-          text: message.message,
-          filePath
-        }));
+        return messages.map((message) => {
+          let severity = message.type.toLowerCase();
+          if (!validSeverities.includes(severity)) {
+            severity = 'error';
+          }
+          return ({
+            severity,
+            excerpt: message.message,
+            location: {
+              file: filePath,
+              position: generateRange(editor, message.line - 1, message.col - 1)
+            }
+          });
+        });
       }
     };
   }

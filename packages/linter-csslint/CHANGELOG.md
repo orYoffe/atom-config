@@ -1,3 +1,31 @@
+## [2.0.5](https://github.com/AtomLinter/linter-csslint/compare/v2.0.4...v2.0.5) (2019-02-13)
+
+
+### Bug Fixes
+
+* **deps:** update dependency fs-plus to v3.1.1 ([bf45d93](https://github.com/AtomLinter/linter-csslint/commit/bf45d93))
+
+## [2.0.4](https://github.com/AtomLinter/linter-csslint/compare/v2.0.3...v2.0.4) (2019-02-07)
+
+
+### Bug Fixes
+
+* handle superseded runs ([458b0b0](https://github.com/AtomLinter/linter-csslint/commit/458b0b0)), closes [#214](https://github.com/AtomLinter/linter-csslint/issues/214)
+
+## [2.0.3](https://github.com/AtomLinter/linter-csslint/compare/v2.0.2...v2.0.3) (2019-01-23)
+
+
+### Bug Fixes
+
+* **package:** update atom-package-deps to version 5.0.0 ([e12f485](https://github.com/AtomLinter/linter-csslint/commit/e12f485))
+
+## [2.0.2](https://github.com/AtomLinter/linter-csslint/compare/v2.0.1...v2.0.2) (2018-12-13)
+
+
+### Bug Fixes
+
+* remove HTML from supported types ([ce69eec](https://github.com/AtomLinter/linter-csslint/commit/ce69eec)), closes [#207](https://github.com/AtomLinter/linter-csslint/issues/207)
+
 <a name="2.0.1"></a>
 ## [2.0.1](https://github.com/AtomLinter/linter-csslint/compare/v2.0.0...v2.0.1) (2018-04-27)
 

@@ -1,3 +1,31 @@
+# [1.6.0](https://github.com/AtomLinter/linter-htmlhint/compare/v1.5.2...v1.6.0) (2019-01-17)
+
+
+### Features
+
+* update to Linter v2 API ([9d31471](https://github.com/AtomLinter/linter-htmlhint/commit/9d31471))
+
+## [1.5.2](https://github.com/AtomLinter/linter-htmlhint/compare/v1.5.1...v1.5.2) (2019-01-17)
+
+
+### Bug Fixes
+
+* **package:** update atom-package-deps to version 5.0.0 ([7b4c90a](https://github.com/AtomLinter/linter-htmlhint/commit/7b4c90a))
+
+## [1.5.1](https://github.com/AtomLinter/linter-htmlhint/compare/v1.5.0...v1.5.1) (2018-09-12)
+
+
+### Bug Fixes
+
+* **package:** update htmlhint to version 0.10.0 ([fd934a2](https://github.com/AtomLinter/linter-htmlhint/commit/fd934a2))
+
+# [1.5.0](https://github.com/AtomLinter/linter-htmlhint/compare/v1.4.0...v1.5.0) (2018-08-29)
+
+
+### Features
+
+* disable when no .htmlhintrc file is found ([#172](https://github.com/AtomLinter/linter-htmlhint/issues/172)) ([0e2bb0d](https://github.com/AtomLinter/linter-htmlhint/commit/0e2bb0d))
+
 # Change Log
 
 ## [v1.4.0](https://github.com/AtomLinter/linter-htmlhint/tree/v1.4.0) (2017-10-28)
