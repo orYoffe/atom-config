@@ -43,7 +43,7 @@
     ]
   editor:
     autoIndent: false
-    fontSize: 16
+    fontSize: 23
     preferredLineLength: 140
     softWrap: true
     zoomFontWhenCtrlScrolling: true
@@ -53,8 +53,7 @@
   "highlight-selected":
     showResultsOnScrollBar: true
   "linter-eslint":
-    disabling:
-      disableWhenNoEslintConfig: false
+    disabling: {}
     lintHtmlFiles: true
   "linter-ui-default":
     panelHeight: 81
@@ -78,7 +77,8 @@
   "seti-ui":
     compactView: true
     fileIcons: false
-  "tree-view": {}
+  "tree-view":
+    hideVcsIgnoredFiles: true
   welcome:
     showOnStartup: false
 ".coffee.jsx.source":

@@ -1,0 +1,44 @@
+0 info it worked if it ends with ok
+1 verbose cli [ '/Applications/Atom.app/Contents/Resources/app/apm/bin/node',
+1 verbose cli   '/Applications/Atom.app/Contents/Resources/app/apm/node_modules/npm/bin/npm-cli.js',
+1 verbose cli   '--globalconfig',
+1 verbose cli   '/Users/oryoffe/.atom/.apm/.apmrc',
+1 verbose cli   '--userconfig',
+1 verbose cli   '/Users/oryoffe/.atom/.apmrc',
+1 verbose cli   'install',
+1 verbose cli   'https://www.atom.io/api/packages/atom-graphql/versions/0.1.0/tarball',
+1 verbose cli   '--runtime=electron',
+1 verbose cli   '--target=2.0.18',
+1 verbose cli   '--dist-url=https://atom.io/download/electron',
+1 verbose cli   '--arch=x64',
+1 verbose cli   '--global-style' ]
+2 info using npm@6.2.0
+3 info using node@v8.9.3
+4 verbose npm-session cd2bb2d2ade866b2
+5 silly install loadCurrentTree
+6 silly install readLocalPackageData
+7 http fetch GET 400 https://www.atom.io/api/packages/atom-graphql/versions/0.1.0/tarball 1297ms
+8 silly fetchPackageMetaData error for https://www.atom.io/api/packages/atom-graphql/versions/0.1.0/tarball 400 Bad Request: https://www.atom.io/api/packages/atom-graphql/versions/0.1.0/tarball
+9 timing stage:rollbackFailedOptional Completed in 3ms
+10 timing stage:runTopLevelLifecycles Completed in 1425ms
+11 verbose stack Error: 400 Bad Request: https://www.atom.io/api/packages/atom-graphql/versions/0.1.0/tarball
+11 verbose stack     at fetch.then.res (/Applications/Atom.app/Contents/Resources/app/apm/node_modules/npm/node_modules/pacote/lib/fetchers/registry/fetch.js:42:19)
+11 verbose stack     at tryCatcher (/Applications/Atom.app/Contents/Resources/app/apm/node_modules/npm/node_modules/bluebird/js/release/util.js:16:23)
+11 verbose stack     at Promise._settlePromiseFromHandler (/Applications/Atom.app/Contents/Resources/app/apm/node_modules/npm/node_modules/bluebird/js/release/promise.js:512:31)
+11 verbose stack     at Promise._settlePromise (/Applications/Atom.app/Contents/Resources/app/apm/node_modules/npm/node_modules/bluebird/js/release/promise.js:569:18)
+11 verbose stack     at Promise._settlePromise0 (/Applications/Atom.app/Contents/Resources/app/apm/node_modules/npm/node_modules/bluebird/js/release/promise.js:614:10)
+11 verbose stack     at Promise._settlePromises (/Applications/Atom.app/Contents/Resources/app/apm/node_modules/npm/node_modules/bluebird/js/release/promise.js:693:18)
+11 verbose stack     at Async._drainQueue (/Applications/Atom.app/Contents/Resources/app/apm/node_modules/npm/node_modules/bluebird/js/release/async.js:133:16)
+11 verbose stack     at Async._drainQueues (/Applications/Atom.app/Contents/Resources/app/apm/node_modules/npm/node_modules/bluebird/js/release/async.js:143:10)
+11 verbose stack     at Immediate.Async.drainQueues (/Applications/Atom.app/Contents/Resources/app/apm/node_modules/npm/node_modules/bluebird/js/release/async.js:17:14)
+11 verbose stack     at runCallback (timers.js:789:20)
+11 verbose stack     at tryOnImmediate (timers.js:751:5)
+11 verbose stack     at processImmediate [as _immediateCallback] (timers.js:722:5)
+12 verbose cwd /private/var/folders/7x/v6ks476d5ngbf5dqytq4kgfw0000gn/T/apm-install-dir-119216-2754-390ehd.uug5l
+13 verbose Darwin 18.0.0
+14 verbose argv "/Applications/Atom.app/Contents/Resources/app/apm/bin/node" "/Applications/Atom.app/Contents/Resources/app/apm/node_modules/npm/bin/npm-cli.js" "--globalconfig" "/Users/oryoffe/.atom/.apm/.apmrc" "--userconfig" "/Users/oryoffe/.atom/.apmrc" "install" "https://www.atom.io/api/packages/atom-graphql/versions/0.1.0/tarball" "--runtime=electron" "--target=2.0.18" "--dist-url=https://atom.io/download/electron" "--arch=x64" "--global-style"
+15 verbose node v8.9.3
+16 verbose npm  v6.2.0
+17 error code E400
+18 error 400 Bad Request: https://www.atom.io/api/packages/atom-graphql/versions/0.1.0/tarball
+19 verbose exit [ 1, true ]
